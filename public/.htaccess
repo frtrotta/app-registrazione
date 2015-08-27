@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule rest-api/(.*)$ rest-api/api.php?request=$1 [QSA,NC,L]
+</IfModule>
+
+# FT 13-08-2015
+# Aruba does not allow for Indexs option, even for prohibiting.
+# Uncommenting the following line would result in Internal Server Error
+#Options -Indexes
