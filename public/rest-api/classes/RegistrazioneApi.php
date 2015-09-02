@@ -67,6 +67,7 @@ class RegistrazioneApi extends MySqlRestApi {
         } else {
             throw new MethodNotAllowedException();
         }
+        return "ok";
     }
 
     protected function Me() {
@@ -75,6 +76,25 @@ class RegistrazioneApi extends MySqlRestApi {
         } else {
             throw new MethodNotAllowedException();
         }
+    }
+    
+    protected function Ordine() {
+        if($this->method === 'POST') {
+            if(!_userIsLogged()) {
+                throw new UnauthorizedException();
+            }
+        } else if($this->method == 'GET') {
+            if(!_userIsLogged()) {
+                throw new UnauthorizedException();
+            }
+        } else if($this->method == 'PUT') {
+            if(!_userIsLogged()) {
+                throw new UnauthorizedException();
+            }
+        } else {
+            throw new MethodNotAllowedException("$this->method");
+        }
+        
     }
 
     private function _loginByUsernameAndPassword($username, $password) {
@@ -209,19 +229,12 @@ class RegistrazioneApi extends MySqlRestApi {
         return $r;
     }
 
-//    private function userIsLogged() {
-//        $query = 'SELECT gettoneAutenticazione'
-//                . ' FROM utente'
-//                . " WHERE gettoneAutenticazione = '$this->gettoneAutenticazione'"
-//                . " AND gettoneAutenticazioneScadeIl > NOW()";
-//        $rs = $this->conn->query($query);
-//        $r = ($rs->num_rows == 1);
-//        $rs->free();
-//        return $r;
-//    }
-
+    private function _userIsLogged() {
+        return isset($this->me);
+    }
+    
     private function _userIsAmministratore() {
-        return (isset($this->me) && $this->me['eAmministratore']);
+        return (_userIsLooged() && $this->me['eAmministratore']);
     }
 
     private function _setAuthCookie() {

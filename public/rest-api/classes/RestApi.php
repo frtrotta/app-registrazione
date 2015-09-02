@@ -55,7 +55,7 @@ abstract class RestApi {
         if (isset($this->args[0]) && !is_numeric($this->args[0])) {
             $this->verb = array_shift($this->args);
         }
-        
+
         /* TODO non funzionerebbe come Deployed perchè assume che il verb sia
          * non numerico. Ad esempio, però, uid di Deployd sono alfanumerici
          */
@@ -84,19 +84,21 @@ abstract class RestApi {
                 break;
             case 'PUT':
                 $this->request = $this->_cleanInputs($_GET);
-                $this->file = file_get_contents("php://input");
                 break;
             default:
                 $this->_response('Invalid Method', 405);
                 break;
+        }
+        $this->contentType = filter_input(INPUT_SERVER, 'CONTENT_TYPE');
+        if (isset($this->contentType)) {
+            $this->body = file_get_contents('php://input');
         }
     }
 
     public function processAPI() {
         if (method_exists($this, $this->endpoint)) {
             $this->_response($this->{$this->endpoint}());
-        }
-        else {
+        } else {
             //$this->response("No Endpoint: $this->endpoint", 404);
             throw new NotFoundException("No Endpoint: $this->endpoint");
         }
