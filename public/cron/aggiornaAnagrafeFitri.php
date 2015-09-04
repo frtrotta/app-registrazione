@@ -1,5 +1,7 @@
 <?php
 
+//define('DEBUG', '');
+
 include 'errorHandling.php';
 
 $currentYear = date('Y');
@@ -352,7 +354,7 @@ function updateAtleti($conn, $atleti) {
     return $n;
 }
 
-$conf = parse_ini_file(__DIR__ . '\..\rest-api\config.ini', true);
+$conf = parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR .'..' . DIRECTORY_SEPARATOR .'rest-api' . DIRECTORY_SEPARATOR .'config.ini', true);
 $mysqlConf = $conf['mysql'];
 
 
@@ -361,7 +363,7 @@ $mysqlConf = $conf['mysql'];
 $societaFName = 'societa.csv';
 $societaFH = fopen($societaFName, 'w');
 
-echo '<p>Downloading <span style="font-family: monospace;">' . SOCIETA_URL . '</span>...';
+echo '<p>Downloading file of societa...';
 fileDownload(SOCIETA_URL, $societaFH);
 echo ' done</p>';
 fclose($societaFH);
@@ -369,7 +371,7 @@ fclose($societaFH);
 
 $atletiFName = 'atleti.csv';
 $atletiFH = fopen($atletiFName, 'w');
-echo '<p>Downloading <span style="font-family: monospace;">' . ATLETI_URL . '</span>...';
+echo '<p>Downloading file of atleti...';
 fileDownload(ATLETI_URL, $atletiFH);
 echo ' done</p>';
 fclose($atletiFH);

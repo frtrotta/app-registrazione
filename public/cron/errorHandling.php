@@ -45,26 +45,26 @@ if (defined('DEBUG')) {
         switch ($errno) {
             case E_USER_ERROR:
                 // Send an e-mail to the administrator
-                error_log("Error: $errstr \n Fatal error on line $errline in file $errfile \n", DEST_EMAIL, ADMIN_EMAIL);
+                error_log(date('Y-m-d H:i:s') . " Error: $errstr \n Fatal error on line $errline in file $errfile \n", DEST_EMAIL, ADMIN_EMAIL);
 
                 // Write the error to our log file
-                error_log("Error: $errstr \n Fatal error on line $errline in file $errfile \n", DEST_LOGFILE, LOG_FILE);
+                error_log(date('Y-m-d H:i:s') . " Error: $errstr \n Fatal error on line $errline in file $errfile \n", DEST_LOGFILE, LOG_FILE);
                 break;
 
             case E_USER_WARNING:
                 // Write the error to our log file
-                error_log("Warning: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
+                error_log(date('Y-m-d H:i:s') . " Warning: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
                 break;
 
             case E_USER_NOTICE:
                 // Write the error to our log file
-                error_log("Notice: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
+                error_log(date('Y-m-d H:i:s') . " Notice: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
                 break;
 
             default:
                 // Write the error to our log file
-                error_log("Unknown error [#$errno]: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
-                error_log("Unknown error [#$errno]: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
+                error_log(date('Y-m-d H:i:s') . " Unknown error [#$errno]: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
+                error_log(date('Y-m-d H:i:s') . " Unknown error [#$errno]: $errstr \n in $errfile on line $errline \n", DEST_LOGFILE, LOG_FILE);
                 break;
         }
 

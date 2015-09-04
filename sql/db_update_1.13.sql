@@ -394,9 +394,6 @@ UPDATE `societa_fitri` SET provincia = 'RM', email = 'info@villaadagreenrunner.i
 UPDATE `societa_fitri` SET provincia = 'AR', email = 'viscortonatriathlon@gmail.com' WHERE codice = 1389;
 UPDATE `societa_fitri` SET provincia = 'PO', email = 'max.tri@aliceposta.it' WHERE codice = 1514;
 UPDATE `societa_fitri` SET provincia = 'VR', email = 'info@womantriathlonitalia.it' WHERE codice = 1839;
-
-ALTER TABLE `societa_fitri`
-	MODIFY provincia varchar(2) not null;
 	
 CREATE TABLE `tesserati_fitri` (
 -- "CODICE SS";TESSERA;COGNOME;NOME;SESSO;"DATA NASCITA";CITTADINANZA;CATEGORIA;QUALIFICA;LIVELLO;STATO;"DATA EMISSIONE";"TIPO TESSERA";DISABILITA
