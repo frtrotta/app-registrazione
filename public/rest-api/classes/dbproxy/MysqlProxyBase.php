@@ -3,7 +3,10 @@
 abstract class MysqlProxyBase {
 
     private $tableName; // the name of the table
-    private $fieldList; // the list of the fields in the correspondent SQL table
+    private $fieldList;
+    /* The list of the fields in the correspondent SQL table
+     * The first must be the IDENTITY field.
+     */
     private $conn;
 
     public function __construct($connection, $tableName, $fieldList) {
@@ -34,15 +37,15 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    private function _getSqlValueList($data) {
-        $r = null;
-        $n = count($this->fieldList) - 1;
-        for ($i = 0; $i < $n; $i++) {
-            $r .= _sqlFormat($data[$this->fieldList[$i]]) . ', ';
-        }
-        $r .= _sqlFormat($data[$this->fieldList[$n - 1]]);
-        return $r;
-    }
+//    private function _getSqlValueList($data) {
+//        $r = null;
+//        $n = count($this->fieldList) - 1;
+//        for ($i = 0; $i < $n; $i++) {
+//            $r .= _sqlFormat($data[$this->fieldList[$i]]) . ', ';
+//        }
+//        $r .= _sqlFormat($data[$this->fieldList[$n - 1]]);
+//        return $r;
+//    }
 
     private function _sqlFormat($field) {
         $r = 'NULL';
@@ -53,6 +56,7 @@ abstract class MysqlProxyBase {
                 $r = ($field) ? '1' : '0';
             } else {
                 $r = (string) $field;
+                // TODO possibile convertire facilmente data in stringa? e data e ora?
             }
         }
         return $r;
@@ -64,8 +68,8 @@ abstract class MysqlProxyBase {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
-                . ' FROM ' . $this->tableName
-                . " WHERE $id = '$id'";
+                . ' FROM `' . $this->tableName . '` '
+                . ' WHERE ' . $this->fields[0] . ' = ' . $this->_sqlFormat($id);
         $rs = $this->conn->query($query);
         if ($rs) {
             $r = $rs->fetch_assoc();
@@ -74,21 +78,68 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    public function getAll() {
+    /**
+     * Gets the instances based on the valuse provided by the pars.
+     * The values are in in AND.
+     * 
+     * @param associative array $pars
+     * @return associative array withe the selected row or null
+     * @throws Exception
+     */
+    public function getSelected($pars) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
-                . ' FROM ' . $this->tableName
-                . " WHERE $id = '$id'";
-        $rs = $this->conn->query($query);
-        if ($rs) {
-            $r = $rs->_fetchAllAssoc();
-            if ($r) {
-                foreach ($r as &$temp) {
-                    $this->_castData($temp);
+                . ' FROM `' . $this->tableName . '` ';
+        if (isset($pars)) {
+            $first = true;
+            foreach ($pars as $key => $value) {
+                if ($first) {
+                    $first = false;
+                    $where = " WHERE $key = " . $this->_sqlFormat($value);
+                } else {
+                    $where .= " AND $key = " . $this->_sqlFormat($value);
                 }
             }
         }
+        $rs = $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+        }
+        $r = $rs->_fetchAllAssoc();
+        if ($r) {
+            foreach ($r as &$temp) {
+                $this->_castData($temp);
+            }
+        }
+        return $r;
+    }
+    
+    
+
+    private function _createFieldListAndValues($data) {
+        $first = true;
+        foreach ($data as $key => $value) {
+            $key = $this->conn->escape_string($key);
+            if ($first) {
+                $first = false;
+                $r = "( `$key`";
+            } else {
+                $r .= ", `$key`";
+            }
+        }
+        $r .= ') ';
+        $first = true;
+        foreach ($data as $key => $value) {
+            $value = $this->conn->escape_string($value);
+            if ($first) {
+                $first = false;
+                $r .= 'VALUES ( ' . $this->_sqlFormat($value);
+            } else {
+                $r .= ', ' . $this->_sqlFormat($value);
+            }
+        }
+        $r .= ') ';
         return $r;
     }
 
@@ -101,60 +152,68 @@ abstract class MysqlProxyBase {
      */
     public function add($data) {
         $r = null;
-        $query = 'INSERT INTO ' . $this->tableName
-                . ' ('
-                . $this->_getFieldListString()
-                . ')'
-                . ' VALUES ('
-                . $this->_getSqlValueList($data)
-                . ')';
-        if ($this->conn->query($query)) {
-            $r = $conn->insert_id;
+        $query = 'INSERT INTO `' . $this->tableName . '` '
+                . $this->_createFieldListAndValues($data);
+        $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
         }
+        $r = $conn->insert_id;
         return $r;
     }
 
+    /**
+     * 
+     * @param associative array $data. The first element must be the unique identifier.
+     * @return boolean
+     * @throws Exception
+     */
     public function update($data) {
         $r = false;
-        $query = 'UPDATE ' . $this->tableName
-                . ' ('
-                . $this->_getFieldListString()
-                . ')'
-                . ' VALUES ('
-                . $this->_getSqlValueList($data)
-                . ')'
-                . " WHERE $id = '$id'";
-        if ($this->conn->query($query)) {
-            $n = $this->conn->affected_rows();
-            switch($n) {
-                case 0:
-                    break;
-                case 1:
-                    $r = true;
-                    break;
-                default:
-                    throw new Exception("Unexpected number of affected rows ($n)");
-            }
+        $identifier = array_shift($data);
+        $identifierFieldName = $this->conn->escape_string(array_keys($identifier)[0]);
+        $identifierFieldValue = $this->conn->escape_string($identifier[$identifierFieldName]);
+        $query = 'UPDATE `' . $this->tableName . '` '
+                . $this->_createFieldListAndValues($data)
+                . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
+        $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
         }
+
+        $n = $this->conn->affected_rows();
+        switch ($n) {
+            case 0:
+                break;
+            case 1:
+                $r = true;
+                break;
+            default:
+                throw new Exception("Unexpected number of affected rows ($n)");
+        }
+
         return $r;
     }
 
     public function delete($id) {
         $r = false;
         $query = 'DELETE FROM ' . $this->tableName
-                . " WHERE $id = '$id'";
-        if ($this->conn->query($query)) {
-            $n = $this->conn->affected_rows();
-            switch($n) {
-                case 0:
-                    break;
-                case 1:
-                    $r = true;
-                    break;
-                default:
-                    throw new Exception("Unexpected number of affected rows ($n)");
-            }
+                . ' WHERE ' . $this->fields[0] . ' = ' . $this->_sqlFormat($id);
+        $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+        }
+        $n = $this->conn->affected_rows();
+        switch ($n) {
+            case 0:
+                break;
+            case 1:
+                $r = true;
+                break;
+            default:
+                throw new Exception("Unexpected number of affected rows ($n)");
         }
         return $r;
     }
+
 }
