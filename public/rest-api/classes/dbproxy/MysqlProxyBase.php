@@ -114,8 +114,6 @@ abstract class MysqlProxyBase {
         }
         return $r;
     }
-    
-    
 
     private function _createFieldListAndValues($data) {
         $first = true;
@@ -197,7 +195,7 @@ abstract class MysqlProxyBase {
 
     public function delete($id) {
         $r = false;
-        $query = 'DELETE FROM ' . $this->tableName
+        $query = 'DELETE FROM `' . $this->tableName . '` '
                 . ' WHERE ' . $this->fields[0] . ' = ' . $this->_sqlFormat($id);
         $this->conn->query($query);
         if ($this->conn->errno) {
