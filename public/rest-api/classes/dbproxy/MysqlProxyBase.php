@@ -37,22 +37,12 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-//    private function _getSqlValueList($data) {
-//        $r = null;
-//        $n = count($this->fieldList) - 1;
-//        for ($i = 0; $i < $n; $i++) {
-//            $r .= _sqlFormat($data[$this->fieldList[$i]]) . ', ';
-//        }
-//        $r .= _sqlFormat($data[$this->fieldList[$n - 1]]);
-//        return $r;
-//    }
-
     private function _sqlFormat($field) {
         $r = 'NULL';
         if (isset($field)) {
             if (is_string($field)) {
                 $r = "'$field'";
-            } else if (is_boolean($field)) {
+            } else if (is_bool($field)) {
                 $r = ($field) ? '1' : '0';
             } else {
                 $r = (string) $field;
@@ -60,6 +50,72 @@ abstract class MysqlProxyBase {
             }
         }
         return $r;
+    }
+
+    private function _where_helper($clauses, $andor) {
+        $r = null;
+        $first = true;
+        foreach ($clauses as $field => $value) {
+            if ($first) {
+                $first = false;
+                $r = '(';
+            } else {
+                $r .= " $andor ";
+            }
+
+            if ($field === 'or' || $field === 'OR') {
+                $r .= _where_helper($value, 'OR');
+            } else {
+                $op = '=';
+                if (is_array($value)) {
+                    // necessariamente un operatore diverso dall'uguale
+                    if (count(array_keys($value)) === 1) {
+                        $opDefinition = array_keys($value)[0];
+                        if ($opDefinition) {
+                            switch ($opDefinition) {
+                                case 'lt':
+                                    $op = '<';
+                                    break;
+                                case 'le':
+                                    $op = '<=';
+                                    break;
+                                case 'gt':
+                                    $op = '>';
+                                    break;
+                                case 'ge':
+                                    $op = '>=';
+                                    break;
+                                case 'eq':
+                                    $op = '=';
+                                    break;
+                                case 'ne':
+                                    $op = '!=';
+                                    break;
+                                case 'like':
+                                    $op = 'LIKE';
+                                    break;
+                                default:
+                                    throw new MysqlProxyBaseException('Unexptected operator definition (' . $opDefinition . ')', 1);
+                            }
+                            $value = $value[$opDefinition];
+                        } else {
+                            throw new MysqlProxyBaseException('Malformed clause ' . var_export($value, true), 2);
+                        }
+                    } else {
+                        throw new MysqlProxyBaseException('Malformed clause ' . var_export($value, true), 2);
+                    }
+                }
+                $field = mysql_real_escape_string($field);
+                $value = mysql_real_escape_string($value);
+                $r .= "`$field` $op " . _sqlFormat($value);
+            }
+        }
+        $r .= ')';
+        return $r;
+    }
+
+    private function _where($clauses) {
+        return _where_helper($clauses, 'AND');
     }
 
     abstract protected function _castData(&$data);
@@ -90,7 +146,8 @@ abstract class MysqlProxyBase {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
-                . ' FROM `' . $this->tableName . '` ';
+                . ' FROM `' . $this->tableName . '` '
+                . _where($pars);
         if (isset($pars)) {
             $first = true;
             foreach ($pars as $key => $value) {
