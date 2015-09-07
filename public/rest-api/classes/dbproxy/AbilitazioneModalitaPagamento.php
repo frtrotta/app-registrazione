@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class AbilitazioneModalitaPagamento extends MysqlProxyBase {
     public function __construct($connection) {
         parent::__construct($connection, 'abilitazione_modalita_pagamento', ['idGara',

@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class Invito extends MysqlProxyBase {
     public function __construct($connection) {
         parent::__construct($connection, 'invito', ['codice',

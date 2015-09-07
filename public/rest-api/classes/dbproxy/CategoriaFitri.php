@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class CategoriaFitri extends MysqlProxyBase {
     public function __construct($connection) {
         parent::__construct($connection, 'categoria_fitri', ['nome',

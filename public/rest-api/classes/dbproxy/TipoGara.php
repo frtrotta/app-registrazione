@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class TipoGara extends MysqlProxyBase {
     public function __construct($connection) {
         parent::__construct($connection, 'tipo_gara', ['id',

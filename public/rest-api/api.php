@@ -17,7 +17,18 @@ function errorResponse($httpResponseBody, $httpResponseStatusCode) {
 }
 
 spl_autoload_register(function ($class) {
-    include 'classes/' . $class . '.php';
+    $dl = explode('\\', $class);
+    $path = null;
+    $first = true;
+    foreach ($dl as $d) {
+        if ($first) {
+            $first = false;
+            $path .= $d;
+        } else {
+            $path .= DIRECTORY_SEPARATOR . $d;
+        }
+    }
+    include 'classes' . DIRECTORY_SEPARATOR . $path . '.php';
 });
 
 try {
@@ -39,6 +50,9 @@ try {
     $error = new Error(405, $e->getMessage());
     errorResponse($error, 405);
 } catch (InconsistentDataException $e) {
+    $error = new Error(500, $e->getMessage());
+    errorResponse($error, 500);
+} catch (dbproxy\MysqlProxyBaseException $e) {
     $error = new Error(500, $e->getMessage());
     errorResponse($error, 500);
 } catch (Exception $e) {

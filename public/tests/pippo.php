@@ -106,6 +106,7 @@ try {
 }
 echo '<p>' . where(['or' => ['id' => 46, 'nome' => 'pippo']]);
 echo '<p>' . where(['hasCognome' => true, 'or' => ['id' => 46, 'nome' => 'pippo']]);
+echo '<p>' . json_encode(['hasCognome' => true, 'or' => ['id' => 46, 'nome' => 'pippo']]);
 echo '<p>' . where(['hasCognome' => true, 'or' => ['id' => ['gt' => 46], 'nome' => 'pippo']]);
 echo '<p>' . where(['hasCognome' => true, 'or' => ['id' => ['gt' => 46], 'nome' => ['like' => 'pippo']]]);
 

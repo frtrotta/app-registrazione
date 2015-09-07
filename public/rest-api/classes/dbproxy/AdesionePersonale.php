@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class AdesionePersonale extends MysqlProxyBase {
     public function __construct($connection) {
         parent::__construct($connection, 'adesione_personale', ['id',

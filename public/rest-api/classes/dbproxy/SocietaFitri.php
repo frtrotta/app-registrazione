@@ -1,13 +1,15 @@
 <?php
 
-class Squadra extends MysqlProxyBase {
+namespace dbproxy;
+
+class SocietaFitri extends MysqlProxyBase {
     public function __construct($connection) {
-        parent::__construct($connection, 'squadra', ['id',
-            'nome']);
+        parent::__construct($connection, 'societa_fitri', ['codice',
+            'nome', 'provincia', 'email']);
     }
 
     protected function _castData(&$data) {
-        $data['id'] = (int) $data['id'];  
+        $data['codice'] = (int) $data['codice'];  
     }
 
 }

@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class TipoIScrizione extends MysqlProxyBase {
     public function __construct($connection) {
         parent::__construct($connection, 'tipo_iscrizione', ['id',

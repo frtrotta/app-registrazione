@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class Documento extends MysqlProxyBase {
     public function __construct($connection) {
         parent::__construct($connection, 'documento', ['nomeFile',

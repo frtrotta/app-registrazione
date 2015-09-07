@@ -77,24 +77,34 @@ class RegistrazioneApi extends MySqlRestApi {
             throw new MethodNotAllowedException();
         }
     }
-    
-    protected function Ordine() {
-        if($this->method === 'POST') {
-            if(!_userIsLogged()) {
-                throw new UnauthorizedException();
-            }
-        } else if($this->method == 'GET') {
-            if(!_userIsLogged()) {
-                throw new UnauthorizedException();
-            }
-        } else if($this->method == 'PUT') {
-            if(!_userIsLogged()) {
-                throw new UnauthorizedException();
+
+    protected function TesseratiFitri() {
+        $r = null;
+        if ($this->method === 'GET') {
+            $tf = new dbproxy\TesseratiFitri($this->conn);
+            $queryString = filter_input(INPUT_SERVER, 'QUERY_STRING');
+            $queryString = urldecode($queryString);
+            $queryString = explode('&', $queryString);
+            if(isset($queryString[1])) {
+                $queryString = $queryString[1];
+                $whereClause = json_decode($queryString, true);
+                if ($whereClause) {
+                    $r = $tf->getSelected($whereClause);
+                } else {
+                    throw new RegistrazioneApiException('Malformed selection clause: ' . $queryString, 10);
+                }
+            } else {
+                    $r = $tf->getAll();
             }
         } else {
             throw new MethodNotAllowedException("$this->method");
         }
-        
+        $sf = new dbproxy\SocietaFitri($this->conn);
+        foreach($r as &$tesserato) {
+            $tesserato['societa'] = $sf->get($tesserato['CODICE_SS']);
+            unset($tesserato['CODICE_SS']);
+        }
+        return $r;
     }
 
     private function _loginByUsernameAndPassword($username, $password) {
@@ -232,7 +242,7 @@ class RegistrazioneApi extends MySqlRestApi {
     private function _userIsLogged() {
         return isset($this->me);
     }
-    
+
     private function _userIsAmministratore() {
         return (_userIsLooged() && $this->me['eAmministratore']);
     }

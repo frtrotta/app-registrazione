@@ -1,5 +1,9 @@
 <?php
 
+namespace dbproxy;
+
+namespace dbproxy;
+
 abstract class MysqlProxyBase {
 
     private $tableName; // the name of the table
@@ -12,11 +16,11 @@ abstract class MysqlProxyBase {
     public function __construct($connection, $tableName, $fieldList) {
         $this->conn = $connection;
         $this->tableName = $tableName;
-        $this->$fieldList = $fieldList;
+        $this->fieldList = $fieldList;
     }
 
-    private function _fetchAllAssoc($result_set) {
-        $r = NULL;
+    private function _fetchAllAssoc(&$result_set) {
+        $r = null;
         if ($result_set) {
             $r = [];
             while ($row = $result_set->fetch_assoc()) {
@@ -29,8 +33,8 @@ abstract class MysqlProxyBase {
 
     private function _getFieldListString() {
         $r = null;
-        $n = count($this->fieldList) - 1;
-        for ($i = 0; $i < $n; $i++) {
+        $n = count($this->fieldList);
+        for ($i = 0; $i < $n-1; $i++) {
             $r .= $this->fieldList[$i] . ', ';
         }
         $r .= $this->fieldList[$n - 1];
@@ -64,7 +68,7 @@ abstract class MysqlProxyBase {
             }
 
             if ($field === 'or' || $field === 'OR') {
-                $r .= _where_helper($value, 'OR');
+                $r .= $this->_where_helper($value, 'OR');
             } else {
                 $op = '=';
                 if (is_array($value)) {
@@ -106,8 +110,10 @@ abstract class MysqlProxyBase {
                     }
                 }
                 $field = mysql_real_escape_string($field);
-                $value = mysql_real_escape_string($value);
-                $r .= "`$field` $op " . _sqlFormat($value);
+                if (is_string($value)) {
+                    $value = mysql_real_escape_string($value);
+                }
+                $r .= "`$field` $op " . $this->_sqlFormat($value);
             }
         }
         $r .= ')';
@@ -115,7 +121,7 @@ abstract class MysqlProxyBase {
     }
 
     private function _where($clauses) {
-        return _where_helper($clauses, 'AND');
+        return ' WHERE ' . $this->_where_helper($clauses, 'AND');
     }
 
     abstract protected function _castData(&$data);
@@ -125,12 +131,13 @@ abstract class MysqlProxyBase {
         $query = 'SELECT '
                 . $this->_getFieldListString()
                 . ' FROM `' . $this->tableName . '` '
-                . ' WHERE ' . $this->fields[0] . ' = ' . $this->_sqlFormat($id);
+                . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);
         $rs = $this->conn->query($query);
-        if ($rs) {
-            $r = $rs->fetch_assoc();
-            $this->_castData($r);
+        if ($this->conn->errno) {
+            throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
         }
+        $r = $rs->fetch_assoc();
+        $this->_castData($r);
         return $r;
     }
 
@@ -138,32 +145,44 @@ abstract class MysqlProxyBase {
      * Gets the instances based on the valuse provided by the pars.
      * The values are in in AND.
      * 
-     * @param associative array $pars
-     * @return associative array withe the selected row or null
-     * @throws Exception
+     * @param associative array  $pars
+     * @param int $limit the number of returnes rows
+     * @return array of associative arrays
+     * @throws \Exception
      */
-    public function getSelected($pars) {
+    public function getSelected($pars, $limit = 50) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
                 . ' FROM `' . $this->tableName . '` '
-                . _where($pars);
-        if (isset($pars)) {
-            $first = true;
-            foreach ($pars as $key => $value) {
-                if ($first) {
-                    $first = false;
-                    $where = " WHERE $key = " . $this->_sqlFormat($value);
-                } else {
-                    $where .= " AND $key = " . $this->_sqlFormat($value);
-                }
-            }
-        }
+                . $this->_where($pars)
+                . " LIMIT $limit";
         $rs = $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
         }
-        $r = $rs->_fetchAllAssoc();
+        $r = $this->_fetchAllAssoc($rs);
+
+        if ($r) {
+            foreach ($r as &$temp) {
+                $this->_castData($temp);
+            }
+        }
+        return $r;
+    }
+
+    public function getAll($limit = 50) {
+        $r = null;
+        $query = 'SELECT '
+                . $this->_getFieldListString()
+                . ' FROM `' . $this->tableName . '` '
+                . " LIMIT $limit";
+        $rs = $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
+        }
+        $r = $this->_fetchAllAssoc($rs);
+
         if ($r) {
             foreach ($r as &$temp) {
                 $this->_castData($temp);
@@ -206,14 +225,13 @@ abstract class MysqlProxyBase {
      * @return the auto generated id
      */
     public function add($data) {
-        $r = null;
         $query = 'INSERT INTO `' . $this->tableName . '` '
                 . $this->_createFieldListAndValues($data);
         $this->conn->query($query);
         if ($this->conn->errno) {
             throw new Exception($this->conn->errno . ' ' . $this->conn->error);
         }
-        $r = $conn->insert_id;
+        $r = $this->conn->insert_id;
         return $r;
     }
 
@@ -253,7 +271,7 @@ abstract class MysqlProxyBase {
     public function delete($id) {
         $r = false;
         $query = 'DELETE FROM `' . $this->tableName . '` '
-                . ' WHERE ' . $this->fields[0] . ' = ' . $this->_sqlFormat($id);
+                . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);
         $this->conn->query($query);
         if ($this->conn->errno) {
             throw new Exception($this->conn->errno . ' ' . $this->conn->error);

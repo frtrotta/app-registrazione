@@ -1,5 +1,7 @@
 <?php
 
+namespace dbproxy;
+
 class Utente extends MysqlProxyBase {
 
     public function __construct($connection) {

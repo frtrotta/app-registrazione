@@ -107,7 +107,11 @@ abstract class RestApi {
     protected function _response($data, $status = 200) {
         header("HTTP/1.1 " . $status . " " . $this->_requestStatus($status));
         header("Content-Type: application/json");
-        echo json_encode($data);
+        $r = json_encode($data);
+        if(!$r) {
+            throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "' . json_last_error_msg()) . '"';
+        }
+        echo $r;
     }
 
     private function _cleanInputs($data) {
