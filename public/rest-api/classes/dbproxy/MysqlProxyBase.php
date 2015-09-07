@@ -34,7 +34,7 @@ abstract class MysqlProxyBase {
     private function _getFieldListString() {
         $r = null;
         $n = count($this->fieldList);
-        for ($i = 0; $i < $n-1; $i++) {
+        for ($i = 0; $i < $n - 1; $i++) {
             $r .= $this->fieldList[$i] . ', ';
         }
         $r .= $this->fieldList[$n - 1];
@@ -45,6 +45,7 @@ abstract class MysqlProxyBase {
         $r = 'NULL';
         if (isset($field)) {
             if (is_string($field)) {
+                $field = mysql_real_escape_string($field);
                 $r = "'$field'";
             } else if (is_bool($field)) {
                 $r = ($field) ? '1' : '0';
@@ -110,9 +111,6 @@ abstract class MysqlProxyBase {
                     }
                 }
                 $field = mysql_real_escape_string($field);
-                if (is_string($value)) {
-                    $value = mysql_real_escape_string($value);
-                }
                 $r .= "`$field` $op " . $this->_sqlFormat($value);
             }
         }
@@ -137,7 +135,9 @@ abstract class MysqlProxyBase {
             throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
         }
         $r = $rs->fetch_assoc();
-        $this->_castData($r);
+        if ($r) {
+            $this->_castData($r);
+        }
         return $r;
     }
 
@@ -152,16 +152,18 @@ abstract class MysqlProxyBase {
      */
     public function getSelected($pars, $limit = 50) {
         $r = null;
-        $query = 'SELECT '
-                . $this->_getFieldListString()
-                . ' FROM `' . $this->tableName . '` '
-                . $this->_where($pars)
-                . " LIMIT $limit";
-        $rs = $this->conn->query($query);
-        if ($this->conn->errno) {
-            throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
+        if (is_array($pars)) {
+            $query = 'SELECT '
+                    . $this->_getFieldListString()
+                    . ' FROM `' . $this->tableName . '` '
+                    . $this->_where($pars)
+                    . " LIMIT $limit";
+            $rs = $this->conn->query($query);
+            if ($this->conn->errno) {
+                throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
+            }
+            $r = $this->_fetchAllAssoc($rs);
         }
-        $r = $this->_fetchAllAssoc($rs);
 
         if ($r) {
             foreach ($r as &$temp) {

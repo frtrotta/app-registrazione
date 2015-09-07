@@ -17,6 +17,8 @@ class RegistrazioneApi extends MySqlRestApi {
         if (!is_numeric($authConf['token-valid-for-minutes'])) {
             throw new Exception('$authConf[\'token-valid-for-minutes\'] must be numeric');
             // TODO integer and positive
+        } else if (!(is_integer($authConf['token-valid-for-minutes'] + 0) && ((int) $authConf['token-valid-for-minutes']) > 0)) {
+            throw new Exception('$authConf[\'token-valid-for-minutes\'] must be integer and positive');
         }
 
         if (!isset($authConf['cookie-name'])) {
@@ -85,7 +87,7 @@ class RegistrazioneApi extends MySqlRestApi {
             $queryString = filter_input(INPUT_SERVER, 'QUERY_STRING');
             $queryString = urldecode($queryString);
             $queryString = explode('&', $queryString);
-            if(isset($queryString[1])) {
+            if (isset($queryString[1])) {
                 $queryString = $queryString[1];
                 $whereClause = json_decode($queryString, true);
                 if ($whereClause) {
@@ -94,15 +96,27 @@ class RegistrazioneApi extends MySqlRestApi {
                     throw new RegistrazioneApiException('Malformed selection clause: ' . $queryString, 10);
                 }
             } else {
+                if (isset($this->args[0])) {
+                    $id = $this->args[0];
+                    $r = $tf->get($id);
+                } else {
                     $r = $tf->getAll();
+                }
             }
         } else {
             throw new MethodNotAllowedException("$this->method");
         }
         $sf = new dbproxy\SocietaFitri($this->conn);
-        foreach($r as &$tesserato) {
-            $tesserato['societa'] = $sf->get($tesserato['CODICE_SS']);
-            unset($tesserato['CODICE_SS']);
+        if (isset($r['CODICE_SS'])) {
+            // risultato singolo
+            $r['societa'] = $sf->get($r['CODICE_SS']);
+            unset($r['CODICE_SS']);
+        } else if (isset($r)) {
+            // array di risultati
+            foreach ($r as &$tesserato) {
+                $tesserato['societa'] = $sf->get($tesserato['CODICE_SS']);
+                unset($tesserato['CODICE_SS']);
+            }
         }
         return $r;
     }

@@ -55,6 +55,9 @@ try {
 } catch (dbproxy\MysqlProxyBaseException $e) {
     $error = new Error(500, $e->getMessage());
     errorResponse($error, 500);
+} catch (RegistrazioneApiException $e) {
+    $error = new Error(500, $e->getMessage());
+    errorResponse($error, 500);
 } catch (Exception $e) {
     header("HTTP/1.1 500 Internal Server Error");
     header("Content-Type: text/html");
