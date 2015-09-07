@@ -11,7 +11,7 @@ abstract class MysqlProxyBase {
     /* The list of the fields in the correspondent SQL table
      * The first must be the IDENTITY field.
      */
-    private $conn;
+    public $conn;
 
     public function __construct($connection, $tableName, $fieldList) {
         $this->conn = $connection;
@@ -118,13 +118,75 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    private function _where($clauses) {
-        return ' WHERE ' . $this->_where_helper($clauses, 'AND');
+    private function _where($pars) {
+        $r = null;
+        if (isset($pars)) {
+            unset($pars['limit']);
+            unset($pars['skip']);
+            unset($pars['sort']);
+            if (count($pars) > 0) {
+                $r = ' WHERE ' . $this->_where_helper($pars, 'AND');
+            }
+        }
+        return $r;
+    }
+
+    private function _sort_helper($sort) {
+        $first = true;
+        foreach ($sort as $field => $v) {
+            $field = mysql_real_escape_string($field);
+            if ($first) {
+                $first = false;
+                $r = (" ORDER BY `$field` " . (($v > 0) ? 'ASC' : 'DESC'));
+            } else {
+                $r .= (", `$field` " . (($v > 0) ? 'ASC' : 'DESC'));
+            }
+        }
+        return $r;
+    }
+
+    private function _sort($pars) {
+        $r = null;
+        if (isset($pars['sort'])) {
+            $r = $this->_sort_helper($pars['sort']);
+        }
+        return $r;
+    }
+
+    private function _limit_helper($pars) {
+        $r = ' LIMIT ';
+        if (!is_integer($pars['limit'])) {
+            throw new MysqlProxyBaseException('limit must be integer', 10);
+        }
+        if (isset($pars['skip'])) {
+            if (!is_integer($pars['skip'])) {
+                throw new MysqlProxyBaseException('skip must be integer', 11);
+            }
+            $r .= $pars['skip'] . ',';
+        }
+        $r .= $pars['limit'];
+        return $r;
+    }
+
+    private function _limit($pars) {
+        $r = ' LIMIT 50';
+        if (isset($pars['limit'])) {
+            $r = $this->_limit_helper($pars);
+        }
+        return $r;
     }
 
     abstract protected function _castData(&$data);
 
-    public function get($id) {
+    abstract protected function _complete(&$data);
+
+    protected function _unsetField(&$set, $fieldName) {
+        foreach ($set as &$temp) {
+            unset($temp[$fieldName]);
+        }
+    }
+
+    public function get($id, $complete = false) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
@@ -137,6 +199,9 @@ abstract class MysqlProxyBase {
         $r = $rs->fetch_assoc();
         if ($r) {
             $this->_castData($r);
+            if ($complete) {
+                $this->_complete($temp);
+            }
         }
         return $r;
     }
@@ -150,14 +215,15 @@ abstract class MysqlProxyBase {
      * @return array of associative arrays
      * @throws \Exception
      */
-    public function getSelected($pars, $limit = 50) {
+    public function getSelected($pars, $complete = false, $limit = 50) {
         $r = null;
         if (is_array($pars)) {
             $query = 'SELECT '
                     . $this->_getFieldListString()
                     . ' FROM `' . $this->tableName . '` '
                     . $this->_where($pars)
-                    . " LIMIT $limit";
+                    . $this->_sort($pars)
+                    . $this->_limit($pars);
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
                 throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
@@ -168,12 +234,15 @@ abstract class MysqlProxyBase {
         if ($r) {
             foreach ($r as &$temp) {
                 $this->_castData($temp);
+                if ($complete) {
+                    $this->_complete($temp);
+                }
             }
         }
         return $r;
     }
 
-    public function getAll($limit = 50) {
+    public function getAll($complete = false, $limit = 50) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
@@ -188,6 +257,9 @@ abstract class MysqlProxyBase {
         if ($r) {
             foreach ($r as &$temp) {
                 $this->_castData($temp);
+                if ($complete) {
+                    $this->_complete($temp);
+                }
             }
         }
         return $r;
@@ -196,7 +268,7 @@ abstract class MysqlProxyBase {
     private function _createFieldListAndValues($data) {
         $first = true;
         foreach ($data as $key => $value) {
-            $key = $this->conn->escape_string($key);
+            $key = mysql_real_escape_string($key);
             if ($first) {
                 $first = false;
                 $r = "( `$key`";
@@ -207,7 +279,7 @@ abstract class MysqlProxyBase {
         $r .= ') ';
         $first = true;
         foreach ($data as $key => $value) {
-            $value = $this->conn->escape_string($value);
+            $value = mysql_real_escape_string($value);
             if ($first) {
                 $first = false;
                 $r .= 'VALUES ( ' . $this->_sqlFormat($value);
@@ -246,8 +318,8 @@ abstract class MysqlProxyBase {
     public function update($data) {
         $r = false;
         $identifier = array_shift($data);
-        $identifierFieldName = $this->conn->escape_string(array_keys($identifier)[0]);
-        $identifierFieldValue = $this->conn->escape_string($identifier[$identifierFieldName]);
+        $identifierFieldName = mysql_real_escape_string(array_keys($identifier)[0]);
+        $identifierFieldValue = mysql_real_escape_string($identifier[$identifierFieldName]);
         $query = 'UPDATE `' . $this->tableName . '` '
                 . $this->_createFieldListAndValues($data)
                 . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);

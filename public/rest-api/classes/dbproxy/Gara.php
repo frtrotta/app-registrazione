@@ -18,4 +18,24 @@ class Gara extends MysqlProxyBase {
         //TODO $data['disputataIl'] = new DateTime($data['disputataIl']);
     }
 
+    protected function _complete(&$data) {
+        $tg = new TipoGara($this->conn);
+        $data['tipo'] = $tg->get($data['idTipoGara']);
+        unset($data['idTipoGara']);
+        
+        $idFieldName = 'idGara';
+        $pars = [$idFieldName => $data['id']];
+        
+        
+        $amp = new AbilitazioneModalitaPagamento($this->conn);
+        $data['abilitazioneModalitaPagamento'] = $amp->getSelected($pars, true);
+        
+        $ati = new AbilitazioneTipoIscrizione($this->conn);
+        $data['abilitazioneTipoIscrizione'] = $ati->getSelected($pars, true);
+        $this->_unsetField($data['abilitazioneTipoIscrizione'], $idFieldName);
+        
+        $atrt = new AbilitazioneTipoRichiestaTesseramento($this->conn);
+        $data['abilitazioneTipoRichiestaTesseramento'] = $atrt->getSelected($pars, true);
+        $this->_unsetField($data['abilitazioneTipoRichiestaTesseramento'], $idFieldName);
+    }
 }

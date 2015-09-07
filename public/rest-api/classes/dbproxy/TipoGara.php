@@ -15,4 +15,8 @@ class TipoGara extends MysqlProxyBase {
         $data['id'] = (int) $data['id'];  
     }
 
+    protected function _complete(&$data) {
+        
+    }
+
 }

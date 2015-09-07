@@ -15,6 +15,11 @@ class AbilitazioneTipoIscrizione extends MysqlProxyBase {
         $data['idTipoIscrizione'] = (int) $data['idTipoIscrizione'];
         $data['costo'] = (float) $data['costo'];
         //TODO $data['finoAl'] = new DateTime($data['finoAl']);
-    }
+    }    
 
+    protected function _complete(&$data) {
+        $ti = new TipoIscrizione($this->conn);
+        $data['tipoIscrizione'] = $ti->get($data['idTipoIscrizione']);
+        unset($data['idTipoIscrizione']);
+    }
 }

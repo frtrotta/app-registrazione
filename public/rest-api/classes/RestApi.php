@@ -109,7 +109,8 @@ abstract class RestApi {
         header("Content-Type: application/json");
         $r = json_encode($data);
         if(!$r) {
-            throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "' . json_last_error_msg()) . '"';
+            throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "');
+            //TOD throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "' . json_last_error_msg()) . '"';
         }
         echo $r;
     }

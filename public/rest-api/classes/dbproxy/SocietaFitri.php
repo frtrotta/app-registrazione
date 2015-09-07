@@ -11,5 +11,9 @@ class SocietaFitri extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['codice'] = (int) $data['codice'];  
     }
+    
+    protected function _complete(&$data) {
+        
+    }
 
 }

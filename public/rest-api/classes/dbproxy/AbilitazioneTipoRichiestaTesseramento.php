@@ -15,6 +15,12 @@ class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
         $data['idTipoRichiestaTesseramento'] = (int) $data['idTipoRichiestaTesseramento'];
         $data['costo'] = (float) $data['costo'];
         //TODO $data['finoAl'] = new DateTime($data['finoAl']);
+    }   
+
+    protected function _complete(&$data) {
+        $ti = new TipoRichiestaTesseramento($this->conn);
+        $data['tipoRichiestaTesseramento'] = $ti->get($data['idTipoRichiestaTesseramento']);
+        unset($data['idTipoRichiestaTesseramento']);
     }
 
 }

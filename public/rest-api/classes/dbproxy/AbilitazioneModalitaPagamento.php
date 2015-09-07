@@ -15,4 +15,9 @@ class AbilitazioneModalitaPagamento extends MysqlProxyBase {
         //TODO $data['finoAl'] = new DateTime($data['finoAl']);
     }
 
+    protected function _complete(&$data) {
+        $mp = new ModalitaPagamento($this->conn);
+        $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
+        unset($data['idModalitaPagamento']);
+    }
 }

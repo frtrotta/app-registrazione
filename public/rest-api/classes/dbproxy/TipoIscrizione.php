@@ -14,5 +14,9 @@ class TipoIScrizione extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];  
     }
+    
+    protected function _complete(&$data) {
+        
+    }
 
 }

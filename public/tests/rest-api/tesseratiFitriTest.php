@@ -171,6 +171,39 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+                
+                $testCode = '067';
+                $r = http_request(URL_BASE . 'TesseratiFitri?{%22sort%22:{%22TESSERA%22:-1},%22limit%22:3,%22skip%22:2,%22TESSERA%22:{%22le%22:94861}}');
+                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                    $list = json_decode($r->response->body, true);
+                    if ($list) {
+                        $n = count($list);
+                        if ($n === 3) {
+                            $t = $list[0];
+                            if ($t['TESSERA'] === 94859 &&
+                                    $t['COGNOME'] === 'Shaw' &&
+                                    $t['NOME'] === 'Catherine Emma' &&
+                                    $t['DATA_NASCITA'] === '1977-08-06'
+                            ) {
+                                testPassed($testCode);
+                            } else {
+                                $e = var_export($t, true);
+                                $msg = "Unexpected element ($e)";
+                                testFailedMsg($testCode, $r, $msg);
+                            }
+                        } else {
+                            $msg = "Unexpected number of result ($n)";
+                        testFailedMsg($testCode, $r, $msg);
+                    }
+                    } else {
+                        $msg = 'Unable to parse JSON body';
+                        testFailedMsg($testCode, $r, $msg);
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+                
+                
                 ?>
             </tbody>
         </table>
