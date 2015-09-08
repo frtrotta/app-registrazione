@@ -118,14 +118,14 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    private function _where($pars) {
+    private function _where($selectionClause) {
         $r = null;
-        if (isset($pars)) {
-            unset($pars['limit']);
-            unset($pars['skip']);
-            unset($pars['sort']);
-            if (count($pars) > 0) {
-                $r = ' WHERE ' . $this->_where_helper($pars, 'AND');
+        if (isset($selectionClause)) {
+            unset($selectionClause['limit']);
+            unset($selectionClause['skip']);
+            unset($selectionClause['sort']);
+            if (count($selectionClause) > 0) {
+                $r = ' WHERE ' . $this->_where_helper($selectionClause, 'AND');
             }
         }
         return $r;
@@ -145,10 +145,10 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    private function _sort($pars) {
+    private function _sort($selectionClause) {
         $r = null;
-        if (isset($pars['sort'])) {
-            $r = $this->_sort_helper($pars['sort']);
+        if (isset($selectionClause['sort'])) {
+            $r = $this->_sort_helper($selectionClause['sort']);
         }
         return $r;
     }
@@ -168,17 +168,22 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    private function _limit($pars) {
+    private function _limit($selectionClause) {
         $r = ' LIMIT 50';
-        if (isset($pars['limit'])) {
-            $r = $this->_limit_helper($pars);
+        if (isset($selectionClause['limit'])) {
+            $r = $this->_limit_helper($selectionClause);
         }
         return $r;
     }
 
     abstract protected function _castData(&$data);
 
+    /**
+     * Completed the data with the possibile related data
+     */
     abstract protected function _complete(&$data);
+
+    abstract protected function _isCoherent($data);
 
     protected function _unsetField(&$set, $fieldName) {
         foreach ($set as &$temp) {
@@ -210,20 +215,20 @@ abstract class MysqlProxyBase {
      * Gets the instances based on the valuse provided by the pars.
      * The values are in in AND.
      * 
-     * @param associative array  $pars
+     * @param associative array  $selectionClause
      * @param int $limit the number of returnes rows
      * @return array of associative arrays
      * @throws \Exception
      */
-    public function getSelected($pars, $complete = false, $limit = 50) {
+    public function getSelected($selectionClause, $complete = false, $limit = 50) {
         $r = null;
-        if (is_array($pars)) {
+        if (is_array($selectionClause)) {
             $query = 'SELECT '
                     . $this->_getFieldListString()
                     . ' FROM `' . $this->tableName . '` '
-                    . $this->_where($pars)
-                    . $this->_sort($pars)
-                    . $this->_limit($pars);
+                    . $this->_where($selectionClause)
+                    . $this->_sort($selectionClause)
+                    . $this->_limit($selectionClause);
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
                 throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
@@ -296,47 +301,58 @@ abstract class MysqlProxyBase {
      * The field of $data correspondent to the AUTO_INCREMENT field can be either set to null or not set.
      * 
      * @param associative array $data
-     * @return the auto generated id
+     * @return $data with the generated identifier
      */
     public function add($data) {
-        $query = 'INSERT INTO `' . $this->tableName . '` '
-                . $this->_createFieldListAndValues($data);
-        $this->conn->query($query);
-        if ($this->conn->errno) {
-            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+        if ($this->_isCoherent($data)) {
+            $query = 'INSERT INTO `' . $this->tableName . '` '
+                    . $this->_createFieldListAndValues($data);
+            $this->conn->query($query);
+            if ($this->conn->errno) {
+                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            }
+            $r = $data;
+            $r[$this->fieldList[0]] = $this->conn->insert_id;
+        } else {
+            $e = var_export($data, true);
+            throw new MysqlProxyBaseException("Incoherent data $e", 20);
         }
-        $r = $this->conn->insert_id;
         return $r;
     }
 
     /**
      * 
      * @param associative array $data. The first element must be the unique identifier.
-     * @return boolean
+     * @return null or the updated (passed) data
      * @throws Exception
      */
     public function update($data) {
-        $r = false;
-        $identifier = array_shift($data);
-        $identifierFieldName = mysql_real_escape_string(array_keys($identifier)[0]);
-        $identifierFieldValue = mysql_real_escape_string($identifier[$identifierFieldName]);
-        $query = 'UPDATE `' . $this->tableName . '` '
-                . $this->_createFieldListAndValues($data)
-                . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
-        $this->conn->query($query);
-        if ($this->conn->errno) {
-            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
-        }
+        $r = null;
+        if ($this->_isCoherent($data)) {
+            $identifier = array_shift($data);
+            $identifierFieldName = mysql_real_escape_string(array_keys($identifier)[0]);
+            $identifierFieldValue = mysql_real_escape_string($identifier[$identifierFieldName]);
+            $query = 'UPDATE `' . $this->tableName . '` '
+                    . $this->_createFieldListAndValues($data)
+                    . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
+            $this->conn->query($query);
+            if ($this->conn->errno) {
+                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            }
 
-        $n = $this->conn->affected_rows();
-        switch ($n) {
-            case 0:
-                break;
-            case 1:
-                $r = true;
-                break;
-            default:
-                throw new Exception("Unexpected number of affected rows ($n)");
+            $n = $this->conn->affected_rows();
+            switch ($n) {
+                case 0:
+                    break;
+                case 1:
+                    $r = $data;
+                    break;
+                default:
+                    throw new Exception("Unexpected number of affected rows ($n)");
+            }
+        } else {
+            $e = var_export($data, true);
+            throw new MysqlProxyBaseException("Incoherent data $e", 21);
         }
 
         return $r;

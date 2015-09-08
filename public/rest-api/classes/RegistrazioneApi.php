@@ -84,56 +84,99 @@ class RegistrazioneApi extends MySqlRestApi {
         $r = null;
         if ($this->method === 'GET') {
             $tf = new dbproxy\TesseratiFitri($this->conn);
-            $queryString = filter_input(INPUT_SERVER, 'QUERY_STRING');
-            $queryString = urldecode($queryString);
-            $queryString = explode('&', $queryString);
-            if (isset($queryString[1])) {
-                $queryString = $queryString[1];
-                $whereClause = json_decode($queryString, true);
-                if ($whereClause) {
-                    $r = $tf->getSelected($whereClause, true);
-                } else {
-                    throw new RegistrazioneApiException('Malformed selection clause: ' . $queryString, 10);
-                }
-            } else {
-                if (isset($this->args[0])) {
-                    $id = $this->args[0];
-                    $r = $tf->get($id, true);
-                } else {
-                    $r = $tf->getAll(true);
-                }
-            }
+            $r = $this->_CRUDread($tf);
         } else {
             throw new MethodNotAllowedException("$this->method");
         }
         return $r;
     }
-    
+
     protected function Gara() {
         $r = null;
+        $g = new dbproxy\Gara($this->conn);
         if ($this->method === 'GET') {
-            $tf = new dbproxy\Gara($this->conn);
-            $queryString = filter_input(INPUT_SERVER, 'QUERY_STRING');
-            $queryString = urldecode($queryString);
-            $queryString = explode('&', $queryString);
-            if (isset($queryString[1])) {
-                $queryString = $queryString[1];
-                $whereClause = json_decode($queryString, true);
-                if ($whereClause) {
-                    $r = $tf->getSelected($whereClause, true);
-                } else {
-                    throw new RegistrazioneApiException('Malformed selection clause: ' . $queryString, 10);
-                }
-            } else {
-                if (isset($this->args[0])) {
-                    $id = $this->args[0];
-                    $r = $tf->get($id, true);
-                } else {
-                    $r = $tf->getAll(true);
-                }
-            }
+            $r = $this->_CRUDread($g);
         } else {
             throw new MethodNotAllowedException("$this->method");
+        }
+        return $r;
+    }
+
+    protected function Utente() {
+        $r = null;
+        $u = new dbproxy\Utente($this->conn);
+        if ($this->method === 'GET') {
+            $r = $this->_CRUDread($u);
+        } else if ($this->method === 'POST') {
+            $r = $this->_CRUDupdate($u);
+        } else if ($this->method === 'PUT') {
+
+            // TODO Generazione password
+            // TODO Invio email per completamento iscrizione. Sempre? No, solo in caso di autenticazione
+            // classica
+        } else {
+            throw new MethodNotAllowedException("$this->method");
+        }
+        return $r;
+    }
+
+    /**
+     * Performs the READ operation of the CRUD set.
+     * 
+     * @param MysqlProxyBase-dervird $entityProxy
+     * @return the set of elements or the single element read
+     * @throws RegistrazioneApiException in case of malformed selection clause
+     */
+    private function _CRUDread($entityProxy) {
+        $r = null;
+        $queryString = filter_input(INPUT_SERVER, 'QUERY_STRING');
+        $queryString = urldecode($queryString);
+        $queryString = explode('&', $queryString);
+        if (isset($queryString[1])) {
+            $queryString = $queryString[1];
+            $selectionClause = json_decode($queryString, true);
+            if ($selectionClause) {
+                $r = $entityProxy->getSelected($selectionClause, true);
+            } else {
+                throw new RegistrazioneApiException('Malformed selection clause: ' . $queryString, 10);
+            }
+        } else {
+            if (isset($this->args[0])) {
+                $id = $this->args[0];
+                $r = $entityProxy->get($id, true);
+            } else {
+                $r = $entityProxy->getAll(true);
+            }
+        }
+        return $r;
+    }
+
+    private function _CRUDupdate($entityProxy) {
+        $r = null;
+        if ($this->contentType === 'application/json') {
+            $data = json_decode($this->body);
+            if ($data) {
+                $r = $entityProxy->update($data);
+            } else {
+                throw new BadRequestException('Unable to parse JSON body');
+            }
+        } else {
+            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+        }
+        return $r;
+    }
+    
+    private function _CRUDcreate($entityProxy) {
+        $r = null;
+        if ($this->contentType === 'application/json') {
+            $data = json_decode($this->body);
+            if ($data) {
+                $r = $entityProxy->add($data);
+            } else {
+                throw new BadRequestException('Unable to parse JSON body');
+            }
+        } else {
+            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
         }
         return $r;
     }
@@ -153,15 +196,16 @@ class RegistrazioneApi extends MySqlRestApi {
                 . ' FROM utente'
                 . " WHERE username = '$username'"
                 . " AND password = '$password'";
-        if ($rs = $this->conn->query($query)) {
-            if ($row = $rs->fetch_assoc()) {
-                $this->me = $row;
-                $this->_castCurrentUser();
-                $rs->free();
-                $r = true;
-            }
-        } else {
-            throw new Exception($this->conn->error);
+        $rs = $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+        }
+        $row = $rs->fetch_assoc();
+        if ($row) {
+            $this->me = $row;
+            $this->_castCurrentUser();
+            $r = true;
+            $rs->free();
         }
 
         return $r;
@@ -184,7 +228,11 @@ class RegistrazioneApi extends MySqlRestApi {
                     . " WHERE gettoneAutenticazione = '$this->gettoneAutenticazione'"
                     . " AND gettoneAutenticazioneScadeIl > NOW()";
             $rs = $this->conn->query($query);
-            if ($row = $rs->fetch_assoc()) {
+            if ($this->conn->errno) {
+                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            }
+            $row = $rs->fetch_assoc();
+            if ($row) {
                 $this->me = $row;
                 $this->_castCurrentUser();
                 $rs->free();
@@ -206,13 +254,16 @@ class RegistrazioneApi extends MySqlRestApi {
                     . ' FROM utente'
                     . " WHERE gettoneAutenticazione = '$gettone'";
             $rs = $this->conn->query($query);
+            if ($this->conn->errno) {
+                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            }
             if ($rs) {
                 if ($rs->num_rows === 0) {
                     $unique = true;
                     $rs->free();
                 }
             } else {
-                throw new Exception($this->conn->error);
+                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
             }
         }
         return $gettone;
@@ -231,7 +282,7 @@ class RegistrazioneApi extends MySqlRestApi {
                 throw new InconsistentDataException("Number of affected rows: $$this->conn->affected_rows (expected 1)");
             }
         } else {
-            throw new Exception($this->conn->error);
+            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
         }
     }
 
@@ -243,6 +294,9 @@ class RegistrazioneApi extends MySqlRestApi {
                     . " WHERE gettoneAutenticazione = '$this->gettoneAutenticazione',"
                     . " AND gettoneAutenticazioneScadeIl > NOW()";
             $this->conn->query($query);
+            if ($this->conn->errno) {
+                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            }
             if ($this->conn->affected_rows === 0) {
                 $this->gettoneAutenticazione = NULL;
                 //throw new InconsistentDataException('Number of affected rows: '. $this->conn->affected_rows .' (expected 1)');
@@ -258,13 +312,14 @@ class RegistrazioneApi extends MySqlRestApi {
                     . ' gettoneAutenticazione = NULL,'
                     . ' gettoneAutenticazioneScadeIl = NULL'
                     . " WHERE gettoneAutenticazione = '$this->gettoneAutenticazione'";
-            if ($this->conn->query($query)) {
-                if ($this->conn->affected_rows === 1) {
-                    $this->gettoneAutenticazione = NULL;
-                    $r = true;
-                }
-            } else {
-                throw new Exception("[$query]");
+            $this->conn->query($query);
+            if ($this->conn->errno) {
+                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            }
+
+            if ($this->conn->affected_rows === 1) {
+                $this->gettoneAutenticazione = NULL;
+                $r = true;
             }
         }
         return $r;
