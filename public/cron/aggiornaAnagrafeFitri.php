@@ -16,7 +16,7 @@ function fileDownload($fileUrl, $fileHandle) {
     set_time_limit(0); // unlimited max execution time
     $options = array(
         CURLOPT_FILE => $fileHandle,
-        CURLOPT_TIMEOUT => 28800, // set this to 8 hours so we dont timeout on big files
+        CURLOPT_TIMEOUT => 20 * 60,
         CURLOPT_URL => $fileUrl,
         CURLOPT_HTTPHEADER => array('User-Agent: ArtWare Generic HTTP', 'Cache-Control: no-cache')
     );
@@ -56,14 +56,6 @@ function societaLineToCsv($string) {
         }
     }
 
-//    for ($i = 0; $i < count($fields); $i++) {
-//        if ($i === 0 && is_numeric($fields[$i])) {
-//            $fields[$i] = $fields[$i] + 0;
-//        } else {
-//            $fields[$i] = trimAndNull($fields[$i]);
-//        }
-//    }
-
     return $fields;
 }
 
@@ -94,22 +86,6 @@ function atletiLineToCsv($string) {
             $field = trim($field, '"');
         }
     }
-
-//    for ($i = 0; $i < count($fields); $i++) {
-//        if (($i === 0 || $i === 1) && is_numeric($fields[$i])) {
-//            $fields[$i] = $fields[$i] + 0;
-//        }
-//        if (($i === 6 || $i === 12)) {
-//            $temp = DateTime::createFromFormat('Y/m/d', $fields[$i]);
-//            if ($temp && ($temp->format('Y/m/d') === $fields[$i])) {
-//                $fields[$i] = $temp;
-//            } else {
-//                $fields[$i] = trim($fields[$i], '"');
-//            }
-//        } else {
-//            $fields[$i] = trim($fields[$i], '"');
-//        }
-//    }
 
     return $fields;
 }
@@ -286,7 +262,7 @@ function insertIntoTempTable($conn, $atleti) {
         if ($insertStmt->errno) {
             switch ($insertStmt->errno) {
                 case 1062:
-                    error_log('Duplicate tessera: '. json_encode($a));
+                    error_log('Duplicate tessera: ' . json_encode($a));
                     break;
                 default:
                     throw new Exception($insertStmt->errno . ' ' . $insertStmt->error);
@@ -354,7 +330,7 @@ function updateAtleti($conn, $atleti) {
     return $n;
 }
 
-$conf = parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR .'..' . DIRECTORY_SEPARATOR .'rest-api' . DIRECTORY_SEPARATOR .'config.ini', true);
+$conf = parse_ini_file(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'rest-api' . DIRECTORY_SEPARATOR . 'config.ini', true);
 $mysqlConf = $conf['mysql'];
 
 
@@ -393,11 +369,14 @@ echo " done ($n)</p>";
 //    echo "UPDATE societa_fitri SET provincia = '$provincia', email = '$email' WHERE codice = $codice;</br>";
 //}
 
-$conn = databaseConnect($mysqlConf);
-$n = addSocieta($conn, $societa);
-echo "<p>Added $n societ&agrave;</p>";
-$n = updateAtleti($conn, $atleti);
-$conn->close();
+if (count($societa) > 0 && count($atleti) > 0) {
+    $conn = databaseConnect($mysqlConf);
+    $n = addSocieta($conn, $societa);
+    echo "<p>Added $n societ&agrave;</p>";
+    $n = updateAtleti($conn, $atleti);
+    $conn->close();
+} else {
+    throw new Exception("Societa ($societa) and/or Atleti ($atleti) are empty");
+}
 //unlink($societaFName);
 //unlink($atletiFName);
-
