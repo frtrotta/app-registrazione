@@ -24,8 +24,7 @@ class Gara extends MysqlProxyBase {
         unset($data['idTipoGara']);
         
         $idFieldName = 'idGara';
-        $pars = [$idFieldName => $data['id']];
-        
+        $pars = [$idFieldName => $data['id']];        
         
         $amp = new AbilitazioneModalitaPagamento($this->conn);
         $data['abilitazioneModalitaPagamento'] = $amp->getSelected($pars, true);

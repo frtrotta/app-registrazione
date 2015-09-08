@@ -11,5 +11,24 @@ class Documento extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['idRichiestaTesseramento'] = (int) $data['idRichiestaTesseramento'];
     }
+    
+    protected function _complete(&$data) {
+        $rt = new RichiestaTesseramento($this->conn);
+        $data['richiestaDiTesseramento'] = $rt->get($data['idRichiestaTesseramento'], true);
+        unset($data['idRichiestaTesseramento']);
+    }
+
+    protected function _isCoherent($data) {
+        if (!isset($data['nomeFile']) ||
+                !isset($data['idRichiestaTesseramento'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['idRichiestaTesseramento'])) {
+            return false;
+        }
+        
+        return true;
+    }
 
 }

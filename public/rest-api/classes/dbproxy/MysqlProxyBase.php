@@ -183,6 +183,21 @@ abstract class MysqlProxyBase {
      */
     abstract protected function _complete(&$data);
 
+    /**
+     * 
+     * @throws Exception
+     */
+    protected function _getOptionalChildIds($idField, $idValue, $childIdField, $tableName) {
+        $query = "SELECT $childIdField"
+                . " FROM $tableName"
+                . " WHERE $idField = $idValue";
+        $rs = $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+        }
+        return $this->fetch_all();
+    }
+
     abstract protected function _isCoherent($data);
 
     protected function _unsetField(&$set, $fieldName) {
@@ -295,7 +310,7 @@ abstract class MysqlProxyBase {
         $r .= ') ';
         return $r;
     }
-    
+
     protected function _is_date($string) {
         $d = DateTime::createFormat('Y/m/d', $date);
         return $d && $d->format('Y/m/d') === $date;

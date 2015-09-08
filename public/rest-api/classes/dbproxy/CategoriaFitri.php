@@ -12,5 +12,23 @@ class CategoriaFitri extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['inizia_da_anni'] = (int) $data['inizia_da_anni'];
     }
+    
+    protected function _complete(&$data) {
+        
+    }
+
+    protected function _isCoherent($data) {
+        if (!isset($data['nome']) ||
+                !isset($data['nomeEsteso']) ||
+                !isset($data['iniziaDaAnni'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['iniziaDaAnni'])) {
+            return false;
+        }
+        
+        return true;
+    }
 
 }
