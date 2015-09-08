@@ -295,6 +295,11 @@ abstract class MysqlProxyBase {
         $r .= ') ';
         return $r;
     }
+    
+    protected function _is_date($string) {
+        $d = DateTime::createFormat('Y/m/d', $date);
+        return $d && $d->format('Y/m/d') === $date;
+    }
 
     /**
      * Add a new record to the table.

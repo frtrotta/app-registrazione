@@ -23,4 +23,30 @@ class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
         unset($data['idTipoRichiestaTesseramento']);
     }
 
+    protected function _isCoherent($data) {
+        if (!isset($data['idTipoRichiestaTesseramento']) ||
+                !isset($data['idGara']) ||
+                !isset($data['finoAl']) ||
+                !isset($data['costo'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['idTipoRichiestaTesseramento'])) {
+            return false;
+        }
+
+        if (!is_integer($data['idGara'])) {
+            return false;
+        }
+        
+        if (!$this->_is_date($data['finoAl'])) {
+            return false;
+        }
+        
+        if (!is_float($data['costo'])) {
+            return false;
+        }
+        
+        return true;
+    }
 }

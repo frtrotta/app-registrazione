@@ -14,5 +14,18 @@ class TipoRichiestaTesseramento extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];  
     }
+    
+    protected function _isCoherent($data) {
+        if (!isset($data['id']) ||
+                !isset($data['nome_it']) ||
+                !isset($data['nome_en'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['id'])) {
+            return false;
+        }
+        return true;
+    }
 
 }

@@ -35,9 +35,17 @@ class TesseratiFitri extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if(!isset($data['CODICE_SS']) ||
-        !isset($data['TESSERA']) ||
-        !isset($data['TESSERA'])
+        if (!isset($data['CODICE_SS']) ||
+                !isset($data['TESSERA']) ||
+                !isset($data['COGNOME']) ||
+                !isset($data['NOME']) ||
+                !isset($data['SESSO']) ||
+                !isset($data['DATA_NASCITA']) ||
+                !isset($data['CITTADINANZA']) ||
+                !isset($data['CATEGORIA']) ||
+                !isset($data['QUALIFICA']) ||
+                !isset($data['DATA_EMISSIONE']) ||
+                !isset($data['TIPO_TESSERA'])
         ) {
             return false;
         }
@@ -48,6 +56,15 @@ class TesseratiFitri extends MysqlProxyBase {
         if (!is_integer($data['TESSERA'])) {
             return false;
         }
+        
+        if (!$this->_is_date($data['DATA_NASCITA'])) {
+            return false;
+        }
+        
+        if (!$this->_is_date($data['DATA_EMISSIONE'])) {
+            return false;
+        }
+        
         return true;
     }
 

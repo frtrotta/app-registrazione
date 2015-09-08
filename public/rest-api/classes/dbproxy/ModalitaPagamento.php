@@ -18,4 +18,17 @@ class ModalitaPagamento extends MysqlProxyBase {
     protected function _complete(&$data) {
         
     }
+    
+    protected function _isCoherent($data) {
+        if (!isset($data['id']) ||
+                !isset($data['nome_it']) ||
+                !isset($data['nome_en'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['id'])) {
+            return false;
+        }
+        return true;
+    }
 }

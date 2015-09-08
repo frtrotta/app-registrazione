@@ -29,6 +29,7 @@ class Gara extends MysqlProxyBase {
         
         $amp = new AbilitazioneModalitaPagamento($this->conn);
         $data['abilitazioneModalitaPagamento'] = $amp->getSelected($pars, true);
+        $this->_unsetField($data['abilitazioneModalitaPagamento'], $idFieldName);
         
         $ati = new AbilitazioneTipoIscrizione($this->conn);
         $data['abilitazioneTipoIscrizione'] = $ati->getSelected($pars, true);
@@ -37,5 +38,28 @@ class Gara extends MysqlProxyBase {
         $atrt = new AbilitazioneTipoRichiestaTesseramento($this->conn);
         $data['abilitazioneTipoRichiestaTesseramento'] = $atrt->getSelected($pars, true);
         $this->_unsetField($data['abilitazioneTipoRichiestaTesseramento'], $idFieldName);
+    }
+    
+    protected function _isCoherent($data) {
+        if (!isset($data['id']) ||
+                !isset($data['nome']) ||
+                !isset($data['disputataIl']) ||
+                !isset($data['idTipoGara'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['id'])) {
+            return false;
+        }
+
+        if (!is_integer($data['idTipoGara'])) {
+            return false;
+        }
+        
+        if (!$this->_is_date($data['disputataIl'])) {
+            return false;
+        }
+        
+        return true;
     }
 }

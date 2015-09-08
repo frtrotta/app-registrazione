@@ -22,4 +22,31 @@ class AbilitazioneTipoIscrizione extends MysqlProxyBase {
         $data['tipoIscrizione'] = $ti->get($data['idTipoIscrizione']);
         unset($data['idTipoIscrizione']);
     }
+    
+    protected function _isCoherent($data) {
+        if (!isset($data['idGara']) ||
+                !isset($data['idTipoIscrizione']) ||
+                !isset($data['finoAl']) ||
+                !isset($data['costo'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['idGara'])) {
+            return false;
+        }
+
+        if (!is_integer($data['idTipoIscrizione'])) {
+            return false;
+        }
+        
+        if (!$this->_is_date($data['finoAl'])) {
+            return false;
+        }
+        
+        if (!is_float($data['costo'])) {
+            return false;
+        }
+        
+        return true;
+    }
 }
