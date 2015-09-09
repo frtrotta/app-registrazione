@@ -291,24 +291,16 @@ abstract class MysqlProxyBase {
             $key = mysql_real_escape_string($key);
             if ($first) {
                 $first = false;
-                $r = "( `$key`";
+                $fieldList = "( `$key`";
+                $valueList = ' VALUES ( ' . $this->_sqlFormat($value);
             } else {
-                $r .= ", `$key`";
+                $fieldList .= ", `$key`";
+                $valueList .= ', ' . $this->_sqlFormat($value);
             }
         }
-        $r .= ') ';
-        $first = true;
-        foreach ($data as $key => $value) {
-            $value = mysql_real_escape_string($value);
-            if ($first) {
-                $first = false;
-                $r .= 'VALUES ( ' . $this->_sqlFormat($value);
-            } else {
-                $r .= ', ' . $this->_sqlFormat($value);
-            }
-        }
-        $r .= ') ';
-        return $r;
+        $fieldList .= ') ';
+        $valueList .= ') ';
+        return $fieldList . $valueList;
     }
 
     protected function _is_date($string) {
