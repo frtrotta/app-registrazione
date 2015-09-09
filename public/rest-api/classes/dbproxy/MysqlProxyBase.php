@@ -200,7 +200,7 @@ abstract class MysqlProxyBase {
         if ($r) {
             $this->_castData($r);
             if ($complete) {
-                $this->_complete($temp);
+                $this->_complete($r);
             }
         }
         return $r;

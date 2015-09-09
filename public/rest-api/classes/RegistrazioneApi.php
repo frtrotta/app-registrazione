@@ -108,30 +108,21 @@ class RegistrazioneApi extends MySqlRestApi {
         }
         return $r;
     }
-    
+
     protected function Gara() {
         $r = null;
         if ($this->method === 'GET') {
             $tf = new dbproxy\Gara($this->conn);
-            $queryString = filter_input(INPUT_SERVER, 'QUERY_STRING');
-            $queryString = urldecode($queryString);
-            $queryString = explode('&', $queryString);
-            if (isset($queryString[1])) {
-                $queryString = $queryString[1];
-                $whereClause = json_decode($queryString, true);
-                if ($whereClause) {
-                    $r = $tf->getSelected($whereClause, true);
-                } else {
-                    throw new RegistrazioneApiException('Malformed selection clause: ' . $queryString, 10);
-                }
+            if (count($this->request)) {
+                $r = $tf->getSelected($this->request, true);
+        } else {
+            if (isset($this->args[0])) {
+                $id = $this->args[0];
+                $r = $tf->get($id, true);
             } else {
-                if (isset($this->args[0])) {
-                    $id = $this->args[0];
-                    $r = $tf->get($id, true);
-                } else {
-                    $r = $tf->getAll(true);
-                }
+                $r = $tf->getAll(true);
             }
+        }
         } else {
             throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
