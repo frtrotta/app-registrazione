@@ -26,7 +26,7 @@
                     }
                     $conn->close();
                 }
-                
+
                 function rimuoviUtenteTest($mysqlConf) {
                     $conn = new mysqli($mysqlConf['server'], $mysqlConf['username'], $mysqlConf['password'], $mysqlConf['database']);
                     if ($conn->connect_errno) {
@@ -46,13 +46,53 @@
 
                 inserisciUtenteTest($mysqlConf);
 
-                $testCode = '01';
-                $r = http_request(URL_BASE . 'TesseratiFitri');
-                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+//----------------------------------------------------------------------------
+
+                $testCode = '00';
+                $r = http_request(URL_BASE . 'Login');
+                if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
+                    $body = (array) json_decode($r->response->body);
+                    if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide username and password') {
+                        testPassed($testCode);
+                    } else {
+                        $msg = 'isset($body[\'code\']) ' . isset($body ['code'])
+                                . "\nisset(\$body['message']) " . isset($body ['message'])
+                                . "\n\$body['code']" . $body ['code']
+                                . "\n\$body['message']" . $body['message'];
+
+                        testFailedMsg($testCode, $r, $msg);
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
+//----------------------------------------------------------------------------
+                
+                $testCode = '01a';
+                $r = http_request(URL_BASE . 'Login?{%22username%22:%22test%22,%22password%22:%22test%22}');
+                if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     testPassed($testCode);
                 } else {
                     testFailed($testCode, $r);
                 }
+                
+                $testCode = '01b';
+                $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/json', '{"username":"test","password":"test"}');
+                if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
+                    testPassed($testCode);
+                } else {
+                    testFailed($testCode, $r);
+                }
+                
+                $testCode = '01c';
+                $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/x-www-form-urlencoded', 'username=test&password=test');
+                if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
+                    testPassed($testCode);
+                } else {
+                    testFailed($testCode, $r);
+                }
+
+//----------------------------------------------------------------------------
 
                 $testCode = '02';
                 $r = http_request(URL_BASE . 'Login?username=test&password=test');
@@ -62,6 +102,8 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+
+//----------------------------------------------------------------------------
 
                 $testCode = '03';
                 $r = http_request(URL_BASE . 'Login?username=test&password=test');
@@ -201,7 +243,7 @@
                 } else {
                     testFailed($testCode, $r);
                 }
-                
+
                 rimuoviUtenteTest($mysqlConf);
                 ?>
             </tbody>

@@ -54,7 +54,7 @@ class RegistrazioneApi extends MySqlRestApi {
                 throw new BadRequestException('Please provide username and password');
             }
         } else {
-            throw new MethodNotAllowedException();
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $this->gettoneAutenticazione;
     }
@@ -67,7 +67,7 @@ class RegistrazioneApi extends MySqlRestApi {
                 throw new BadRequestException('No valid auth cookie');
             }
         } else {
-            throw new MethodNotAllowedException();
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return "ok";
     }
@@ -76,7 +76,7 @@ class RegistrazioneApi extends MySqlRestApi {
         if ($this->method === 'GET') {
             return $this->me;
         } else {
-            throw new MethodNotAllowedException();
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
     }
 
@@ -104,7 +104,7 @@ class RegistrazioneApi extends MySqlRestApi {
                 }
             }
         } else {
-            throw new MethodNotAllowedException("$this->method");
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
@@ -133,7 +133,7 @@ class RegistrazioneApi extends MySqlRestApi {
                 }
             }
         } else {
-            throw new MethodNotAllowedException("$this->method");
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }

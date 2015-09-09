@@ -74,24 +74,26 @@ abstract class RestApi {
             }
         }
 
+        $this->request = null;
+        $this->contentType = null;
+        $this->body = null;
         switch ($this->method) {
-            case 'DELETE':
             case 'POST':
-                $this->request = $this->_cleanInputs($_POST);
-                break;
-            case 'GET':
-                $this->request = $this->_cleanInputs($_GET);
+                $this->_parseRequestBody();
                 break;
             case 'PUT':
-                $this->request = $this->_cleanInputs($_GET);
+                $this->_parseRequestBody();
+            case 'GET':
+            case 'DELETE':
+                $this->request = $this->_parseQueryString();
                 break;
             default:
                 $this->_response('Invalid Method', 405);
                 break;
         }
-        $this->contentType = filter_input(INPUT_SERVER, 'CONTENT_TYPE');
+
         if (isset($this->contentType)) {
-            $this->body = file_get_contents('php://input');
+            
         }
     }
 
@@ -104,11 +106,53 @@ abstract class RestApi {
         }
     }
 
+    /**
+     * This is needed for two reasons: (1) because of URL modification to handle requests
+     * (2) to handle both JSON and NVP query strings
+     * @return type
+     */
+    private function _parseQueryString() {
+        $data = filter_input_array(INPUT_GET);
+        unset($data['request']);
+
+        $r = false;
+        if (isset(array_keys($data)[0])) {
+            $r = json_decode(array_keys($data)[0], true);
+        }
+        if (!$r) {
+            $r = $data;
+        }
+        return $r;
+    }
+
+    private function _parseRequestBody() {
+        $this->contentType = filter_input(INPUT_SERVER, 'CONTENT_TYPE');
+        //$this->body = file_get_contents('php://input');
+        switch($this->contentType) {
+            case 'application/json':
+                $this->request = json_decode(file_get_contents('php://input'), true);
+                break;
+            case 'application/x-www-form-urlencoded':
+            case 'multipart/form-data':
+                $this->request = filter_input_array(INPUT_POST);
+                break;
+            default:
+                throw new BadRequestException('Unsupported content type: ' . $this->contentType);
+        }
+        if (filter_input_array(INPUT_POST)) {
+            /* $_POST is populated only in case of 
+             * application/x-www-form-urlencoded or multipart/form-data as 
+             * the HTTP Content-Type in the request
+             */
+            $this->request = filter_input_array(INPUT_POST);
+        }
+    }
+
     protected function _response($data, $status = 200) {
         header("HTTP/1.1 " . $status . " " . $this->_requestStatus($status));
         header("Content-Type: application/json");
         $r = json_encode($data);
-        if(!$r) {
+        if (!$r) {
             throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "');
             //TOD throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "' . json_last_error_msg()) . '"';
         }
