@@ -312,9 +312,23 @@ abstract class MysqlProxyBase {
         return $d && $d->format('Y/m/d') === $value;
     }
     
+    protected function _is_datetime($value) {
+        $d = DateTime::createFormat('Y/m/d H:i:s', $value);
+        return $d && $d->format('Y/m/d H:i:s') === $value;
+    }
+    
     protected function _is_date_optional($value) {
         if(isset($value)) {
             return $this->_is_date($value);
+        }
+        else {
+            return true;
+        }
+    }
+    
+    protected function _is_datetime_optional($value) {
+        if(isset($value)) {
+            return $this->_is_datetime($value);
         }
         else {
             return true;

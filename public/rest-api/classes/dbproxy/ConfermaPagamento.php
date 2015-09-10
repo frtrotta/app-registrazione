@@ -47,7 +47,7 @@ class ConfermaPagamento extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->_is_date($data['eseguitaIl'])) {
+        if (!$this->_is_datetime($data['eseguitaIl'])) {
             return false;
         }
         

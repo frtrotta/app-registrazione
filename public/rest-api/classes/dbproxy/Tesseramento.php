@@ -42,7 +42,7 @@ class Tesseramento extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->_is_date($data['finoAl'])) {
+        if (!$this->_is_datetime($data['finoAl'])) {
             return false;
         }
         

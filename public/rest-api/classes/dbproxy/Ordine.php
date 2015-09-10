@@ -63,7 +63,7 @@ class Ordine extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->_is_date($data['ricevutoIl'])) {
+        if (!$this->_is_datetime($data['ricevutoIl'])) {
             return false;
         }
         

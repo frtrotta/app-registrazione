@@ -56,11 +56,11 @@ class Gara extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->_is_date($data['disputataIl'])) {
+        if (!$this->_is_datetime($data['disputataIl'])) {
             return false;
         }  
         
-        if (!$this->_is_date($data['iscrizioneModificabileFinoAl'])) {
+        if (!$this->_is_datetime($data['iscrizioneModificabileFinoAl'])) {
             return false;
         }
         
