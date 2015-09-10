@@ -2,6 +2,8 @@
 
 //define('DEBUG', '');
 
+$start  = new DateTime();
+
 include 'errorHandling.php';
 
 $currentYear = date('Y');
@@ -293,25 +295,79 @@ function updateAtleti($conn, $atleti) {
     $n = insertIntoTempTable($conn, $atleti);
     echo " done ($n)</p>";
 
-    $query = 'DELETE FROM `tesserati_fitri` WHERE `TESSERA` NOT IN (SELECT `TESSERA` FROM `' . TESSERATI_TEMP_TABLE_NAME . '`);';
-    $conn->query($query);
-    $n = $conn->affected_rows;
-    echo "<p>Deleted $n atleti from tesserati_fitri</p>";
+    //--- Delete removed
+//    $query = 'DELETE FROM `tesserati_fitri` WHERE `TESSERA` NOT IN (SELECT `TESSERA` FROM `' . TESSERATI_TEMP_TABLE_NAME . '`);';
+//    $conn->query($query);
+//    $n = $conn->affected_rows;
+//    echo "<p>Deleted $n atleti from tesserati_fitri</p>";
+    echo '<p>Old Atleti removal skipped</p>';
 
-    $fieldList = '`CODICE_SS`,'
-            . '`TESSERA`,'
-            . '`COGNOME`,'
-            . '`NOME`,'
-            . '`SESSO`,'
-            . '`DATA_NASCITA`,'
-            . '`CITTADINANZA`,'
-            . '`CATEGORIA`,'
-            . '`QUALIFICA`,'
-            . '`LIVELLO`,'
-            . '`STATO`,'
-            . '`DATA_EMISSIONE`,'
-            . '`TIPO_TESSERA`,'
-            . '`DISABILITA`';
+    $fields = [
+        '`CODICE_SS`',
+        '`TESSERA`',
+        '`COGNOME`',
+        '`NOME`',
+        '`SESSO`',
+        '`DATA_NASCITA`',
+        '`CITTADINANZA`',
+        '`CATEGORIA`',
+        '`QUALIFICA`',
+        '`LIVELLO`',
+        '`STATO`',
+        '`DATA_EMISSIONE`',
+        '`TIPO_TESSERA`',
+        '`DISABILITA`'
+    ];
+
+    //---- Updating existing
+    echo '<p>Updating existing Atleti...';
+    
+    $query = 'UPDATE `tesserati_fitri` AS `old` INNER JOIN `' . TESSERATI_TEMP_TABLE_NAME . '` AS `new`'
+            . ' ON `old`.`TESSERA` = `new`.`TESSERA` '
+            . ' SET ' . "\n";
+    $first = true;
+    foreach ($fields as $e) {
+        if ($first) {
+            $first = false;
+            $query .= ('`old`.' . $e . '=`new`.' . $e);
+        } else {
+
+            $query .= (', ' . "\n" . '`old`.' . $e . '=`new`.' . $e);
+        }
+    }
+    $conn->query($query);
+    if ($conn->errno) {
+        throw new Exception($conn->errno . ' ' . $conn->error);
+    }
+    
+    echo ' done</p>';
+
+    //---- Adding new
+
+    echo '<p>Adding new Atleti...';
+    $first = true;
+    foreach ($fields as $e) {
+        if ($first) {
+            $first = false;
+            $fieldList = $e;
+        } else {
+            $fieldList .= (',' . $e);
+        }
+    }
+//    $fieldList = '`CODICE_SS`,'
+//            . '`TESSERA`,'
+//            . '`COGNOME`,'
+//            . '`NOME`,'
+//            . '`SESSO`,'
+//            . '`DATA_NASCITA`,'
+//            . '`CITTADINANZA`,'
+//            . '`CATEGORIA`,'
+//            . '`QUALIFICA`,'
+//            . '`LIVELLO`,'
+//            . '`STATO`,'
+//            . '`DATA_EMISSIONE`,'
+//            . '`TIPO_TESSERA`,'
+//            . '`DISABILITA`';
     $query = 'INSERT INTO `tesserati_fitri` '
             . '('
             . $fieldList
@@ -323,9 +379,11 @@ function updateAtleti($conn, $atleti) {
     if ($conn->errno) {
         throw new Exception($conn->errno . ' ' . $conn->error);
     }
+    
+    echo ' done. ';
 
     $n = $conn->affected_rows;
-    echo "<p>Inserted $n new atleti into tesserati_fitri</p>";
+    echo "Added $n new atleti into tesserati_fitri</p>";
 
     return $n;
 }
@@ -380,3 +438,10 @@ if (count($societa) > 0 && count($atleti) > 0) {
 }
 //unlink($societaFName);
 //unlink($atletiFName);
+
+
+$stop = new DateTime();
+
+$diff = $start->diff( $stop );
+
+echo '<p>'.$diff->format( '%H:%I:%S' ).' elapsed'; // -> 00:25:25
