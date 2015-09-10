@@ -6,12 +6,9 @@ class AdesionePersonale extends MysqlProxyBase {
 
     public function __construct(&$connection) {
         parent::__construct($connection, 'adesione_personale', ['id',
-            'indirizzoLinea1',
-            'indirizzoLinea2',
             'indirizzoCap',
             'indirizzoCitta',
-            'indirizzoProvincia',
-            'indirizzoStato',
+            'indirizzoPaese',
             'categoriaFitri',
             'idUtente']);
     }
@@ -46,11 +43,9 @@ class AdesionePersonale extends MysqlProxyBase {
     protected function _isCoherent($data) {
         if (!isset($data['id']) ||
                 !isset($data['categoriaFitri']) ||
-                !isset($data['indirizzoLinea1']) ||
                 !isset($data['indirizzoCap']) ||
                 !isset($data['indirizzoCitta']) ||
-                // TODO !isset($data['indirizzoProvincia']) ||
-                !isset($data['indirizzoStato']) ||
+                !isset($data['indirizzoPaese']) ||
                 !isset($data['idUtente'])
         ) {
             return false;

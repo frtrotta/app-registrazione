@@ -11,12 +11,9 @@ class Ordine extends MysqlProxyBase {
             'ricevutaInviata',
             'ricevutaInviataIl',
             'note',
-            'indirizzoLinea1',
-            'indirizzoLinea2',
-            'indirizzoCap',
-            'indirizzoCitta',
-            'indirizzoProvincia',
-            'indirizzoStato', 
+            'clienteIndirizzoCap',
+            'clienteIndirizzoCitta',
+            'clienteIndirizzoPaese', 
             'idCliente',
             'idModalitaPagamento']);
     }
@@ -50,10 +47,9 @@ class Ordine extends MysqlProxyBase {
                 !isset($data['totale']) ||
                 !isset($data['pagato']) ||
                 !isset($data['ricevutaInviata']) ||
-                !isset($data['indirizzoLinea1']) ||
                 !isset($data['indirizzoCap']) ||
                 !isset($data['indirizzoCitta']) ||
-                !isset($data['indirizzoStato']) ||
+                !isset($data['indirizzoPaese']) ||
                 !isset($data['idModalitaPagamento']) ||
                 !isset($data['idCliente'])
         ) {
@@ -81,6 +77,4 @@ class Ordine extends MysqlProxyBase {
         
         return true;
     }
-
-
 }
