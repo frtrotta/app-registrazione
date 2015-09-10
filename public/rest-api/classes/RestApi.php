@@ -169,21 +169,8 @@ abstract class RestApi {
             //TOD throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "' . json_last_error_msg()) . '"';
         }
         echo $r;
-    }
-
-    private function _cleanInputs($data) {
-        $clean_input = Array();
-        if (is_array($data)) {
-            foreach ($data as $k => $v) {
-                $clean_input[$k] = $this->_cleanInputs($v);
-            }
-        } else {
-            //$clean_input = trim(strip_tags($data));
-            $clean_input = filter_var($data, FILTER_SANITIZE_STRING);
-        }
-        return $clean_input;
-    }
-
+    }  
+    
     /**
      * Complete list at http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
      * 
