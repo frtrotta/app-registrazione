@@ -106,33 +106,33 @@ abstract class RestApi {
         }
     }
 
+    private function _parseNameValuePairs($string) {
+        /* Must use direct access to "raw" query string or body to avoid char replacement
+         * performed by PHP.
+         * Refer to http://stackoverflow.com/questions/68651/get-php-to-stop-replacing-characters-in-get-or-post-arrays
+         */
+        $list = explode('&', $string);
+        $data = [];
+        foreach ($list as $e) {
+            $temp = explode('=', $e);
+            if (count($temp) == 2) {
+                $data[urldecode($temp[0])] = urldecode($temp[1]);
+            } else {
+                $data[urldecode($temp[0])] = null;
+            }
+        }
+        return $data;
+    }
+
     /**
      * This is needed for two reasons: (1) because of URL modification to handle requests
      * (2) to handle both JSON and NVP query strings.
      * @return type
      */
     private function _parseQueryString() {
-        /* Must use direct access to "raw" query string to avoid char replacement
-         * performed by PHP.
-         * Refer to http://stackoverflow.com/questions/68651/get-php-to-stop-replacing-characters-in-get-or-post-arrays
-         */
-//        $data = filter_input_array(INPUT_GET);
-//        unset($data['request']);
+        $data = $this->_parseNameValuePairs($_SERVER['QUERY_STRING']);
+        array_shift($data); // because of URL modification
 
-        $queryString = $_SERVER['QUERY_STRING'];
-        $list = explode('&', $queryString);
-        array_shift($list); // because of URL modification
-        $data = [];
-        foreach($list as $e) {
-            $temp = explode('=', $e);
-            if(count($temp) == 2) {
-            $data[urldecode($temp[0])] = urldecode($temp[1]);
-            }
-            else {
-                $data[urldecode($temp[0])] = null;
-            }
-        }
-        
         $r = false;
         if (isset(array_keys($data)[0])) {
             $r = json_decode(array_keys($data)[0], true);
@@ -145,25 +145,18 @@ abstract class RestApi {
 
     private function _parseRequestBody() {
         $this->contentType = filter_input(INPUT_SERVER, 'CONTENT_TYPE');
-        //$this->body = file_get_contents('php://input');
-        switch($this->contentType) {
+        $this->body = file_get_contents('php://input');
+        switch ($this->contentType) {
             case 'application/json':
             case 'application/json;charset=UTF-8';
                 $this->request = json_decode(file_get_contents('php://input'), true);
                 break;
             case 'application/x-www-form-urlencoded':
             case 'multipart/form-data':
-                $this->request = filter_input_array(INPUT_POST);
+                $this->request = $this->_parseNameValuePairs($this->body);
                 break;
             default:
                 throw new BadRequestException('Unsupported content type: ' . $this->contentType);
-        }
-        if (filter_input_array(INPUT_POST)) {
-            /* $_POST is populated only in case of 
-             * application/x-www-form-urlencoded or multipart/form-data as 
-             * the HTTP Content-Type in the request
-             */
-            $this->request = filter_input_array(INPUT_POST);
         }
     }
 
