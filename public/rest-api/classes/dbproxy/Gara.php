@@ -9,6 +9,7 @@ class Gara extends MysqlProxyBase {
             'descrizione_it',
             'descrizione_en',
             'disputataIl',
+            'iscrizioneModificabileFinoAl',
             'idTipoGara']);
     }
 
@@ -56,6 +57,10 @@ class Gara extends MysqlProxyBase {
         }
         
         if (!$this->_is_date($data['disputataIl'])) {
+            return false;
+        }  
+        
+        if (!$this->_is_date($data['iscrizioneModificabileFinoAl'])) {
             return false;
         }
         
