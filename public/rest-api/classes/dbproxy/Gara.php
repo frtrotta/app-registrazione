@@ -3,7 +3,7 @@
 namespace dbproxy;
 
 class Gara extends MysqlProxyBase {
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'gara', ['id',
             'nome',
             'descrizione_it',

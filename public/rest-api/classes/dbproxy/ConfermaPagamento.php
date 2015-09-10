@@ -3,7 +3,7 @@
 namespace dbproxy;
 
 class ConfermaPagamento extends MysqlProxyBase {
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'conferma_pagamento', ['id',
             'idOrdine',
             'eseguitaIl',

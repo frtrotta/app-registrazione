@@ -3,7 +3,7 @@
 namespace dbproxy;
 
 class Squadra extends MysqlProxyBase {
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'societa_fitri', ['codice',
             'nome']);
     }

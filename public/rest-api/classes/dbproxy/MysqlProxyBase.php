@@ -13,7 +13,7 @@ abstract class MysqlProxyBase {
      */
     public $conn;
 
-    public function __construct($connection, $tableName, $fieldList) {
+    public function __construct(&$connection, $tableName, $fieldList) {
         $this->conn = $connection;
         $this->tableName = $tableName;
         $this->fieldList = $fieldList;

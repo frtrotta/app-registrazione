@@ -3,7 +3,7 @@
 namespace dbproxy;
 
 class Risultato extends MysqlProxyBase {
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'risultato',['id',
             'codiceConclusioneGara',
             'posizione',

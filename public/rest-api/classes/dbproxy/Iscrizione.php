@@ -4,7 +4,7 @@ namespace dbproxy;
 
 class Iscrizione extends MysqlProxyBase {
 
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'iscrizione', ['id',
             'eseguitaIl',
             'pattorale',

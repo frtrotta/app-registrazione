@@ -3,7 +3,7 @@
 namespace dbproxy;
 
 class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'abilitazione_tipo_richiesta_tesseramento', ['idGara',
             'idTipoRichiestaTesseramento',
             'finoAl',

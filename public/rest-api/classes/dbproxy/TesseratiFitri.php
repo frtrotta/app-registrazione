@@ -4,7 +4,7 @@ namespace dbproxy;
 
 class TesseratiFitri extends MysqlProxyBase {
 
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'tesserati_fitri', ['TESSERA',
             'CODICE_SS',
             'COGNOME',

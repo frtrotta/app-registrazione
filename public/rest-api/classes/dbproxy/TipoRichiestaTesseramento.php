@@ -3,7 +3,7 @@
 namespace dbproxy;
 
 class TipoRichiestaTesseramento extends MysqlProxyBase {
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'tipo_richiesta_tesseramento', ['id',
             'nome_it',
             'descrizione_it',

@@ -4,7 +4,7 @@ namespace dbproxy;
 
 class Utente extends MysqlProxyBase {
 
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'utente', ['id',
             'username',
             'password',

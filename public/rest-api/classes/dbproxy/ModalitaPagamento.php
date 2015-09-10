@@ -3,7 +3,7 @@
 namespace dbproxy;
 
 class ModalitaPagamento extends MysqlProxyBase {
-    public function __construct($connection) {
+    public function __construct(&$connection) {
         parent::__construct($connection, 'modalita_pagamento', ['id',
             'nome_it',
             'descrizione_it',
