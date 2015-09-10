@@ -93,7 +93,7 @@
                     if ($t) {
 
                         if ($t['code'] === 500 &&
-                                strpos($t['message'], 'Malformed selection clause') >= 0
+                                strpos($t['message'], '1054 Unknown column \'ttt\' in \'where clause\'') >= 0
                         ) {
                             testPassed($testCode);
                         } else {

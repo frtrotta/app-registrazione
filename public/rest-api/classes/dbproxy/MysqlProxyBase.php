@@ -220,7 +220,7 @@ abstract class MysqlProxyBase {
         if ($r) {
             $this->_castData($r);
             if ($complete) {
-                $this->_complete($temp);
+                $this->_complete($r);
             }
         }
         return $r;
@@ -246,6 +246,10 @@ abstract class MysqlProxyBase {
                     . $this->_limit($selectionClause);
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
+                if($this->conn->errno === 1054) {
+                    // One ore more fields have not the correct name
+                    throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+                }
                 throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
             }
             $r = $this->_fetchAllAssoc($rs);
@@ -303,9 +307,45 @@ abstract class MysqlProxyBase {
         return $fieldList . $valueList;
     }
 
-    protected function _is_date($string) {
-        $d = DateTime::createFormat('Y/m/d', $date);
-        return $d && $d->format('Y/m/d') === $date;
+    protected function _is_date($value) {
+        $d = DateTime::createFormat('Y/m/d', $value);
+        return $d && $d->format('Y/m/d') === $value;
+    }
+    
+    protected function _is_date_optional($value) {
+        if(isset($value)) {
+            return $this->_is_date($value);
+        }
+        else {
+            return true;
+        }
+    }
+    
+    protected function _is_integer_optional($value) {
+        if(isset($value)) {
+            return $this->is_integer($value);
+        }
+        else {
+            return true;
+        }
+    }
+    
+    protected function _is_bool_optional($value) {
+        if(isset($value)) {
+            return $this->is_bool($value);
+        }
+        else {
+            return true;
+        }
+    }
+    
+    protected function _is_float_optional($value) {
+        if(isset($value)) {
+            return $this->is_float($value);
+        }
+        else {
+            return true;
+        }
     }
 
     /**

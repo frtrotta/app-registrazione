@@ -35,7 +35,7 @@ try {
     $conf = parse_ini_file('config.ini', true);
     $mysqlConf = $conf['mysql'];
     $authConf = $conf['auth'];
-    $API = new RegistrazioneApi($_REQUEST['request'], $mysqlConf, $authConf);
+    $API = new RegistrazioneApi($_GET['request'], $mysqlConf, $authConf);
     $API->processAPI();
 } catch (BadRequestException $e) {
     $error = new Error(400, $e->getMessage());

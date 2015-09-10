@@ -3,6 +3,7 @@
 namespace dbproxy;
 
 class Iscrizione extends MysqlProxyBase {
+
     public function __construct($connection) {
         parent::__construct($connection, 'iscrizione', ['id',
             'eseguitaIl',
@@ -21,20 +22,20 @@ class Iscrizione extends MysqlProxyBase {
         $data['idGara'] = (int) $data['idGara'];
         $data['idOrdine'] = (int) $data['idOrdine'];
     }
-    
+
     protected function _complete(&$data) {
         $g = new Gara($this->conn);
         $data['gara'] = $g->get($data['idGara'], true);
         unset($data['idGara']);
-        
+
         $o = new Ordine($this->conn);
         $data['ordine'] = $o->get($data['idOrdine'], true);
         unset($data['idOrdine']);
-        
+
         $s = new Squadra($this->conn);
         $temp = $this->_getOptionalChildIds('idIscrizione', $data[$this->fieldList[0]], 'idSquadra', 'iscrizione__squadra');
         $n = count($temp);
-        switch($n) {
+        switch ($n) {
             case 0:
                 break;
             case 1:
@@ -43,11 +44,11 @@ class Iscrizione extends MysqlProxyBase {
             default:
                 throw new MysqlProxyBaseException("Unespected child number ($n)", 30);
         }
-        
-        $ap = new Squadra($this->conn);
+
+        $ap = new AdesionePersonale($this->conn);
         $temp = $this->_getOptionalChildIds('idIscrizione', $data[$this->fieldList[0]], 'idAdesionePersonale', 'iscrizione__adesione_personale');
         $n = count($temp);
-        switch($n) {
+        switch ($n) {
             case 0:
                 break;
             case 1:
@@ -79,13 +80,18 @@ class Iscrizione extends MysqlProxyBase {
         if (!is_integer($data['idGara'])) {
             return false;
         }
-        
+
         if (!$this->_is_date($data['eseguitaIl'])) {
             return false;
         }
-        
-        // TODO verificare se ha adesione personale o squadra
-        
+
+        /* Must be either related to a squadra or to an adesione personale
+         */
+        if( (isset($data['squadra']) && isset($data['adesionePersonale'])) ||
+            (!isset($data['squadra']) &&!isset($data['adesionePersonale']))) {
+            return false;
+        }
+
         return true;
     }
 

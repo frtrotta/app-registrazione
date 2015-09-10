@@ -2,41 +2,44 @@
 
 namespace dbproxy;
 
-class VerificaRichiestaTesseramento extends MysqlProxyBase {
+class ConfermaPagamento extends MysqlProxyBase {
     public function __construct($connection) {
-        parent::__construct($connection, 'verifica_richiesta_tesseramento', ['id',
-            'idRichiestaTesseramento',
+        parent::__construct($connection, 'conferma_pagamento', ['id',
+            'idOrdine',
             'eseguitaIl',
-            'esito',
             'idAmministratore']);
     }
 
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];
-        $data['idRichiestaTesseramento'] = (int) $data['idRichiestaTesseramento'];
+        $data['idOrdine'] = (int) $data['idOrdine'];
         //TODO $data['eseguitaIl'] = new DateTime($data['eseguitaIl']);
         $data['idAmministratore'] = (int) $data['idAmministratore'];        
-    }    
+    }
 
     protected function _complete(&$data) {
-        $sf = new SocietaFitri($this->conn);
-        $data['societa'] = $sf->get($data['CODICE_SS'], true);
-        unset($data['CODICE_SS']);
+        $o = new Ordine($this->conn);
+        $data['ordine'] = $o->get($data['idOrdine'], true);
+        unset($data['idOrdine']);
+        
+        $a = new Utente($this->conn);
+        $data['amministratore'] = $a->get($data['idAmministratore'], true);
+        unset($data['idAmministratore']);
     }
 
     protected function _isCoherent($data) {
         if (!isset($data['id']) ||
-                !isset($data['eseguitaIl']) ||
-                !isset($data['esito']) ||
-                !isset($data['idRichiestaTesseramento']) ||
-                !isset($data['idAmministratore'])
+                !isset($data['idOrdine']) ||
+                !isset($data['idAmministratore']) ||
+                !isset($data['eseguitaIl'])
         ) {
             return false;
         }
         if (!is_integer($data['id'])) {
             return false;
         }
-        if (!is_integer($data['idRichiestaTesseramento'])) {
+
+        if (!is_integer($data['idOrdine'])) {
             return false;
         }
 

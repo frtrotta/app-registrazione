@@ -30,7 +30,7 @@ class RegistrazioneApi extends MySqlRestApi {
         $this->me = NULL;
 
         if (isset($_COOKIE[$this->cookieName])) {
-            $this->gettoneAutenticazione = filter_input(INPUT_COOKIE, $this->cookieName, FILTER_SANITIZE_STRING);
+            $this->gettoneAutenticazione = filter_input(INPUT_COOKIE, $this->cookieName);
             $this->gettoneAutenticazione = $this->conn->escape_string($this->gettoneAutenticazione);
             $this->_refreshGettoneAutenticazione();
             $this->_setCurrentUser();
@@ -54,7 +54,7 @@ class RegistrazioneApi extends MySqlRestApi {
                 throw new BadRequestException('Please provide username and password');
             }
         } else {
-            throw new MethodNotAllowedException();
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $this->gettoneAutenticazione;
     }
@@ -67,7 +67,7 @@ class RegistrazioneApi extends MySqlRestApi {
                 throw new BadRequestException('No valid auth cookie');
             }
         } else {
-            throw new MethodNotAllowedException();
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return "ok";
     }
@@ -76,7 +76,7 @@ class RegistrazioneApi extends MySqlRestApi {
         if ($this->method === 'GET') {
             return $this->me;
         } else {
-            throw new MethodNotAllowedException();
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
     }
 
@@ -86,7 +86,7 @@ class RegistrazioneApi extends MySqlRestApi {
             $tf = new dbproxy\TesseratiFitri($this->conn);
             $r = $this->_CRUDread($tf);
         } else {
-            throw new MethodNotAllowedException("$this->method");
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
@@ -97,7 +97,7 @@ class RegistrazioneApi extends MySqlRestApi {
         if ($this->method === 'GET') {
             $r = $this->_CRUDread($g);
         } else {
-            throw new MethodNotAllowedException("$this->method");
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
@@ -129,17 +129,8 @@ class RegistrazioneApi extends MySqlRestApi {
      */
     private function _CRUDread($entityProxy) {
         $r = null;
-        $queryString = filter_input(INPUT_SERVER, 'QUERY_STRING');
-        $queryString = urldecode($queryString);
-        $queryString = explode('&', $queryString);
-        if (isset($queryString[1])) {
-            $queryString = $queryString[1];
-            $selectionClause = json_decode($queryString, true);
-            if ($selectionClause) {
-                $r = $entityProxy->getSelected($selectionClause, true);
-            } else {
-                throw new RegistrazioneApiException('Malformed selection clause: ' . $queryString, 10);
-            }
+        if (count($this->request)) {
+            $r = $entityProxy->getSelected($this->request, true);
         } else {
             if (isset($this->args[0])) {
                 $id = $this->args[0];
@@ -151,35 +142,33 @@ class RegistrazioneApi extends MySqlRestApi {
         return $r;
     }
 
-    private function _CRUDupdate($entityProxy) {
-        $r = null;
-        if ($this->contentType === 'application/json') {
-            $data = json_decode($this->body);
-            if ($data) {
-                $r = $entityProxy->update($data);
-            } else {
-                throw new BadRequestException('Unable to parse JSON body');
-            }
-        } else {
-            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
-        }
-        return $r;
-    }
-    
-    private function _CRUDcreate($entityProxy) {
-        $r = null;
-        if ($this->contentType === 'application/json') {
-            $data = json_decode($this->body);
-            if ($data) {
-                $r = $entityProxy->add($data);
-            } else {
-                throw new BadRequestException('Unable to parse JSON body');
-            }
-        } else {
-            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
-        }
-        return $r;
-    }
+//
+//    private function _CRUDupdate($entityProxy) {
+//        $r = null;
+//        if ($this->contentType === 'application/json') {
+//            $data = json_decode($this->body);
+//            if ($data) {
+//                $r = $entityProxy->update($data);
+//            } else {
+//                throw new BadRequestException('Unable to parse JSON body');
+//            }
+//        } else {
+//            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+//        }
+//        return $r;
+//    }
+//    
+//    private function _CRUDcreate($entityProxy) {
+//        $r = null;
+//        if ($this->contentType === 'application/json') {
+//            $data = json_decode($this->body);
+//            if ($data) {
+//                $r = $entityProxy->add($data);
+//            } else {
+//                throw new BadRequestException('Unable to parse JSON body');
+//            }
+//        } else {
+//            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
 
     private function _loginByUsernameAndPassword($username, $password) {
         $r = false;
@@ -277,12 +266,12 @@ class RegistrazioneApi extends MySqlRestApi {
                 . " gettoneAutenticazione = '$this->gettoneAutenticazione',"
                 . " gettoneAutenticazioneScadeIl = DATE_ADD(NOW(), INTERVAL $this->gettoneValidoPerMinuti MINUTE)"
                 . " WHERE id = '$id'";
-        if ($this->conn->query($query)) {
-            if ($this->conn->affected_rows !== 1) {
-                throw new InconsistentDataException("Number of affected rows: $$this->conn->affected_rows (expected 1)");
-            }
-        } else {
+        $this->conn->query($query);
+        if ($this->conn->errno) {
             throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+        }
+        if ($this->conn->affected_rows !== 1) {
+            throw new InconsistentDataException('Number of affected rows: ' . $this->conn->affected_rows . ' (expected 1)');
         }
     }
 
@@ -291,7 +280,7 @@ class RegistrazioneApi extends MySqlRestApi {
             $query = 'UPDATE utente'
                     . ' SET'
                     . " gettoneAutenticazioneScadeIl = DATE_ADD(NOW(), INTERVAL $this->gettoneValidoPerMinuti MINUTE)"
-                    . " WHERE gettoneAutenticazione = '$this->gettoneAutenticazione',"
+                    . " WHERE gettoneAutenticazione = '$this->gettoneAutenticazione'"
                     . " AND gettoneAutenticazioneScadeIl > NOW()";
             $this->conn->query($query);
             if ($this->conn->errno) {

@@ -16,4 +16,16 @@ class SocietaFitri extends MysqlProxyBase {
         
     }
 
+    protected function _isCoherent($data) {
+        if (!isset($data['codice']) ||
+                !isset($data['nome'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['codice'])) {
+            return false;
+        }
+        
+        return true;
+    }
 }

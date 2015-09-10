@@ -11,5 +11,21 @@ class Squadra extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['codice'] = (int) $data['nome'];  
     }
+    
+    protected function _complete(&$data) {
+        
+    }
 
+    protected function _isCoherent($data) {
+        if (!isset($data['id']) ||
+                !isset($data['nome'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['id'])) {
+            return false;
+        }
+        
+        return true;
+    }
 }

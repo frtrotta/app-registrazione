@@ -31,5 +31,56 @@ class Ordine extends MysqlProxyBase {
         $data['idCliente'] = (int) $data['idCliente'];
         $data['idModalitaPagamento'] = (int) $data['idModalitaPagamento'];
     }
+    
+    
+
+    protected function _complete(&$data) {
+        $u = new Utente($this->conn);
+        $data['cliente'] = $u->get($data['idCliente'], true);
+        unset($data['idCliente']);
+        
+        $mp = new ModalitaPagamento($this->conn);
+        $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
+        unset($data['idModalitaPagamento']);
+    }
+
+    protected function _isCoherent($data) {
+        if (!isset($data['id']) ||
+                !isset($data['ricevutoIl']) ||
+                !isset($data['totale']) ||
+                !isset($data['pagato']) ||
+                !isset($data['ricevutaInviata']) ||
+                !isset($data['indirizzoLinea1']) ||
+                !isset($data['indirizzoCap']) ||
+                !isset($data['indirizzoCitta']) ||
+                !isset($data['indirizzoStato']) ||
+                !isset($data['idModalitaPagamento']) ||
+                !isset($data['idCliente'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['id'])) {
+            return false;
+        }
+
+        if (!is_float($data['totale'])) {
+            return false;
+        }
+        
+        if (!$this->_is_date($data['ricevutoIl'])) {
+            return false;
+        }
+        
+        if (!$this->is_bool($data['pagato'])) {
+            return false;
+        }
+        
+        if (!$this->is_bool($data['ricevutaInviata'])) {
+            return false;
+        }
+        
+        return true;
+    }
+
 
 }

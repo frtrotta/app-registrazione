@@ -15,6 +15,10 @@ class TipoRichiestaTesseramento extends MysqlProxyBase {
         $data['id'] = (int) $data['id'];  
     }
     
+    protected function _complete(&$data) {
+        
+    }
+    
     protected function _isCoherent($data) {
         if (!isset($data['id']) ||
                 !isset($data['nome_it']) ||

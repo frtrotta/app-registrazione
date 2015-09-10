@@ -31,7 +31,7 @@ class httpResponse {
 
 }
 
-function http_request($url, $cookies = NULL) {
+function http_request($url, $cookies = NULL, $method = 'GET', $contentType = null, $body = null) {
     $options = array(
         CURLOPT_RETURNTRANSFER => true, // return web page
         CURLOPT_HEADER => true, // return headers
@@ -43,12 +43,34 @@ function http_request($url, $cookies = NULL) {
         CURLOPT_TIMEOUT => 120, // time-out on response
     );
 
-    $headers = [];
+    switch ($method) {
+        case 'GET':
+            break;
+        case 'POST':
+        case 'PUT':
+        case 'DELETE':
+            switch ($contentType) {
+                case 'application/json':
+                case 'application/x-www-form-urlencoded':
+                    $options[CURLOPT_CUSTOMREQUEST] = $method;
+                    $options[CURLOPT_POST] = 1;
+                    $options[CURLOPT_POSTFIELDS] = $body;
+                    $options[CURLOPT_HTTPHEADER] = array(
+                        'Content-Type: ' . $contentType,
+                        'Content-Length: ' . strlen($body));
+                    break;
+                default:
+                    throw new Exception('Unsupported content type ' . $contentType);
+            }
+            break;
+        default:
+            throw new Exception('Unsupported method ' . $method);
+    }
+
     if (isset($cookies)) {
         foreach ($cookies as $name => $value) {
-            array_push($headers, "Cookie: $name=$value");
+            $options[CURLOPT_HTTPHEADER][] = "Cookie: $name=$value";
         }
-        $options[CURLOPT_HTTPHEADER] = $headers;
     }
 
     $ch = curl_init($url);
@@ -97,7 +119,7 @@ function testFailed($testCode, $cUrlResult) {
     . "</tr>";
 }
 
-function testFailedMsg($testCode,  $cUrlResult, $msg) {
+function testFailedMsg($testCode, $cUrlResult, $msg) {
     echo "<tr class=\"danger\">"
     . "<td><strong>Test&nbsp;$testCode&nbsp;failed</strong></td>"
     . "<td>"

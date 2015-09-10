@@ -115,3 +115,9 @@ try {
 } catch (Exception $e) {
     echo '<p>' . $e->getMessage();
 }
+
+var_dump($_GET);
+var_dump($_SERVER['QUERY_STRING']);
+var_dump($_POST);
+var_dump(isset($_POST));
+var_dump(json_decode('"pippo"'));

@@ -19,4 +19,35 @@ class RichiestaTesseramento extends MysqlProxyBase {
         $data['idAdesionePersonale'] = (int) $data['idAdesionePersonale'];        
     }
 
+    protected function _complete(&$data) {
+        $ap = new AdesionePersonale($this->conn);
+        $data['adesionePersonale'] = $ap->get($data['idAdesionePersonale'], true);
+        unset($data['idAdesionePersonale']);        
+        
+        $trt = new TipoRichiestaTesseramento($this->conn);
+        $data['tipoRichiestaTesseramento'] = $trt->get($data['idTipoRichiestaTesseramento'], true);
+        unset($data['idTipoRichiestaTesseramento']);
+    }
+
+    protected function _isCoherent($data) {
+        if (!isset($data['id']) ||
+                !isset($data['eseguitaIl']) ||
+                !isset($data['verificata'])
+        ) {
+            return false;
+        }
+        if (!is_integer($data['id'])) {
+            return false;
+        }
+        
+        if (!$this->_is_date($data['eseguitaIl'])) {
+            return false;
+        }
+        
+        if (!$this->is_bool($data['verificata'])) {
+            return false;
+        }
+        
+        return true;
+    }
 }
