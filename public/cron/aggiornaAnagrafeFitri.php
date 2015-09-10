@@ -415,7 +415,7 @@ function updateSocieta($conn, $societa) {
     echo ' done. ';
 
     $n = $conn->affected_rows;
-    echo "Added $n new Societa into tesserati_fitri</p>";
+    echo "Added $n new Societa into societa_fitri</p>";
 
     return $n;
 }
