@@ -15,22 +15,22 @@ class RegistrazioneApi extends MySqlRestApi {
     protected function Login() {
         if ($this->method === 'GET' || $this->method === 'POST') {
             // TODO no clear password
-            if (isset($this->request['username']) && isset($this->request['password'])) {
-                $username = $this->request['username'];
+            if (isset($this->request['email']) && isset($this->request['password'])) {
+                $email = $this->request['email'];
                 $password = $this->request['password'];
                 try {
-                    if (!($this->loginModule->loginByUsernameAndPassword($username, $password))) {
-                        throw new UnauthorizedException('Wrong username and/or password');
+                    if (!($this->loginModule->loginByEmailAndPassword($email, $password))) {
+                        throw new UnauthorizedException('Wrong email and/or password');
                     }
                 } catch (LoginModuleException $ex) {
                     if ($ex->getCode() === 1) {
-                        throw new BadRequestException('Please provide username and password');
+                        throw new BadRequestException('Please provide email and password');
                     } else {
                         throw $ex;
                     }
                 }
             } else {
-                throw new BadRequestException('Please provide username and password');
+                throw new BadRequestException('Please provide email and password');
             }
         } else {
             throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');

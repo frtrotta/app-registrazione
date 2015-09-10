@@ -108,13 +108,31 @@ abstract class RestApi {
 
     /**
      * This is needed for two reasons: (1) because of URL modification to handle requests
-     * (2) to handle both JSON and NVP query strings
+     * (2) to handle both JSON and NVP query strings.
      * @return type
      */
     private function _parseQueryString() {
-        $data = filter_input_array(INPUT_GET);
-        unset($data['request']);
+        /* Must use direct access to "raw" query string to avoid char replacement
+         * performed by PHP.
+         * Refer to http://stackoverflow.com/questions/68651/get-php-to-stop-replacing-characters-in-get-or-post-arrays
+         */
+//        $data = filter_input_array(INPUT_GET);
+//        unset($data['request']);
 
+        $queryString = $_SERVER['QUERY_STRING'];
+        $list = explode('&', $queryString);
+        array_shift($list); // because of URL modification
+        $data = [];
+        foreach($list as $e) {
+            $temp = explode('=', $e);
+            if(count($temp) == 2) {
+            $data[urldecode($temp[0])] = urldecode($temp[1]);
+            }
+            else {
+                $data[urldecode($temp[0])] = null;
+            }
+        }
+        
         $r = false;
         if (isset(array_keys($data)[0])) {
             $r = json_decode(array_keys($data)[0], true);

@@ -6,7 +6,6 @@ class Utente extends MysqlProxyBase {
 
     public function __construct(&$connection) {
         parent::__construct($connection, 'utente', ['id',
-            'username',
             'password',
             'gettoneAutenticazione',
             'gettoneAutenticazioneScadeIl',
@@ -14,7 +13,6 @@ class Utente extends MysqlProxyBase {
             'cognome',
             'sesso',
             'natoIl',
-            'email',
             'email',
             'facebookId',
             'telefono',
@@ -60,10 +58,6 @@ class Utente extends MysqlProxyBase {
         }
         
         // --- combinazioni
-        if((isset($data['username']) && !isset($data['password'])) ||
-                (isset($data['password']) && !isset($data['username']))) {
-            return false;
-        }
         
         if((isset($data['password']) && isset($data['facebookId'])) ||
                 (isset($data['facebookId']) && ! isset($data['password']))) {

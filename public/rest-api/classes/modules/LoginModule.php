@@ -43,14 +43,13 @@ class LoginModule {
         
     }
 
-    public function loginByUsernameAndPassword($username, $password) {
+    public function loginByEmailAndPassword($email, $password) {
         $r = false;
-        if (isset($username) && isset($password) && $username !== '' && $password != '') {
-            $username = $this->conn->escape_string($username);
+        if (isset($email) && isset($password) && $email !== '' && $password != '') {
+            $email = $this->conn->escape_string($email);
             $password = $this->conn->escape_string($password);
             $query = 'SELECT'
                     . ' id,'
-                    . ' username, '
                     . ' nome,'
                     . ' cognome,'
                     . ' sesso,'
@@ -59,7 +58,7 @@ class LoginModule {
                     . ' telefono,'
                     . ' eAmministratore'
                     . ' FROM utente'
-                    . " WHERE username = '$username'"
+                    . " WHERE email = '$email'"
                     . " AND password = '$password'";
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
@@ -76,7 +75,7 @@ class LoginModule {
                 $this->_setAuthCookie();
             }
         } else {
-            throw new LoginModuleException('No username and or passowrd provided', 0);
+            throw new LoginModuleException('No email and/or passowrd provided', 0);
         }
 
         return $r;
@@ -108,7 +107,6 @@ class LoginModule {
         if (isset($this->gettoneAutenticazione)) {
             $query = 'SELECT'
                     . ' id,'
-                    . ' username,'
                     . ' nome,'
                     . ' cognome,'
                     . ' sesso,'

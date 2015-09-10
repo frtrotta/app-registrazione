@@ -17,9 +17,9 @@
                         throw new Exception("Connection error: $this->conn->connect_error");
                     }
                     $query = "INSERT INTO utente "
-                            . "(username, password, nome, cognome, email, eAmministratore)"
+                            . "(password, nome, cognome, email, eAmministratore)"
                             . " VALUES "
-                            . "('test', 'test', 'nome test', 'cognome test', 'email test', 0)";
+                            . "('test', 'nome test', 'cognome test', 'email@test.com', 0)";
                     $conn->query($query);
                     if ($conn->errno) {
                         throw new Exception($conn->error);
@@ -34,7 +34,7 @@
                     }
                     $query = "DELETE FROM utente "
                             . " WHERE "
-                            . " username = 'test'";
+                            . " email = 'email@test.com'";
                     $conn->query($query);
                     if ($conn->errno) {
                         throw new Exception($conn->error);
@@ -44,7 +44,7 @@
 
                 define("URL_BASE", "http://localhost/app-registrazione/rest-api/");
 
-                inserisciUtenteTest($mysqlConf);
+                //inserisciUtenteTest($mysqlConf);
 
 //----------------------------------------------------------------------------
 
@@ -52,7 +52,7 @@
                 $r = http_request(URL_BASE . 'Login');
                 if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
-                    if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide username and password') {
+                    if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide email and password') {
                         testPassed($testCode);
                     } else {
                         $msg = 'isset($body[\'code\']) ' . isset($body ['code'])
@@ -69,7 +69,7 @@
 //----------------------------------------------------------------------------
                 
                 $testCode = '01a';
-                $r = http_request(URL_BASE . 'Login?{%22username%22:%22test%22,%22password%22:%22test%22}');
+                $r = http_request(URL_BASE . 'Login?'.urlencode('{"email":"email@test.com","password":"test"}'));
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     testPassed($testCode);
                 } else {
@@ -77,7 +77,7 @@
                 }
                 
                 $testCode = '01b';
-                $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/json', '{"username":"test","password":"test"}');
+                $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/json', '{"email":"email@test.com","password":"test"}');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     testPassed($testCode);
                 } else {
@@ -85,7 +85,7 @@
                 }
                 
                 $testCode = '01c';
-                $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/x-www-form-urlencoded', 'username=test&password=test');
+                $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/x-www-form-urlencoded', 'email=email%40test.com&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     testPassed($testCode);
                 } else {
@@ -95,7 +95,7 @@
 //----------------------------------------------------------------------------
 
                 $testCode = '02a';
-                $r = http_request(URL_BASE . 'Login?username=test&password=test');
+                $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     $cookie1 = $r->response->cookies[$authConf['cookie-name']];
                     testPassed($testCode, "Cookie: $cookie1");
@@ -106,7 +106,7 @@
                 //----------------------------------------------------------------------------
 
                 $testCode = '02b';
-                $r = http_request(URL_BASE . 'Login?username=test&password=test');
+                $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     $cookie1 = $r->response->cookies[$authConf['cookie-name']];
                     testPassed($testCode, "Cookie: $cookie1");
@@ -116,7 +116,7 @@
 //----------------------------------------------------------------------------
 
                 $testCode = '02c';
-                $r = http_request(URL_BASE . 'Login?username=test&password=test');
+                $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     $cookie1 = $r->response->cookies[$authConf['cookie-name']];
                     testPassed($testCode, "Cookie: $cookie1");
@@ -127,7 +127,7 @@
 //----------------------------------------------------------------------------
 
                 $testCode = '03';
-                $r = http_request(URL_BASE . 'Login?username=test&password=test');
+                $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     $cookie2 = $r->response->cookies[$authConf['cookie-name']];
                     if ($cookie1 !== $cookie2) {
@@ -145,9 +145,8 @@
                 $r = http_request(URL_BASE . 'Me', array($authConf['cookie-name'] => $cookie2));
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
-                    if ($body ['username'] === 'test'
-                            && $body ['nome'] === 'nome test' 
-                            && $body ['cognome'] === 'cognome test' && $body ['email'] === 'email test' && !$body['eAmministratore'] && $body ['telefono'] === NULL
+                    if ($body ['nome'] === 'nome test' 
+                            && $body ['cognome'] === 'cognome test' && $body ['email'] === 'email@test.com' && !$body['eAmministratore'] && $body ['telefono'] === NULL
                     ) {
                         testPassed($testCode);
                     } else {
@@ -234,8 +233,10 @@
                     testFailed($testCode, $r);
                 }
 
+//---------------------------------------------------------             
+
                 $testCode = '07a';
-                $r = http_request(URL_BASE . 'Login?username=test&password=test');
+                $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     $cookie = $r->response->cookies[$authConf['cookie-name']];
                     testPassed($testCode);
