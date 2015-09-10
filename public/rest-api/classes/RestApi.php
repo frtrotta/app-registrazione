@@ -130,6 +130,7 @@ abstract class RestApi {
         //$this->body = file_get_contents('php://input');
         switch($this->contentType) {
             case 'application/json':
+            case 'application/json;charset=UTF-8';
                 $this->request = json_decode(file_get_contents('php://input'), true);
                 break;
             case 'application/x-www-form-urlencoded':
