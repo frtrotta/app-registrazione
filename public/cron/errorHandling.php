@@ -4,11 +4,7 @@
  * From http://web.stanford.edu/dept/its/communications/webservices/wiki/index.php/How_to_perform_error_handling_in_PHP
  */
 if (defined('DEBUG')) {
-// Report all PHP errors
-    ini_set('error_reporting', E_ALL);
 
-// Set the display_errors directive to On
-    ini_set('display_errors', 1);
 } else {
 
 // Report simple running errors

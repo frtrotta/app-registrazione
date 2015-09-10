@@ -5,7 +5,7 @@ ALTER TABLE `utente`
 	
 UPDATE `utente`
 	SET email = '[da richiedere]'
-	WHERE nome = '' AND cognome = '';
+	WHERE nome = 'Giacomo' AND cognome = 'Dini';
 	
 UPDATE `utente`
 	SET email = '[da richiedere 1]'

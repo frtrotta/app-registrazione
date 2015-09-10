@@ -2,17 +2,18 @@
 
 //define('DEBUG', '');
 
-$start  = new DateTime();
+$start = new DateTime();
 
 include 'errorHandling.php';
 
 $currentYear = date('Y');
 define('SOCIETA_URL', "http://tesseramento.fitri.it/export_tess/societa.php?user=fitritess&pwd=f1tr1t3ss&stagione=$currentYear");
-define('ATLETI_URL', 'http://tesseramento.fitri.it/export_tess/atleti.php?user=fitritess&pwd=f1tr1t3ss');
+define('TESSERATI_URL', 'http://tesseramento.fitri.it/export_tess/atleti.php?user=fitritess&pwd=f1tr1t3ss');
 //define('GIUDICI_URL', 'http://tesseramento.fitri.it/export_tess/udg.php?user=fitritess&pwd=f1tr1t3ss');
 define('SOCIETA_FNAME', 'societa.csv');
-define('ATLETI_FNAME', 'atleti.csv');
+define('TESSERATI_FNAME', 'tesserati.csv');
 define('TESSERATI_TEMP_TABLE_NAME', 'tesserati_fitri_temp');
+define('SOCIETA_TEMP_TABLE_NAME', 'societa_fitri_temp');
 
 function fileDownload($fileUrl, $fileHandle) {
     set_time_limit(0); // unlimited max execution time
@@ -61,7 +62,7 @@ function societaLineToCsv($string) {
     return $fields;
 }
 
-function atletiLineToCsv($string) {
+function tesseratiLineToCsv($string) {
     // "CODICE SS";TESSERA;COGNOME;NOME;SESSO;"DATA NASCITA";CITTADINANZA;CATEGORIA;QUALIFICA;LIVELLO;STATO;"DATA EMISSIONE";"TIPO TESSERA";DISABILITA
     // 1769;52345;Abagnale;Michele;M;10/05/1969;Italia;Agonista;Master;"Master 2";;17/04/2015;Atleta;
     $string = rtrim($string); // remove trailing newline char
@@ -119,65 +120,81 @@ function databaseConnect($mysqlConf) {
  * New societa are added to the table and no one is removed, even if it not present in the
  * downloaded CSV. This is because data needs to be maintened for future reference.
  */
-function addSocieta($conn, $societa) {
-    $n = 0;
-    $codice = null;
+//function addSocieta($conn, $societa) {
+//    $n = 0;
+//    $codice = null;
+//
+//    if (!($selectStmt = $conn->prepare('SELECT codice FROM societa_fitri WHERE codice = ?'))) {
+//        throw new Exception($conn->errno . ' ' . $conn->error);
+//    }
+//    if (!($selectStmt->bind_param('i', $codice))) {
+//        throw new Exception($selectStmt->errno . ' ' . $selectStmt->error);
+//    }
+//
+//    $societaToAdd = array();
+//
+//    foreach ($societa as $s) {
+//        $codice = $s['CODICE SS'];
+//        $selectStmt->execute();
+//        if ($selectStmt->errno) {
+//            throw new Exception($selectStmt->errno . ' ' . $selectStmt->error);
+//        }
+//        $selectStmt->bind_result($r);
+//        $selectStmt->fetch();
+//        if (!isset($r)) {
+//            $societaToAdd[] = $s;
+//        }
+//    }
+//    $selectStmt->close();
+//
+//    if (count($societaToAdd) > 0) {
+//        $n = count($societaToAdd);
+//        $nome = null;
+//        $provincia = null;
+//        $email = null;
+//
+//        if (!($insertStmt = $conn->prepare('INSERT INTO societa_fitri '
+//                . ' (codice, provincia, nome, email)'
+//                . " VALUES (?, ?, ?, ?)"))) {
+//            throw new Exception($conn->errno . ' ' . $conn->error);
+//        }
+//        if (!($insertStmt->bind_param('isss', $codice, $provincia, $nome, $email))) {
+//            throw new Exception($insertStmt->errno . ' ' . $insertStmt->error);
+//        }
+//
+//        foreach ($societaToAdd as $s) {
+//            $codice = $s['CODICE SS'];
+//            $nome = $s['RAGIONE SOCIALE'];
+//            $provincia = $s['PROVINCIA'];
+//            $email = $s['EMAIL'];
+//            $insertStmt->execute();
+//            if ($insertStmt->errno) {
+//                throw new Exception($insertStmt->errno . ' ' . $insertStmt->error);
+//            }
+//        }
+//
+//        $insertStmt->close();
+//    }
+//    return $n;
+//}
 
-    if (!($selectStmt = $conn->prepare('SELECT codice FROM societa_fitri WHERE codice = ?'))) {
+function createSocietaTempTable($conn) {
+//    "CODICE SS";TESSERA;COGNOME;NOME;SESSO;"DATA NASCITA";CITTADINANZA;CATEGORIA;QUALIFICA;LIVELLO;STATO;"DATA EMISSIONE";"TIPO TESSERA";DISABILITA
+
+    $query = "CREATE TEMPORARY TABLE `" . SOCIETA_TEMP_TABLE_NAME . "` (
+  `codice` int(11) NOT NULL,
+  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `provincia` varchar(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+";
+    $conn->query($query);
+    if ($conn->errno) {
         throw new Exception($conn->errno . ' ' . $conn->error);
     }
-    if (!($selectStmt->bind_param('i', $codice))) {
-        throw new Exception($selectStmt->errno . ' ' . $selectStmt->error);
-    }
-
-    $societaToAdd = array();
-
-    foreach ($societa as $s) {
-        $codice = $s['CODICE SS'];
-        $selectStmt->execute();
-        if ($selectStmt->errno) {
-            throw new Exception($selectStmt->errno . ' ' . $selectStmt->error);
-        }
-        $selectStmt->bind_result($r);
-        $selectStmt->fetch();
-        if (!isset($r)) {
-            $societaToAdd[] = $s;
-        }
-    }
-    $selectStmt->close();
-
-    if (count($societaToAdd) > 0) {
-        $n = count($societaToAdd);
-        $nome = null;
-        $provincia = null;
-        $email = null;
-
-        if (!($insertStmt = $conn->prepare('INSERT INTO societa_fitri '
-                . ' (codice, provincia, nome, email)'
-                . " VALUES (?, ?, ?, ?)"))) {
-            throw new Exception($conn->errno . ' ' . $conn->error);
-        }
-        if (!($insertStmt->bind_param('isss', $codice, $provincia, $nome, $email))) {
-            throw new Exception($insertStmt->errno . ' ' . $insertStmt->error);
-        }
-
-        foreach ($societaToAdd as $s) {
-            $codice = $s['CODICE SS'];
-            $nome = $s['RAGIONE SOCIALE'];
-            $provincia = $s['PROVINCIA'];
-            $email = $s['EMAIL'];
-            $insertStmt->execute();
-            if ($insertStmt->errno) {
-                throw new Exception($insertStmt->errno . ' ' . $insertStmt->error);
-            }
-        }
-
-        $insertStmt->close();
-    }
-    return $n;
 }
 
-function createTempTable($conn) {
+function createTesseratiTempTable($conn) {
 //    "CODICE SS";TESSERA;COGNOME;NOME;SESSO;"DATA NASCITA";CITTADINANZA;CATEGORIA;QUALIFICA;LIVELLO;STATO;"DATA EMISSIONE";"TIPO TESSERA";DISABILITA
 
     $query = "CREATE TEMPORARY TABLE `" . TESSERATI_TEMP_TABLE_NAME . "` (
@@ -204,7 +221,45 @@ function createTempTable($conn) {
     }
 }
 
-function insertIntoTempTable($conn, $atleti) {
+function insertSocietaIntoTempTable($conn, $societa) {
+    $n = 0;
+
+    $codice = null;
+    $nome = null;
+    $provincia = null;
+    $email = null;
+
+    if (!($insertStmt = $conn->prepare('INSERT INTO `' . SOCIETA_TEMP_TABLE_NAME . '` '
+            . '(`codice`,'
+            . '`nome`,'
+            . '`provincia`,'
+            . '`email` )'
+            . ' VALUES (?, ?, ?, ?)'))) {
+        throw new Exception($conn->error);
+    }
+    if (!($insertStmt->bind_param('isss', $codice, $nome, $provincia, $email))) {
+        throw new Exception($selectStmt->errno . ' ' . $selectStmt->error);
+    }
+
+    foreach ($societa as $s) {
+        $codice = $s['CODICE SS'];
+        $nome = $s['RAGIONE SOCIALE'];
+        $provincia = $s['PROVINCIA'];
+        $email = $s['EMAIL'];
+
+        $insertStmt->execute();
+        if ($insertStmt->errno) {
+
+            throw new Exception($insertStmt->errno . ' ' . $insertStmt->error);
+        } else {
+            $n++;
+        }
+    }
+    $insertStmt->close();
+    return $n;
+}
+
+function insertTesseratiIntoTempTable($conn, $tesserati) {
     $n = 0;
 
     $CODICE_SS = null;
@@ -244,7 +299,7 @@ function insertIntoTempTable($conn, $atleti) {
         throw new Exception($selectStmt->errno . ' ' . $selectStmt->error);
     }
 
-    foreach ($atleti as $a) {
+    foreach ($tesserati as $a) {
         $CODICE_SS = $a['CODICE SS'];
         $TESSERA = $a['TESSERA'];
         $COGNOME = $a['COGNOME'];
@@ -285,22 +340,102 @@ function insertIntoTempTable($conn, $atleti) {
     return $n;
 }
 
-function updateAtleti($conn, $atleti) {
+function updateSocieta($conn, $societa) {
     $n = 0;
 
-    echo '<p>Creating temporary table for storing downloaded atleti data...';
-    createTempTable($conn);
+    echo '<p>Creating temporary table for storing downloaded societa data...';
+    createSocietaTempTable($conn);
     echo ' done</p>';
     echo '<p>Inserting downloaded data into temporary table...';
-    $n = insertIntoTempTable($conn, $atleti);
+    $n = insertSocietaIntoTempTable($conn, $societa);
+    echo " done ($n)</p>";
+
+    //--- Delete removed
+//    $query = 'DELETE FROM `societa_fitri` WHERE `codice` NOT IN (SELECT `codice` FROM `' . SOCIETA_TEMP_TABLE_NAME . '`);';
+//    $conn->query($query);
+//    $n = $conn->affected_rows;
+//    echo "<p>Deleted $n societa from societa_fitri</p>";
+    echo '<p>Old Societa removal skipped</p>';
+
+    $fields = [
+        '`codice`',
+        '`nome`',
+        '`provincia`',
+        '`email`'
+    ];
+
+    //---- Updating existing
+    echo '<p>Updating existing Societa...';
+
+    $query = 'UPDATE `societa_fitri` AS `old` INNER JOIN `' . SOCIETA_TEMP_TABLE_NAME . '` AS `new`'
+            . ' ON `old`.`codice` = `new`.`codice` '
+            . ' SET ' . "\n";
+    $first = true;
+    foreach ($fields as $e) {
+        if ($first) {
+            $first = false;
+            $query .= ('`old`.' . $e . '=`new`.' . $e);
+        } else {
+
+            $query .= (', ' . "\n" . '`old`.' . $e . '=`new`.' . $e);
+        }
+    }
+    $conn->query($query);
+    if ($conn->errno) {
+        throw new Exception($conn->errno . ' ' . $conn->error);
+    }
+
+    echo ' done</p>';
+
+    //---- Adding new
+
+    echo '<p>Adding new Societa...';
+    $first = true;
+    foreach ($fields as $e) {
+        if ($first) {
+            $first = false;
+            $fieldList = $e;
+        } else {
+            $fieldList .= (',' . $e);
+        }
+    }
+
+    $query = 'INSERT INTO `societa_fitri` '
+            . '('
+            . $fieldList
+            . ')'
+            . ' SELECT '
+            . $fieldList
+            . ' FROM `' . SOCIETA_TEMP_TABLE_NAME . '` WHERE `codice` NOT IN (SELECT `codice` FROM `tesserati_fitri`);';
+    $conn->query($query);
+    if ($conn->errno) {
+        throw new Exception($conn->errno . ' ' . $conn->error);
+    }
+
+    echo ' done. ';
+
+    $n = $conn->affected_rows;
+    echo "Added $n new Societa into tesserati_fitri</p>";
+
+    return $n;
+}
+
+function updateTesserati($conn, $tesserati) {
+    $n = 0;
+
+    echo '<p>Creating temporary table for storing downloaded Tesserati data...';
+    createTesseratiTempTable($conn);
+    echo ' done</p>';
+    echo '<p>Inserting downloaded data into temporary table...';
+    $n = insertTesseratiIntoTempTable($conn, $tesserati);
     echo " done ($n)</p>";
 
     //--- Delete removed
 //    $query = 'DELETE FROM `tesserati_fitri` WHERE `TESSERA` NOT IN (SELECT `TESSERA` FROM `' . TESSERATI_TEMP_TABLE_NAME . '`);';
 //    $conn->query($query);
 //    $n = $conn->affected_rows;
-//    echo "<p>Deleted $n atleti from tesserati_fitri</p>";
-    echo '<p>Old Atleti removal skipped</p>';
+//    echo "<p>Deleted $n Tesserati from tesserati_fitri</p>";
+    echo '<p>Old Tesserati removal skipped</p>';
 
     $fields = [
         '`CODICE_SS`',
@@ -320,8 +455,8 @@ function updateAtleti($conn, $atleti) {
     ];
 
     //---- Updating existing
-    echo '<p>Updating existing Atleti...';
-    
+    echo '<p>Updating existing Tesserati...';
+
     $query = 'UPDATE `tesserati_fitri` AS `old` INNER JOIN `' . TESSERATI_TEMP_TABLE_NAME . '` AS `new`'
             . ' ON `old`.`TESSERA` = `new`.`TESSERA` '
             . ' SET ' . "\n";
@@ -339,12 +474,12 @@ function updateAtleti($conn, $atleti) {
     if ($conn->errno) {
         throw new Exception($conn->errno . ' ' . $conn->error);
     }
-    
+
     echo ' done</p>';
 
     //---- Adding new
 
-    echo '<p>Adding new Atleti...';
+    echo '<p>Adding new Tesserati...';
     $first = true;
     foreach ($fields as $e) {
         if ($first) {
@@ -354,20 +489,7 @@ function updateAtleti($conn, $atleti) {
             $fieldList .= (',' . $e);
         }
     }
-//    $fieldList = '`CODICE_SS`,'
-//            . '`TESSERA`,'
-//            . '`COGNOME`,'
-//            . '`NOME`,'
-//            . '`SESSO`,'
-//            . '`DATA_NASCITA`,'
-//            . '`CITTADINANZA`,'
-//            . '`CATEGORIA`,'
-//            . '`QUALIFICA`,'
-//            . '`LIVELLO`,'
-//            . '`STATO`,'
-//            . '`DATA_EMISSIONE`,'
-//            . '`TIPO_TESSERA`,'
-//            . '`DISABILITA`';
+
     $query = 'INSERT INTO `tesserati_fitri` '
             . '('
             . $fieldList
@@ -379,11 +501,11 @@ function updateAtleti($conn, $atleti) {
     if ($conn->errno) {
         throw new Exception($conn->errno . ' ' . $conn->error);
     }
-    
+
     echo ' done. ';
 
     $n = $conn->affected_rows;
-    echo "Added $n new atleti into tesserati_fitri</p>";
+    echo "Added $n new Tesserati into tesserati_fitri</p>";
 
     return $n;
 }
@@ -394,30 +516,32 @@ $mysqlConf = $conf['mysql'];
 
 
 
-$societaFName = 'societa.csv';
-$societaFH = fopen($societaFName, 'w');
-
-echo '<p>Downloading file of societa...';
+$societaFH = fopen(SOCIETA_FNAME, 'w');
+echo '<p>Downloading file of Societa...';
 fileDownload(SOCIETA_URL, $societaFH);
 echo ' done</p>';
 fclose($societaFH);
 
 
-$atletiFName = 'atleti.csv';
-$atletiFH = fopen($atletiFName, 'w');
-echo '<p>Downloading file of atleti...';
-fileDownload(ATLETI_URL, $atletiFH);
+$tesseratiFH = fopen(TESSERATI_FNAME, 'w');
+echo '<p>Downloading file of Tesserati...';
+fileDownload(TESSERATI_URL, $tesseratiFH);
 echo ' done</p>';
-fclose($atletiFH);
+fclose($tesseratiFH);
 
-echo '<p>Converting societa CSV to associative...';
+echo '<hr>';
+
+echo '<p>Converting Societa CSV to associative...';
 $societa = csvToAssociative(SOCIETA_FNAME, 'societaLineToCsv');
 $n = count($societa);
 echo " done ($n)</p>";
-echo '<p>Converting atleti CSV to associative...';
-$atleti = csvToAssociative(ATLETI_FNAME, 'atletiLineToCsv');
-$n = count($atleti);
+echo '<p>Converting Tesserati CSV to associative...';
+$tesserati = csvToAssociative(TESSERATI_FNAME, 'tesseratiLineToCsv');
+$n = count($tesserati);
 echo " done ($n)</p>";
+
+echo '<hr>';
+
 
 ////--- comodo
 //for ($i = 0; $i < count($societa); $i++) {
@@ -427,14 +551,17 @@ echo " done ($n)</p>";
 //    echo "UPDATE societa_fitri SET provincia = '$provincia', email = '$email' WHERE codice = $codice;</br>";
 //}
 
-if (count($societa) > 0 && count($atleti) > 0) {
+if (count($societa) > 0 && count($tesserati) > 0) {
     $conn = databaseConnect($mysqlConf);
-    $n = addSocieta($conn, $societa);
-    echo "<p>Added $n societ&agrave;</p>";
-    $n = updateAtleti($conn, $atleti);
+//    $n = addSocieta($conn, $societa);
+//    echo "<p>Added $n societ&agrave;</p>";
+    $n = updateSocieta($conn, $societa);
+    echo '<hr>';
+    $n = updateTesserati($conn, $tesserati);
+    echo '<hr>';
     $conn->close();
 } else {
-    throw new Exception("Societa ($societa) and/or Atleti ($atleti) are empty");
+    throw new Exception("Societa ($societa) and/or Tesserati ($tesserati) are empty");
 }
 //unlink($societaFName);
 //unlink($atletiFName);
@@ -442,6 +569,6 @@ if (count($societa) > 0 && count($atleti) > 0) {
 
 $stop = new DateTime();
 
-$diff = $start->diff( $stop );
+$diff = $start->diff($stop);
 
-echo '<p>'.$diff->format( '%H:%I:%S' ).' elapsed'; // -> 00:25:25
+echo '<p>' . $diff->format('%H:%I:%S') . ' elapsed'; // -> 00:25:25
