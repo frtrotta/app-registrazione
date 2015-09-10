@@ -45,7 +45,7 @@ abstract class MysqlProxyBase {
         $r = 'NULL';
         if (isset($field)) {
             if (is_string($field)) {
-                $field = mysql_real_escape_string($field);
+                $field = $this->conn->escape_string($field);
                 $r = "'$field'";
             } else if (is_bool($field)) {
                 $r = ($field) ? '1' : '0';
@@ -110,7 +110,7 @@ abstract class MysqlProxyBase {
                         throw new MysqlProxyBaseException('Malformed clause ' . var_export($value, true), 2);
                     }
                 }
-                $field = mysql_real_escape_string($field);
+                $field = $this->conn->escape_string($field);
                 $r .= "`$field` $op " . $this->_sqlFormat($value);
             }
         }
@@ -134,7 +134,7 @@ abstract class MysqlProxyBase {
     private function _sort_helper($sort) {
         $first = true;
         foreach ($sort as $field => $v) {
-            $field = mysql_real_escape_string($field);
+            $field = $this->conn->escape_string($field);
             if ($first) {
                 $first = false;
                 $r = (" ORDER BY `$field` " . (($v > 0) ? 'ASC' : 'DESC'));
@@ -292,7 +292,7 @@ abstract class MysqlProxyBase {
     private function _createFieldListAndValues($data) {
         $first = true;
         foreach ($data as $key => $value) {
-            $key = mysql_real_escape_string($key);
+            $key = $this->conn->escape_string($key);
             if ($first) {
                 $first = false;
                 $fieldList = "( `$key`";
@@ -382,8 +382,8 @@ abstract class MysqlProxyBase {
         $r = null;
         if ($this->_isCoherent($data)) {
             $identifier = array_shift($data);
-            $identifierFieldName = mysql_real_escape_string(array_keys($identifier)[0]);
-            $identifierFieldValue = mysql_real_escape_string($identifier[$identifierFieldName]);
+            $identifierFieldName = $this->conn->escape_string(array_keys($identifier)[0]);
+            $identifierFieldValue = $this->conn->escape_string($identifier[$identifierFieldName]);
             $query = 'UPDATE `' . $this->tableName . '` '
                     . $this->_createFieldListAndValues($data)
                     . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);

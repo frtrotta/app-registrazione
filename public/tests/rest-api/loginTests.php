@@ -51,7 +51,7 @@
                 $testCode = '00';
                 $r = http_request(URL_BASE . 'Login');
                 if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
-                    $body = (array) json_decode($r->response->body);
+                    $body = json_decode($r->response->body, true);
                     if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide username and password') {
                         testPassed($testCode);
                     } else {
@@ -94,11 +94,32 @@
 
 //----------------------------------------------------------------------------
 
-                $testCode = '02';
+                $testCode = '02a';
                 $r = http_request(URL_BASE . 'Login?username=test&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     $cookie1 = $r->response->cookies[$authConf['cookie-name']];
-                    testPassed($testCode);
+                    testPassed($testCode, "Cookie: $cookie1");
+                } else {
+                    testFailed($testCode, $r);
+                }
+                
+                //----------------------------------------------------------------------------
+
+                $testCode = '02b';
+                $r = http_request(URL_BASE . 'Login?username=test&password=test');
+                if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
+                    $cookie1 = $r->response->cookies[$authConf['cookie-name']];
+                    testPassed($testCode, "Cookie: $cookie1");
+                } else {
+                    testFailed($testCode, $r);
+                }
+//----------------------------------------------------------------------------
+
+                $testCode = '02c';
+                $r = http_request(URL_BASE . 'Login?username=test&password=test');
+                if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
+                    $cookie1 = $r->response->cookies[$authConf['cookie-name']];
+                    testPassed($testCode, "Cookie: $cookie1");
                 } else {
                     testFailed($testCode, $r);
                 }
@@ -110,7 +131,7 @@
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     $cookie2 = $r->response->cookies[$authConf['cookie-name']];
                     if ($cookie1 !== $cookie2) {
-                        testPassed($testCode);
+                        testPassed($testCode, "Cookie: $cookie2");
                     } else {
                         $msg = "cookie1: $cookie1\ncookie2: $cookie2";
                         testFailedMsg($testCode, $r, $msg);
@@ -123,8 +144,10 @@
                 $testCode = '04';
                 $r = http_request(URL_BASE . 'Me', array($authConf['cookie-name'] => $cookie2));
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = (array) json_decode($r->response->body);
-                    if ($body ['username'] === 'test' && $body ['nome'] === 'nome test' && $body ['cognome'] === 'cognome test' && $body ['email'] === 'email test' && !$body['eAmministratore'] && $body ['telefono'] === NULL
+                    $body = json_decode($r->response->body, true);
+                    if ($body ['username'] === 'test'
+                            && $body ['nome'] === 'nome test' 
+                            && $body ['cognome'] === 'cognome test' && $body ['email'] === 'email test' && !$body['eAmministratore'] && $body ['telefono'] === NULL
                     ) {
                         testPassed($testCode);
                     } else {
@@ -143,19 +166,15 @@
                 //---------------------------------------------------------
                 $testCode = '05a';
                 $r = http_request(URL_BASE . 'Logout', array($authConf['cookie-name'] => $cookie1));
-                if ($r->response->code === 400
+                if ($r->response->code === 200
                         //&& isset($r->response->cookies[$authConf['cookie-name']])                
                         && $r->response->contentType === 'application/json'
                 ) {
-                    $body = (array) json_decode($r->response->body);
-                    if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'No valid auth cookie') {
+                    $body = json_decode($r->response->body);
+                    if($body  === 'No user to log out') {
                         testPassed($testCode);
                     } else {
-                        $msg = 'isset($body[\'code\']) ' . isset($body ['code'])
-                                . "\nisset(\$body['message']) " . isset($body ['message'])
-                                . "\n\$body['code']" . $body ['code']
-                                . "\n\$body['message']" . $body['message'];
-
+                        $msg = '$body ' . $body;
                         testFailedMsg($testCode, $r, $msg);
                     }
                 } else {
@@ -180,19 +199,15 @@
                 //---------------------------------------------------------
                 $testCode = '05c';
                 $r = http_request(URL_BASE . 'Logout', array($authConf['cookie-name'] => $cookie1));
-                if ($r->response->code === 400
+                if ($r->response->code === 200
                         //&& isset($r->response->cookies[$authConf['cookie-name']])                
                         && $r->response->contentType === 'application/json'
                 ) {
-                    $body = (array) json_decode($r->response->body);
-                    if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'No valid auth cookie') {
+                    $body = json_decode($r->response->body);
+                    if($body  === 'No user to log out') {
                         testPassed($testCode);
                     } else {
-                        $msg = 'isset($body[\'code\']) ' . isset($body ['code'])
-                                . "\nisset(\$body['message']) " . isset($body ['message'])
-                                . "\n\$body['code']" . $body ['code']
-                                . "\n\$body['message']" . $body['message'];
-
+                        $msg = '$body ' . $body;
                         testFailedMsg($testCode, $r, $msg);
                     }
                 } else {
@@ -207,8 +222,8 @@
                 $testCode = '06';
                 $r = http_request(URL_BASE . 'Me');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = (array) json_decode($r->response->body);
-                    if ($body === []
+                    $body = json_decode($r->response->body);
+                    if ($body === null
                     ) {
                         testPassed($testCode);
                     } else {
@@ -232,7 +247,7 @@
                 $testCode = '07b';
                 $r = http_request(URL_BASE . 'Me', array($authConf['cookie-name'] => $cookie));
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = (array) json_decode($r->response->body);
+                    $body = json_decode($r->response->body, true);
                     if ($body !== []
                     ) {
                         testPassed($testCode);
@@ -244,7 +259,7 @@
                     testFailed($testCode, $r);
                 }
 
-                rimuoviUtenteTest($mysqlConf);
+                //rimuoviUtenteTest($mysqlConf);
                 ?>
             </tbody>
         </table>

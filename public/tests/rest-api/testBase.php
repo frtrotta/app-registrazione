@@ -103,9 +103,11 @@ function http_request($url, $cookies = NULL, $method = 'GET', $contentType = nul
     return $r;
 }
 
-function testPassed($testCode) {
+function testPassed($testCode, $msg = null) {
     echo "<tr class=\"success\">"
-    . "<td colspan=\"2\">Test&nbsp;$testCode&nbsp;OK</td>"
+    . "<td colspan=\"2\">Test&nbsp;$testCode&nbsp;OK"
+    . (isset($msg)?" <small>($msg)</small>":'')
+    ."</td>"
     . "</tr>";
 }
 

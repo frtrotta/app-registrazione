@@ -61,5 +61,5 @@ try {
 } catch (Exception $e) {
     header("HTTP/1.1 500 Internal Server Error");
     header("Content-Type: text/html");
-    echo $e->getMessage();
+    echo $e->getMessage(). ' [Error code: ' . $e->getCode() .']';
 }

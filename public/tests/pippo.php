@@ -83,8 +83,8 @@ function where_helper($clauses, $andor) {
                     throw new Exception('Malformed clause ' . var_export($value, true)); // stampa array
                 }
             }
-            $field = mysql_real_escape_string($field);
-            $value = mysql_real_escape_string($value);
+            $field = $this->conn->escape_string($field);
+            $value = $this->conn->escape_string($value);
             $r .= "`$field` $op " . _sqlFormat($value);
         }
     }
