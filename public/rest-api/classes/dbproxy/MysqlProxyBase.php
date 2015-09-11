@@ -100,7 +100,7 @@ abstract class MysqlProxyBase {
                                     $op = 'LIKE';
                                     break;
                                 default:
-                                    throw new MysqlProxyBaseException('Unexptected operator definition (' . $opDefinition . ')', 1);
+                                    throw new MysqlProxyBaseException('Unexpected operator definition (' . $opDefinition . ')', 1);
                             }
                             $value = $value[$opDefinition];
                         } else {
