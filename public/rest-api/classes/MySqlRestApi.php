@@ -79,32 +79,32 @@ class MySqlRestApi extends RestApi {
         return $r;
     }
 
-//
-//    protected function _CRUDupdate($entityProxy) {
-//        $r = null;
-//        if ($this->contentType === 'application/json') {
-//            $data = json_decode($this->body);
-//            if ($data) {
-//                $r = $entityProxy->update($data);
-//            } else {
-//                throw new BadRequestException('Unable to parse JSON body');
-//            }
-//        } else {
-//            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
-//        }
-//        return $r;
-//    }
-//    
-//    protected function _CRUDcreate($entityProxy) {
-//        $r = null;
-//        if ($this->contentType === 'application/json') {
-//            $data = json_decode($this->body);
-//            if ($data) {
-//                $r = $entityProxy->add($data);
-//            } else {
-//                throw new BadRequestException('Unable to parse JSON body');
-//            }
-//        } else {
-//            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
-
+    protected function _CRUDupdate($entityProxy) {
+        $r = null;
+        if ($this->contentType === 'application/json') {
+            $data = json_decode($this->body);
+            if ($data) {
+                $r = $entityProxy->update($data);
+            } else {
+                throw new BadRequestException('Unable to parse JSON body');
+            }
+        } else {
+            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+        }
+        return $r;
+    }
+    
+    protected function _CRUDcreate($entityProxy) {
+        $r = null;
+        if ($this->contentType === 'application/json') {
+            $data = json_decode($this->body);
+            if ($data) {
+                $r = $entityProxy->add($data);
+            } else {
+                throw new BadRequestException('Unable to parse JSON body');
+            }
+        } else {
+            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+        }
+    }
 }
