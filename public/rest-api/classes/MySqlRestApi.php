@@ -61,10 +61,11 @@ class MySqlRestApi extends RestApi {
      * Performs the READ operation of the CRUD set.
      * 
      * @param MysqlProxyBase-derived $entityProxy
+     * @param boolean $removeSensitiveData
      * @return the set of elements or the single element read
      * @throws RegistrazioneApiException in case of malformed selection clause
      */
-    protected function _CRUDread($entityProxy) {
+    protected function _CRUDread($entityProxy, $removeSensitiveData = true) {
         $r = null;
         if (count($this->request)) {
             $r = $entityProxy->getSelected($this->request, true);
@@ -76,35 +77,45 @@ class MySqlRestApi extends RestApi {
                 $r = $entityProxy->getAll(true);
             }
         }
+        if($removeSensitiveData) {
+            if(is_array($r)) {
+                foreach($r as &$e) {
+                    $entityProxy->removeUnsecureFields($e);
+                }
+            }
+            else {
+                $entityProxy->removeUnsecureFields($r);
+            }
+        }
         return $r;
     }
 
-//
-//    protected function _CRUDupdate($entityProxy) {
-//        $r = null;
-//        if ($this->contentType === 'application/json') {
-//            $data = json_decode($this->body);
-//            if ($data) {
-//                $r = $entityProxy->update($data);
-//            } else {
-//                throw new BadRequestException('Unable to parse JSON body');
-//            }
-//        } else {
-//            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
-//        }
-//        return $r;
-//    }
-//    
-//    protected function _CRUDcreate($entityProxy) {
-//        $r = null;
-//        if ($this->contentType === 'application/json') {
-//            $data = json_decode($this->body);
-//            if ($data) {
-//                $r = $entityProxy->add($data);
-//            } else {
-//                throw new BadRequestException('Unable to parse JSON body');
-//            }
-//        } else {
-//            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
-
+    protected function _CRUDupdate($entityProxy) {
+        $r = null;
+        if ($this->contentType === 'application/json') {
+            $data = json_decode($this->body);
+            if ($data) {
+                $r = $entityProxy->update($data);
+            } else {
+                throw new BadRequestException('Unable to parse JSON body');
+            }
+        } else {
+            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+        }
+        return $r;
+    }
+    
+    protected function _CRUDcreate($entityProxy) {
+        $r = null;
+        if ($this->contentType === 'application/json') {
+            $data = json_decode($this->body);
+            if ($data) {
+                $r = $entityProxy->add($data);
+            } else {
+                throw new BadRequestException('Unable to parse JSON body');
+            }
+        } else {
+            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+        }
+    }
 }

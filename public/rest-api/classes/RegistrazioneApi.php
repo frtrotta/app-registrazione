@@ -13,27 +13,38 @@ class RegistrazioneApi extends MySqlRestApi {
     }
 
     protected function Login() {
-        if ($this->method === 'GET' || $this->method === 'POST') {
-            // TODO no clear password
-            if (isset($this->request['email']) && isset($this->request['password'])) {
-                $email = $this->request['email'];
-                $password = $this->request['password'];
-                try {
-                    if (!($this->loginModule->loginByEmailAndPassword($email, $password))) {
-                        throw new UnauthorizedException('Wrong email and/or password');
-                    }
-                } catch (LoginModuleException $ex) {
-                    if ($ex->getCode() === 1) {
-                        throw new BadRequestException('Please provide email and password');
-                    } else {
-                        throw $ex;
-                    }
+        $email = null;
+        $password = null;
+        switch ($this->method) {
+            case 'GET':
+                if (isset($this->request['email'])) {
+                    $email = $this->request['email'];
                 }
-            } else {
-                throw new BadRequestException('Please provide email and password');
+                if (isset($this->request['password'])) {
+                    $password = $this->request['password'];
+                }
+                break;
+            case 'POST':
+                if (isset($this->body['email'])) {
+                    $email = $this->body['email'];
+                }
+                if (isset($this->body['password'])) {
+                    $password = $this->body['password'];
+                }
+                break;
+            default:
+                throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+        }
+        try {
+            if (!($this->loginModule->loginByEmailAndPassword($email, $password))) {
+                throw new UnauthorizedException('Wrong email and/or password');
             }
-        } else {
-            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+        } catch (modules\LoginModuleException $ex) {
+            if ($ex->getCode() === 0) {
+                throw new BadRequestException('Please provide email and password');
+            } else {
+                throw $ex;
+            }
         }
         return 'Ok';
     }
@@ -42,10 +53,9 @@ class RegistrazioneApi extends MySqlRestApi {
         $r = null;
         if ($this->method === 'GET' || $this->method === 'POST') {
             $temp = $this->loginModule->logout();
-            if($temp) {
+            if ($temp) {
                 $r = 'Ok';
-            }
-            else {
+            } else {
                 $r = 'No user to log out';
             }
         } else {
@@ -92,13 +102,11 @@ class RegistrazioneApi extends MySqlRestApi {
         } else if ($this->method === 'POST') {
             $r = $this->_CRUDupdate($u);
         } else if ($this->method === 'PUT') {
-
-            // TODO Generazione password
-            // TODO Invio email per completamento iscrizione. Sempre? No, solo in caso di autenticazione
-            // classica
+            $r = $this->_CRUDcreate($u);
         } else {
-            throw new MethodNotAllowedException("$this->method");
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
+
 }

@@ -44,12 +44,49 @@
 
                 define("URL_BASE", "http://localhost/app-registrazione/rest-api/");
 
-                //inserisciUtenteTest($mysqlConf);
+                inserisciUtenteTest($mysqlConf);
 
 //----------------------------------------------------------------------------
 
-                $testCode = '00';
+                $testCode = '00a';
                 $r = http_request(URL_BASE . 'Login');
+                if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body, true);
+                    if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide email and password') {
+                        testPassed($testCode);
+                    } else {
+                        $msg = 'isset($body[\'code\']) ' . isset($body ['code'])
+                                . "\nisset(\$body['message']) " . isset($body ['message'])
+                                . "\n\$body['code']" . $body ['code']
+                                . "\n\$body['message']" . $body['message'];
+
+                        testFailedMsg($testCode, $r, $msg);
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+                
+                $testCode = '00b';
+                $r = http_request(URL_BASE . 'Login?email=&password=test');
+                if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body, true);
+                    if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide email and password') {
+                        testPassed($testCode);
+                    } else {
+                        $msg = 'isset($body[\'code\']) ' . isset($body ['code'])
+                                . "\nisset(\$body['message']) " . isset($body ['message'])
+                                . "\n\$body['code']" . $body ['code']
+                                . "\n\$body['message']" . $body['message'];
+
+                        testFailedMsg($testCode, $r, $msg);
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+                
+                
+                $testCode = '00c';
+                $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=');
                 if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
                     if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide email and password') {
@@ -260,7 +297,7 @@
                     testFailed($testCode, $r);
                 }
 
-                //rimuoviUtenteTest($mysqlConf);
+                rimuoviUtenteTest($mysqlConf);
                 ?>
             </tbody>
         </table>

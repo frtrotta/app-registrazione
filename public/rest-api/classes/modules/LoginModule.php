@@ -75,7 +75,7 @@ class LoginModule {
                 $this->_setAuthCookie();
             }
         } else {
-            throw new LoginModuleException('No email and/or passowrd provided', 0);
+            throw new LoginModuleException('No email and/or password provided', 0);
         }
 
         return $r;

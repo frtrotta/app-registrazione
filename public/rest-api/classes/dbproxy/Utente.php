@@ -66,4 +66,16 @@ class Utente extends MysqlProxyBase {
         
         return true;
     }
+    
+    public function removeUnsecureFields(&$data) {
+        unset($data['password']);
+        unset($data['gettoneAutenticazione']);
+        unset($data['gettoneAutenticazioneScadeIl']);
+    }
+    
+    public function add($data) {
+        
+        
+        parent::add($data);
+    }
 }

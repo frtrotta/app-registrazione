@@ -145,15 +145,14 @@ abstract class RestApi {
 
     private function _parseRequestBody() {
         $this->contentType = filter_input(INPUT_SERVER, 'CONTENT_TYPE');
-        $this->body = file_get_contents('php://input');
         switch ($this->contentType) {
             case 'application/json':
             case 'application/json;charset=UTF-8';
-                $this->request = json_decode(file_get_contents('php://input'), true);
+                $this->body = json_decode(file_get_contents('php://input'), true);
                 break;
             case 'application/x-www-form-urlencoded':
             case 'multipart/form-data':
-                $this->request = $this->_parseNameValuePairs($this->body);
+                $this->body = $this->_parseNameValuePairs(file_get_contents('php://input'));
                 break;
             default:
                 throw new BadRequestException('Unsupported content type: ' . $this->contentType);

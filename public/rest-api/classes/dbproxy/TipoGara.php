@@ -32,5 +32,9 @@ class TipoGara extends MysqlProxyBase {
         
         return true;
     }
+    
+    public function removeUnsecureFields(&$data) {
+        
+    }
 
 }
