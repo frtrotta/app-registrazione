@@ -40,8 +40,9 @@ class MySqlRestApi extends RestApi {
     }
     
     public function __destruct() {
-        if($this->conn)
+        if($this->conn) {
             $this->conn->close();
+        }
     }
     
     protected function fetch_all_assoc($result_set) {

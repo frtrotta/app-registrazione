@@ -11,7 +11,7 @@ abstract class MysqlProxyBase {
     /* The list of the fields in the correspondent SQL table
      * The first must be the IDENTITY field.
      */
-    public $conn;
+    public $conn; // TODO protected?
 
     public function __construct(&$connection, $tableName, $fieldList) {
         $this->conn = $connection;
@@ -41,7 +41,7 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    private function _sqlFormat($field) {
+    protected function _sqlFormat($field) {
         $r = 'NULL';
         if (isset($field)) {
             if (is_string($field)) {
@@ -420,7 +420,7 @@ abstract class MysqlProxyBase {
             }
         } else {
             $e = var_export($data, true);
-            throw new MysqlProxyBaseException("Incoherent data $e", 21);
+            throw new MysqlProxyBaseException("Incoherent data $e", 30);
         }
 
         return $r;
