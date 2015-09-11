@@ -21,10 +21,11 @@ and open the template in the editor.
                 var vm = this;
                 var gara = $resource("http://localhost/app-registrazione/rest-api/Gara")
                 
-        
                 vm.mostraGareIndividuali = function(){
-                    
-                    console.log(gara.query({tipo:{nome_it:"individuale"}}));
+                    var gareIndividuali = [];
+                    gara.query().success(function(data){
+                        console.log(data);
+                    });
                     
                 };
                 
@@ -34,7 +35,11 @@ and open the template in the editor.
         <button type="button" ng-click="app.mostraGareIndividuali()">Mostra gare individuali</button>        
         <button type="button" ng-click="app.mostraGareASquadre()">Mostra gare a squadre</button>
 
-        
+        <div ng-show="app.gare">
+            <ul>
+                <li ng-repeat="gara in app.gare">{{gara.nome}}</li>
+            </ul>
+        </div>
         
     </body>
 </html>
