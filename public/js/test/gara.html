@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html ng-app="AppMdl">
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.angularjs.org/1.4.3/angular.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-resource.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-route.js" type="text/javascript"></script>
+    </head>
+    <body ng-controller="AppCtrl as app">
+        
+        <script>
+            angular.module("AppMdl", ["ngResource"])
+            .controller("AppCtrl", function($resource, $http){
+                var vm = this;
+                var gara = $resource("http://localhost/app-registrazione/rest-api/Gara")
+                
+        
+                vm.mostraGareIndividuali = function(){
+                    
+                    console.log(gara.query({tipo:{nome_it:"individuale"}}));
+                    
+                };
+                
+            });
+        </script>
+        
+        <button type="button" ng-click="app.mostraGareIndividuali()">Mostra gare individuali</button>        
+        <button type="button" ng-click="app.mostraGareASquadre()">Mostra gare a squadre</button>
+
+        
+        
+    </body>
+</html>
