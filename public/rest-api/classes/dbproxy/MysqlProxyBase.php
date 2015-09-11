@@ -193,7 +193,7 @@ abstract class MysqlProxyBase {
                 . " WHERE $idField = $idValue";
         $rs = $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            throw new Exception($this->conn->error, $this->conn->errno);
         }
         return $this->fetch_all();
     }
@@ -214,7 +214,7 @@ abstract class MysqlProxyBase {
                 . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);
         $rs = $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
+            throw new \Exception($this->conn->error, $this->conn->errno);
         }
         $r = $rs->fetch_assoc();
         if ($r) {
@@ -250,7 +250,7 @@ abstract class MysqlProxyBase {
                     // One ore more fields have not the correct name
                     throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
                 }
-                throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
+                throw new \Exception($this->conn->error, $this->conn->errno);
             }
             $r = $this->_fetchAllAssoc($rs);
         }
@@ -274,7 +274,7 @@ abstract class MysqlProxyBase {
                 . " LIMIT $limit";
         $rs = $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new \Exception($this->conn->errno . ' ' . $this->conn->error);
+            throw new \Exception($this->conn->error, $this->conn->errno);
         }
         $r = $this->_fetchAllAssoc($rs);
 
@@ -375,7 +375,7 @@ abstract class MysqlProxyBase {
                     . $this->_createFieldListAndValues($data);
             $this->conn->query($query);
             if ($this->conn->errno) {
-                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+                throw new Exception($this->conn->error, $this->conn->errno);
             }
             $r = $data;
             $r[$this->fieldList[0]] = $this->conn->insert_id;
@@ -403,7 +403,7 @@ abstract class MysqlProxyBase {
                     . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
             $this->conn->query($query);
             if ($this->conn->errno) {
-                throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+                throw new Exception($this->conn->error, $this->conn->errno);
             }
 
             $n = $this->conn->affected_rows();
@@ -430,7 +430,7 @@ abstract class MysqlProxyBase {
                 . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);
         $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new Exception($this->conn->errno . ' ' . $this->conn->error);
+            throw new Exception($this->conn->error, $this->conn->errno);
         }
         $n = $this->conn->affected_rows();
         switch ($n) {
