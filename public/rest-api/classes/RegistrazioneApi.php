@@ -102,12 +102,9 @@ class RegistrazioneApi extends MySqlRestApi {
         } else if ($this->method === 'POST') {
             $r = $this->_CRUDupdate($u);
         } else if ($this->method === 'PUT') {
-
-            // TODO Generazione password
-            // TODO Invio email per completamento iscrizione. Sempre? No, solo in caso di autenticazione
-            // classica
+            $r = $this->_CRUDcreate($u);
         } else {
-            throw new MethodNotAllowedException("$this->method");
+            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }

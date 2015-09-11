@@ -61,10 +61,11 @@ class MySqlRestApi extends RestApi {
      * Performs the READ operation of the CRUD set.
      * 
      * @param MysqlProxyBase-derived $entityProxy
+     * @param boolean $removeSensitiveData
      * @return the set of elements or the single element read
      * @throws RegistrazioneApiException in case of malformed selection clause
      */
-    protected function _CRUDread($entityProxy) {
+    protected function _CRUDread($entityProxy, $removeSensitiveData = true) {
         $r = null;
         if (count($this->request)) {
             $r = $entityProxy->getSelected($this->request, true);
@@ -74,6 +75,16 @@ class MySqlRestApi extends RestApi {
                 $r = $entityProxy->get($id, true);
             } else {
                 $r = $entityProxy->getAll(true);
+            }
+        }
+        if($removeSensitiveData) {
+            if(is_array($r)) {
+                foreach($r as &$e) {
+                    $entityProxy->removeUnsecureFields($e);
+                }
+            }
+            else {
+                $entityProxy->removeUnsecureFields($r);
             }
         }
         return $r;

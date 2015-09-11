@@ -199,6 +199,8 @@ abstract class MysqlProxyBase {
     }
 
     abstract protected function _isCoherent($data);
+    
+    abstract public function removeUnsecureFields(&$data);
 
     protected function _unsetField(&$set, $fieldName) {
         foreach ($set as &$temp) {
