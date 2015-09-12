@@ -61,7 +61,7 @@ class AdesionePersonale extends MysqlProxyBase {
         return true;
     }
     
-    public function removeUnsecureFields(&$data) {
+    protected function _removeUnsecureFields(&$data) {
         
     }
 

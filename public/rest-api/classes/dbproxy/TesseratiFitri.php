@@ -69,7 +69,7 @@ class TesseratiFitri extends MysqlProxyBase {
     }
 
     
-    public function removeUnsecureFields(&$data) {
+    protected function _removeUnsecureFields(&$data) {
         
     }
 }

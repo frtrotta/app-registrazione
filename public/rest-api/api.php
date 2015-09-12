@@ -8,6 +8,7 @@ function errorResponse($httpResponseBody, $httpResponseStatusCode) {
         403 => 'Forbidden',
         404 => 'Not Found',
         405 => 'Method Not Allowed',
+        422 => 'Unprocessable Entity',
         500 => 'Internal Server Error',
     );
 
@@ -49,17 +50,18 @@ try {
 } catch (MethodNotAllowedException $e) {
     $error = new Error(405, $e->getMessage());
     errorResponse($error, 405);
-} catch (InconsistentDataException $e) {
-    $error = new Error(500, $e->getMessage());
-    errorResponse($error, 500);
-} catch (dbproxy\MysqlProxyBaseException $e) {
-    $error = new Error(500, $e->getMessage());
-    errorResponse($error, 500);
-} catch (RegistrazioneApiException $e) {
-    $error = new Error(500, $e->getMessage());
-    errorResponse($error, 500);
-} catch (Exception $e) {
+} catch (UnprocessableEntityException $e) {
+    $error = new Error($e->getCode(), $e->getMessage());
+    errorResponse($error, 422);
+} catch (dbproxy\ClientRequestException $e) {
+    $error = new Error($e->getCode(), $e->getMessage());
+    errorResponse($error, 422);
+} catch (modules\ClientRequestException $e) {
+    $error = new Error($e->getCode(), $e->getMessage());
+    errorResponse($error, 422);
+}
+catch (Exception $e) {
     header("HTTP/1.1 500 Internal Server Error");
     header("Content-Type: text/html");
-    echo $e->getMessage(). ' [Error code: ' . $e->getCode() .']';
+    echo get_class($e) . ': ' . $e->getMessage() . ' [Error code: ' . $e->getCode() . ']';
 }

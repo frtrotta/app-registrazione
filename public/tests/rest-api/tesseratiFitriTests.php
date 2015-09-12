@@ -88,11 +88,11 @@
 
                 $testCode = '04';
                 $r = http_request(URL_BASE . 'TesseratiFitri?ttt');
-                if ($r->response->code === 500 && $r->response->contentType === 'application/json') {
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $t = json_decode($r->response->body, true);
                     if ($t) {
 
-                        if ($t['code'] === 500 &&
+                        if ($t['code'] === 1054 &&
                                 strpos($t['message'], '1054 Unknown column \'ttt\' in \'where clause\'') >= 0
                         ) {
                             testPassed($testCode);
