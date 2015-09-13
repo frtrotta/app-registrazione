@@ -67,11 +67,27 @@ class Ordine extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->is_bool($data['pagato'])) {
+        if (!is_bool($data['pagato'])) {
             return false;
         }
         
-        if (!$this->is_bool($data['ricevutaInviata'])) {
+        if (!is_bool($data['ricevutaInviata'])) {
+            return false;
+        }
+        
+        if (!$this->_is_datetime_optional($data['ricevutaInviataIl'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoCap'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoCitta'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoPaese'])) {
             return false;
         }
         

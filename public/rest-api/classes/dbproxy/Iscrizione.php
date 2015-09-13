@@ -84,6 +84,14 @@ class Iscrizione extends MysqlProxyBase {
             return false;
         }
 
+        if (!$this->_is_integer_optional($data['pettorale'])) {
+            return false;
+        }       
+
+        if (!$this->_is_string_with_length_optional($data['motto'])) {
+            return false;
+        }
+
         /* Must be either related to a squadra or to an adesione personale
          */
         if( (isset($data['squadra']) && isset($data['adesionePersonale'])) ||

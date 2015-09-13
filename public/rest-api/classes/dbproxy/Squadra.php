@@ -22,7 +22,12 @@ class Squadra extends MysqlProxyBase {
         ) {
             return false;
         }
+        
         if (!is_integer($data['id'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['nome'])) {
             return false;
         }
         

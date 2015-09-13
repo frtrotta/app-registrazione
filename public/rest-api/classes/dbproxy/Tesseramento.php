@@ -26,7 +26,6 @@ class Tesseramento extends MysqlProxyBase {
     protected function _isCoherent($data) {
         if (!isset($data['id']) ||
                 !isset($data['finoAl']) ||
-                !isset($data['codiceSocietaFitri']) ||
                 !isset($data['idTipoTesseramento'])
                 
         ) {
@@ -35,14 +34,48 @@ class Tesseramento extends MysqlProxyBase {
         if (!is_integer($data['id'])) {
             return false;
         }
-        if (!is_integer($data['codiceSocietaFitri'])) {
+        
+        if (!$this->_is_datetime($data['finoAl'])) {
             return false;
         }
+        
         if (!is_integer($data['idTipoTesseramento'])) {
             return false;
         }
         
-        if (!$this->_is_datetime($data['finoAl'])) {
+        if (!is_integer_optional($data['codiceSocietaFitri'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['matricola'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['stranieroSocieta'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['stranieroStato'])) {
+            return false;
+        }
+        
+        // combinazioni
+        if(
+                !(is_integer(@$data['codiceSocietaFitri']) &&
+                $this->_is_string_with_length(@$data['matricola']))
+                
+                &&
+                
+                !($this->_is_string_with_length(@$data['matricola']) &&
+                $this->_is_string_with_length(@$data['stranieroSocieta']) &&
+                $this->_is_string_with_length(@$data['stranieroStato']))
+                
+                &&
+                
+                !(isset($data['matricola']) &&
+                isset($data['stranieroSocieta']) &&
+                isset($data['stranieroStato']))
+                ) {
             return false;
         }
         

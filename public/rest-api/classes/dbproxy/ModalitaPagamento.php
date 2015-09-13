@@ -28,6 +28,22 @@ class ModalitaPagamento extends MysqlProxyBase {
         }
         if (!is_integer($data['id'])) {
             return false;
+        }        
+        
+        if(!$this->_is_string_with_length($data['nome_it'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['nome_en'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
+            return false;
         }
         return true;
     }

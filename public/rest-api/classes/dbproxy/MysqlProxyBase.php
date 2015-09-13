@@ -332,9 +332,17 @@ abstract class MysqlProxyBase {
         }
         return $r;
     }
-    
+
     protected function _is_string_with_length($value) {
-        return is_string($value) && (count($value) > 0);
+        return is_string($value) && (strlen($value) > 0);
+    }
+    
+    protected function _is_string_with_length_optional($value) {
+        if (isset($value)) {
+            return $this->_is_string_with_length($value);
+        } else {
+            return true;
+        }
     }
 
     protected function _is_date($value) {
@@ -345,22 +353,7 @@ abstract class MysqlProxyBase {
                 break;
             }
         }
-        if($d) {
-            return $d->format($format[$i]) === $value;
-        } else {
-            return false;
-        }
-    }
-
-    protected function _is_datetime($value) {
-        $format = ['Y/m/d H:i:s', 'Y-m-d H:i:s'];
-        for ($i = 0; $i < count($format); $i++) {
-            $d = \DateTime::createFromFormat($format[$i], $value);
-            if ($d) {
-                break;
-            }
-        }
-        if($d) {
+        if ($d) {
             return $d->format($format[$i]) === $value;
         } else {
             return false;
@@ -372,6 +365,21 @@ abstract class MysqlProxyBase {
             return $this->_is_date($value);
         } else {
             return true;
+        }
+    }
+
+    protected function _is_datetime($value) {
+        $format = ['Y/m/d H:i:s', 'Y-m-d H:i:s'];
+        for ($i = 0; $i < count($format); $i++) {
+            $d = \DateTime::createFromFormat($format[$i], $value);
+            if ($d) {
+                break;
+            }
+        }
+        if ($d) {
+            return $d->format($format[$i]) === $value;
+        } else {
+            return false;
         }
     }
 
@@ -393,7 +401,7 @@ abstract class MysqlProxyBase {
 
     protected function _is_bool_optional($value) {
         if (isset($value)) {
-            return $this->is_bool($value);
+            return is_bool($value);
         } else {
             return true;
         }
@@ -432,7 +440,7 @@ abstract class MysqlProxyBase {
             $r[$this->fieldList[0]] = $this->conn->insert_id;
         } else {
             $e = var_export($data, true);
-            throw new ClientRequestException("Incoherent data $e", 20);
+            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 92);
         }
         return $r;
     }
@@ -445,33 +453,37 @@ abstract class MysqlProxyBase {
      */
     public function update($id, $data) {
         $r = null;
-        if ($this->_isCoherent($data)) {
-            $identifierFieldName = $this->fieldList[0];
-            unset($data[$identifierFieldName]);
-            $identifierFieldValue = $id;
-            $query = 'UPDATE `' . $this->tableName . '` '
-                    . $this->_createSetList($data)
-                    . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
-            $this->conn->query($query);
+        $current = $this->get($id);
+        if ($current) {
+            $data = array_merge($current, $data);
+            if ($this->_isCoherent($data)) {
+                $identifierFieldName = $this->fieldList[0];
+                unset($data[$identifierFieldName]);
+                $identifierFieldValue = $id;
+                $query = 'UPDATE `' . $this->tableName . '` '
+                        . $this->_createSetList($data)
+                        . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
+                $this->conn->query($query);
 
-            if ($this->conn->errno) {
-                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
-            }
+                if ($this->conn->errno) {
+                    throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+                }
 
-            $n = $this->conn->affected_rows;
-            switch ($n) {
-                case 0:
-                    break;
-                case 1:
-                    $r = $data;
-                    $r[$identifierFieldName] = $identifierFieldValue;
-                    break;
-                default:
-                    throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
+                $n = $this->conn->affected_rows;
+                switch ($n) {
+                    case 0:
+                        break;
+                    case 1:
+                        $r = $data;
+                        $r[$identifierFieldName] = $identifierFieldValue;
+                        break;
+                    default:
+                        throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
+                }
+            } else {
+                $e = var_export($data, true);
+                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 91);
             }
-        } else {
-            $e = var_export($data, true);
-            throw new ClientRequestException("Incoherent data $e", 30);
         }
 
         return $r;

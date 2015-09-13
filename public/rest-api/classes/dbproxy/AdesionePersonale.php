@@ -53,6 +53,18 @@ class AdesionePersonale extends MysqlProxyBase {
         if (!is_integer($data['id'])) {
             return false;
         }
+        
+        if(!$this->_is_string_with_length($data['indirizzoCap'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoCitta'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoPaese'])) {
+            return false;
+        }
 
         if (!is_integer($data['idUtente'])) {
             return false;

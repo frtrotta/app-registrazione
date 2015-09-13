@@ -44,7 +44,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->is_bool($data['verificata'])) {
+        if (!is_bool($data['verificata'])) {
             return false;
         }
         

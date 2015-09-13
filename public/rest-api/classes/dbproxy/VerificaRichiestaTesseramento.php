@@ -36,6 +36,11 @@ class VerificaRichiestaTesseramento extends MysqlProxyBase {
         if (!is_integer($data['id'])) {
             return false;
         }
+        
+        
+        if(!$this->_is_string_with_length($data['esito'])) {
+            return false;
+        }
         if (!is_integer($data['idRichiestaTesseramento'])) {
             return false;
         }

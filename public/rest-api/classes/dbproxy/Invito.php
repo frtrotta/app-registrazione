@@ -39,9 +39,25 @@ class Invito extends MysqlProxyBase {
         ) {
             return false;
         }
-        if (!is_integer($data['idIscrizione'])) {
+        
+        if (!$this->_is_string_with_length($data['codice'])) {
+            return false;
+        }       
+
+        if (!$this->_is_string_with_length($data['nome'])) {
+            return false;
+        }       
+
+        if (!$this->_is_string_with_length($data['cognome'])) {
+            return false;
+        }       
+
+        if (!$this->_is_string_with_length($data['email'])) {
             return false;
         }
+        if (!is_integer($data['idIscrizione'])) {
+            return false;
+        }  
         
         return true;
     }

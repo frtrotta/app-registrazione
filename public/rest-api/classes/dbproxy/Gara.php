@@ -59,6 +59,18 @@ class Gara extends MysqlProxyBase {
         }
         if (!is_integer($data['id'])) {
             return false;
+        }        
+        
+        if(!$this->_is_string_with_length($data['nome'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
+            return false;
         }
 
         if (!is_integer($data['idTipoGara'])) {
