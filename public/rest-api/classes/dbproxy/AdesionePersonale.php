@@ -41,7 +41,7 @@ class AdesionePersonale extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!isset($data['id']) ||
+        if (!array_key_exists('id', data) ||
                 !isset($data['categoriaFitri']) ||
                 !isset($data['indirizzoCap']) ||
                 !isset($data['indirizzoCitta']) ||
@@ -50,7 +50,7 @@ class AdesionePersonale extends MysqlProxyBase {
         ) {
             return false;
         }
-        if (!is_integer($data['id'])) {
+        if (!is_integer_optional($data['id'])) {
             return false;
         }
         

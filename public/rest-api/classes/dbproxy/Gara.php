@@ -50,14 +50,14 @@ class Gara extends MysqlProxyBase {
     }
     
     protected function _isCoherent($data) {
-        if (!isset($data['id']) ||
+        if (!array_key_exists('id', data) ||
                 !isset($data['nome']) ||
                 !isset($data['disputataIl']) ||
                 !isset($data['idTipoGara'])
         ) {
             return false;
         }
-        if (!is_integer($data['id'])) {
+        if (!is_integer_optional($data['id'])) {
             return false;
         }        
         
