@@ -84,11 +84,11 @@ class Iscrizione extends MysqlProxyBase {
             return false;
         }
 
-        if (!$this->_is_integer_optional($data['pettorale'])) {
+        if (!$this->_is_integer_optional(@$data['pettorale'])) {
             return false;
         }       
 
-        if (!$this->_is_string_with_length_optional($data['motto'])) {
+        if (!$this->_is_string_with_length_optional(@$data['motto'])) {
             return false;
         }
 

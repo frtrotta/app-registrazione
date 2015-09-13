@@ -75,7 +75,7 @@ class Ordine extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->_is_datetime_optional($data['ricevutaInviataIl'])) {
+        if (!$this->_is_datetime_optional(@$data['ricevutaInviataIl'])) {
             return false;
         }
         

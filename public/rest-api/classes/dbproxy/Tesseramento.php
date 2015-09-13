@@ -43,7 +43,7 @@ class Tesseramento extends MysqlProxyBase {
             return false;
         }
         
-        if (!is_integer_optional($data['codiceSocietaFitri'])) {
+        if (!is_integer_optional(@$data['codiceSocietaFitri'])) {
             return false;
         }
         
