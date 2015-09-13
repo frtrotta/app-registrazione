@@ -62,7 +62,7 @@ class LoginModule {
                     . " AND password = '$password'";
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
-                throw new \Exception($this->conn->error, $this->conn->errno);
+                throw new LoginModuleException($this->conn->error, $this->conn->errno);
             }
             $row = $rs->fetch_assoc();
             if ($row) {
@@ -75,7 +75,7 @@ class LoginModule {
                 $this->_setAuthCookie();
             }
         } else {
-            throw new LoginModuleException('No email and/or password provided', 0);
+            throw new ClientRequestException('No email and/or password provided', 0);
         }
 
         return $r;
@@ -91,7 +91,7 @@ class LoginModule {
     }
 
     public function userIsAmministratore() {
-        return (_userIsLooged() && $this->meData['eAmministratore']);
+        return ($this->userIsLogged() && $this->meData['eAmministratore']);
     }
 
     public function me() {
@@ -119,7 +119,7 @@ class LoginModule {
                     . " AND gettoneAutenticazioneScadeIl > NOW()";
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
-                throw new Exception($this->conn->error, $this->conn->errno);
+                throw new LoginModuleException($this->conn->error, $this->conn->errno);
             }
             $row = $rs->fetch_assoc();
             if ($row) {
@@ -145,7 +145,7 @@ class LoginModule {
                     . " WHERE gettoneAutenticazione = '$gettone'";
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
-                throw new Exception($this->conn->error, $this->conn->errno);
+                throw new LoginModuleException($this->conn->error, $this->conn->errno);
             }
             if ($rs) {
                 if ($rs->num_rows === 0) {
@@ -153,7 +153,7 @@ class LoginModule {
                     $rs->free();
                 }
             } else {
-                throw new Exception($this->conn->error, $this->conn->errno);
+                throw new LoginModuleException($this->conn->error, $this->conn->errno);
             }
         }
         return $gettone;
@@ -169,10 +169,10 @@ class LoginModule {
                 . " WHERE id = '$id'";
         $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new Exception($this->conn->error, $this->conn->errno);
+            throw new LoginModuleException($this->conn->error, $this->conn->errno);
         }
         if ($this->conn->affected_rows !== 1) {
-            throw new InconsistentDataException('Number of affected rows: ' . $this->conn->affected_rows . ' (expected 1)');
+            throw new LoginModuleException('Number of affected rows: ' . $this->conn->affected_rows . ' (expected 1)', 30);
         }
     }
 
@@ -212,7 +212,7 @@ class LoginModule {
                     . " WHERE gettoneAutenticazione = '$this->gettoneAutenticazione'";
             $this->conn->query($query);
             if ($this->conn->errno) {
-                throw new \Exception($this->conn->error, $this->conn->errno);
+                throw new LoginModuleException($this->conn->error, $this->conn->errno);
             }
             switch ($this->conn->affected_rows) {
                 case 1:

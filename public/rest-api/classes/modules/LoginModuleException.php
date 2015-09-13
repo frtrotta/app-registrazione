@@ -3,7 +3,9 @@
 namespace modules;
 
 class LoginModuleException extends \Exception {
-    public function __construct($message, $code = 0) {
-        parent::__construct($message, $code);
+
+    public function __construct($message, $code = 0, $previous = null) {
+        parent::__construct($message, $code, $previous);
     }
+
 }

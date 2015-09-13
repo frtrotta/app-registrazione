@@ -70,16 +70,13 @@ function where_helper($clauses, $andor) {
                                 $op = 'LIKE';
                                 break;
                             default:
-                                // TODO Custom Exception
                                 throw new Exception('Unexptected operator definition (' . $opDefinition . ')');
                         }
                         $value = $value[$opDefinition];
                     } else {
-                        // TODO Custom Exception
                         throw new Exception('Malformed clause ' . var_export($value, true)); // stampa array
                     }
                 } else {
-                    // TODO Custom Exception
                     throw new Exception('Malformed clause ' . var_export($value, true)); // stampa array
                 }
             }

@@ -11,7 +11,7 @@ abstract class MysqlProxyBase {
     /* The list of the fields in the correspondent SQL table
      * The first must be the IDENTITY field.
      */
-    public $conn;
+    public $conn; // TODO protected
 
     public function __construct(&$connection, $tableName, $fieldList) {
         $this->conn = $connection;
@@ -41,7 +41,7 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    private function _sqlFormat($field) {
+    protected function _sqlFormat($field) {
         $r = 'NULL';
         if (isset($field)) {
             if (is_string($field)) {
@@ -100,14 +100,14 @@ abstract class MysqlProxyBase {
                                     $op = 'LIKE';
                                     break;
                                 default:
-                                    throw new MysqlProxyBaseException('Unexpected operator definition (' . $opDefinition . ')', 1);
+                                    throw new ClientRequestException('Unexpected operator definition (' . $opDefinition . ')', 1);
                             }
                             $value = $value[$opDefinition];
                         } else {
-                            throw new MysqlProxyBaseException('Malformed clause ' . var_export($value, true), 2);
+                            throw new ClientRequestException('Malformed clause ' . var_export($value, true), 2);
                         }
                     } else {
-                        throw new MysqlProxyBaseException('Malformed clause ' . var_export($value, true), 2);
+                        throw new ClientRequestException('Malformed clause ' . var_export($value, true), 3);
                     }
                 }
                 $field = $this->conn->escape_string($field);
@@ -156,11 +156,11 @@ abstract class MysqlProxyBase {
     private function _limit_helper($pars) {
         $r = ' LIMIT ';
         if (!is_integer($pars['limit'])) {
-            throw new MysqlProxyBaseException('limit must be integer', 10);
+            throw new ClientRequestException('limit must be integer', 10);
         }
         if (isset($pars['skip'])) {
             if (!is_integer($pars['skip'])) {
-                throw new MysqlProxyBaseException('skip must be integer', 11);
+                throw new ClientRequestException('skip must be integer', 11);
             }
             $r .= $pars['skip'] . ',';
         }
@@ -193,14 +193,14 @@ abstract class MysqlProxyBase {
                 . " WHERE $idField = $idValue";
         $rs = $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new Exception($this->conn->error, $this->conn->errno);
+            throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
         }
         return $this->fetch_all();
     }
 
     abstract protected function _isCoherent($data);
-    
-    abstract public function removeUnsecureFields(&$data);
+
+    abstract protected function _removeUnsecureFields(&$data);
 
     protected function _unsetField(&$set, $fieldName) {
         foreach ($set as &$temp) {
@@ -208,7 +208,7 @@ abstract class MysqlProxyBase {
         }
     }
 
-    public function get($id, $complete = false) {
+    public function get($id, $complete = false, $removeUnsecureFields = true) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
@@ -216,13 +216,16 @@ abstract class MysqlProxyBase {
                 . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);
         $rs = $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new \Exception($this->conn->error, $this->conn->errno);
+            throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
         }
         $r = $rs->fetch_assoc();
         if ($r) {
             $this->_castData($r);
             if ($complete) {
                 $this->_complete($r);
+            }
+            if ($removeUnsecureFields) {
+                $this->_removeUnsecureFields($r);
             }
         }
         return $r;
@@ -237,7 +240,7 @@ abstract class MysqlProxyBase {
      * @return array of associative arrays
      * @throws \Exception
      */
-    public function getSelected($selectionClause, $complete = false, $limit = 50) {
+    public function getSelected($selectionClause, $complete = false, $removeUnsecureFields = true) {
         $r = null;
         if (is_array($selectionClause)) {
             $query = 'SELECT '
@@ -248,11 +251,11 @@ abstract class MysqlProxyBase {
                     . $this->_limit($selectionClause);
             $rs = $this->conn->query($query);
             if ($this->conn->errno) {
-                if($this->conn->errno === 1054) {
+                if ($this->conn->errno === 1054) {
                     // One ore more fields have not the correct name
-                    throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+                    throw new ClientRequestException($this->conn->error, $this->conn->errno);
                 }
-                throw new \Exception($this->conn->error, $this->conn->errno);
+                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
             }
             $r = $this->_fetchAllAssoc($rs);
         }
@@ -263,12 +266,16 @@ abstract class MysqlProxyBase {
                 if ($complete) {
                     $this->_complete($temp);
                 }
+
+                if ($removeUnsecureFields) {
+                    $this->_removeUnsecureFields($temp);
+                }
             }
         }
         return $r;
     }
 
-    public function getAll($complete = false, $limit = 50) {
+    public function getAll($complete = false, $removeUnsecureFields = true, $limit = 50) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
@@ -276,7 +283,7 @@ abstract class MysqlProxyBase {
                 . " LIMIT $limit";
         $rs = $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new \Exception($this->conn->error, $this->conn->errno);
+            throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
         }
         $r = $this->_fetchAllAssoc($rs);
 
@@ -285,6 +292,9 @@ abstract class MysqlProxyBase {
                 $this->_castData($temp);
                 if ($complete) {
                     $this->_complete($temp);
+                }
+                if ($removeUnsecureFields) {
+                    $this->_removeUnsecureFields($temp);
                 }
             }
         }
@@ -309,57 +319,90 @@ abstract class MysqlProxyBase {
         return $fieldList . $valueList;
     }
 
+    private function _createSetList($data) {
+        $first = true;
+        foreach ($data as $key => $value) {
+            $key = $this->conn->escape_string($key);
+            if ($first) {
+                $first = false;
+                $r = " SET `$key` = " . $this->_sqlFormat($value);
+            } else {
+                $r .= ", `$key` = " . $this->_sqlFormat($value);
+            }
+        }
+        return $r;
+    }
+    
+    protected function _is_string_with_length($value) {
+        return is_string($value) && (count($value) > 0);
+    }
+
     protected function _is_date($value) {
-        $d = DateTime::createFormat('Y/m/d', $value);
-        return $d && $d->format('Y/m/d') === $value;
+        $format = ['Y/m/d', 'Y-m-d'];
+        for ($i = 0; $i < count($format); $i++) {
+            $d = \DateTime::createFromFormat($format[$i], $value);
+            if ($d) {
+                break;
+            }
+        }
+        if($d) {
+            return $d->format($format[$i]) === $value;
+        } else {
+            return false;
+        }
     }
-    
+
     protected function _is_datetime($value) {
-        $d = DateTime::createFormat('Y/m/d H:i:s', $value);
-        return $d && $d->format('Y/m/d H:i:s') === $value;
+        $format = ['Y/m/d H:i:s', 'Y-m-d H:i:s'];
+        for ($i = 0; $i < count($format); $i++) {
+            $d = \DateTime::createFromFormat($format[$i], $value);
+            if ($d) {
+                break;
+            }
+        }
+        if($d) {
+            return $d->format($format[$i]) === $value;
+        } else {
+            return false;
+        }
     }
-    
+
     protected function _is_date_optional($value) {
-        if(isset($value)) {
+        if (isset($value)) {
             return $this->_is_date($value);
-        }
-        else {
+        } else {
             return true;
         }
     }
-    
+
     protected function _is_datetime_optional($value) {
-        if(isset($value)) {
+        if (isset($value)) {
             return $this->_is_datetime($value);
-        }
-        else {
+        } else {
             return true;
         }
     }
-    
+
     protected function _is_integer_optional($value) {
-        if(isset($value)) {
+        if (isset($value)) {
             return $this->is_integer($value);
-        }
-        else {
+        } else {
             return true;
         }
     }
-    
+
     protected function _is_bool_optional($value) {
-        if(isset($value)) {
+        if (isset($value)) {
             return $this->is_bool($value);
-        }
-        else {
+        } else {
             return true;
         }
     }
-    
+
     protected function _is_float_optional($value) {
-        if(isset($value)) {
+        if (isset($value)) {
             return $this->is_float($value);
-        }
-        else {
+        } else {
             return true;
         }
     }
@@ -376,51 +419,59 @@ abstract class MysqlProxyBase {
             $query = 'INSERT INTO `' . $this->tableName . '` '
                     . $this->_createFieldListAndValues($data);
             $this->conn->query($query);
-            if ($this->conn->errno) {
-                throw new Exception($this->conn->error, $this->conn->errno);
+            switch ($this->conn->errno) {
+                case 0:
+                    break;
+                case 1062:
+                    throw new ClientRequestException('Instance already exists', 50);
+                    break; //...
+                default:
+                    throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
             }
             $r = $data;
             $r[$this->fieldList[0]] = $this->conn->insert_id;
         } else {
             $e = var_export($data, true);
-            throw new MysqlProxyBaseException("Incoherent data $e", 20);
+            throw new ClientRequestException("Incoherent data $e", 20);
         }
         return $r;
     }
 
     /**
-     * 
-     * @param associative array $data. The first element must be the unique identifier.
+     * @param mixed $id
+     * @param associative array $data
      * @return null or the updated (passed) data
      * @throws Exception
      */
-    public function update($data) {
+    public function update($id, $data) {
         $r = null;
         if ($this->_isCoherent($data)) {
-            $identifier = array_shift($data);
-            $identifierFieldName = $this->conn->escape_string(array_keys($identifier)[0]);
-            $identifierFieldValue = $this->conn->escape_string($identifier[$identifierFieldName]);
+            $identifierFieldName = $this->fieldList[0];
+            unset($data[$identifierFieldName]);
+            $identifierFieldValue = $id;
             $query = 'UPDATE `' . $this->tableName . '` '
-                    . $this->_createFieldListAndValues($data)
+                    . $this->_createSetList($data)
                     . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
             $this->conn->query($query);
+
             if ($this->conn->errno) {
-                throw new Exception($this->conn->error, $this->conn->errno);
+                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
             }
 
-            $n = $this->conn->affected_rows();
+            $n = $this->conn->affected_rows;
             switch ($n) {
                 case 0:
                     break;
                 case 1:
                     $r = $data;
+                    $r[$identifierFieldName] = $identifierFieldValue;
                     break;
                 default:
-                    throw new Exception("Unexpected number of affected rows ($n)");
+                    throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
             }
         } else {
             $e = var_export($data, true);
-            throw new MysqlProxyBaseException("Incoherent data $e", 21);
+            throw new ClientRequestException("Incoherent data $e", 30);
         }
 
         return $r;
@@ -432,7 +483,7 @@ abstract class MysqlProxyBase {
                 . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);
         $this->conn->query($query);
         if ($this->conn->errno) {
-            throw new Exception($this->conn->error, $this->conn->errno);
+            throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
         }
         $n = $this->conn->affected_rows();
         switch ($n) {
@@ -442,7 +493,7 @@ abstract class MysqlProxyBase {
                 $r = true;
                 break;
             default:
-                throw new Exception("Unexpected number of affected rows ($n)");
+                throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
         }
         return $r;
     }

@@ -1,6 +1,6 @@
 <?php
 
-class RegistrazioneApi extends MySqlRestApi {
+class RegistrazioneApi extends MysqlRestApi {
 
     private $loginModule;
 
@@ -39,7 +39,7 @@ class RegistrazioneApi extends MySqlRestApi {
             if (!($this->loginModule->loginByEmailAndPassword($email, $password))) {
                 throw new UnauthorizedException('Wrong email and/or password');
             }
-        } catch (modules\LoginModuleException $ex) {
+        } catch (modules\ClientRequestException $ex) {
             if ($ex->getCode() === 0) {
                 throw new BadRequestException('Please provide email and password');
             } else {
@@ -97,14 +97,47 @@ class RegistrazioneApi extends MySqlRestApi {
     protected function Utente() {
         $r = null;
         $u = new dbproxy\Utente($this->conn);
-        if ($this->method === 'GET') {
-            $r = $this->_CRUDread($u);
-        } else if ($this->method === 'POST') {
-            $r = $this->_CRUDupdate($u);
-        } else if ($this->method === 'PUT') {
-            $r = $this->_CRUDcreate($u);
-        } else {
-            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+        switch ($this->method) {
+            case 'GET':
+                // TODO solo amministratori possono leggere la lista di tutti gli utenti
+                // gli altri possono solo verificare se email esiste
+                $r = $this->_CRUDread($u);
+                break;
+            case 'POST':
+                $authorized = false;
+                if ($this->loginModule->userIsAmministratore()) {
+                    $authorized = true;
+                }
+                
+                if ($authorized) {
+                    $r = $this->_CRUDupdate($u);
+                } else {
+                    throw new UnauthorizedException('User must be Amministratore to update users');
+                }
+                break;
+            case 'PUT':
+                $authorized = false;
+
+                if (isset($this->body['eAmministratore'])) {
+                    if ((bool) $this->body['eAmministratore']) {
+                        if ($this->loginModule->userIsAmministratore()) {
+                            $authorized = true;
+                        }
+                    } else {
+                        $authorized = true;
+                    }
+                } else {
+                    $authorized = true; // It won't pass coherence check
+                }
+
+                if ($authorized) {
+                    $r = $this->_CRUDcreate($u);
+                } else {
+                    throw new UnauthorizedException('User must be Amministratore to create an Amministratore');
+                }
+                break;
+            default:
+                throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
