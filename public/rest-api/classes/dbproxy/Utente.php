@@ -112,12 +112,16 @@ class Utente extends MysqlProxyBase {
         unset($data['gettoneAutenticazioneScadeIl']);
         // TODO unset($data['facebookId']);
     }
+    
+    public function update($id, $data) {        
+        unset($data['gettoneAutenticazione']);
+        unset($data['gettoneAutenticazioneScadeIl']);
+        parent::update($id, $data);
+    }
 
     public function add($data) {
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
-
-        // TODO solo un amministratore può creare un altro amministratore
 
         $r = null;
         if ($this->_isCoherent($data)) {
