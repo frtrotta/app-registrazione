@@ -95,6 +95,7 @@ class Utente extends MysqlProxyBase {
         if (!isset($data['facebookId']) && !isset($data['password'])) {
             return false;
         }
+        
         if (isset($data['password']) && isset($data['facebookId'])) {
             if ($this->_is_string_with_length($data['facebookId']) &&
                     $this->_is_string_with_length($data['password'])) {
@@ -111,12 +112,16 @@ class Utente extends MysqlProxyBase {
         unset($data['gettoneAutenticazioneScadeIl']);
         // TODO unset($data['facebookId']);
     }
+    
+    public function update($id, $data) {        
+        unset($data['gettoneAutenticazione']);
+        unset($data['gettoneAutenticazioneScadeIl']);
+        return parent::update($id, $data);
+    }
 
     public function add($data) {
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
-
-        // TODO solo un amministratore può creare un altro amministratore
 
         $r = null;
         if ($this->_isCoherent($data)) {

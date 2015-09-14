@@ -80,8 +80,8 @@ function where_helper($clauses, $andor) {
                     throw new Exception('Malformed clause ' . var_export($value, true)); // stampa array
                 }
             }
-            $field = $this->conn->escape_string($field);
-            $value = $this->conn->escape_string($value);
+//            $field = $this->conn->escape_string($field);
+//            $value = $this->conn->escape_string($value);
             $r .= "`$field` $op " . _sqlFormat($value);
         }
     }
@@ -118,3 +118,5 @@ var_dump($_SERVER['QUERY_STRING']);
 var_dump($_POST);
 var_dump(isset($_POST));
 var_dump(json_decode('"pippo"'));
+
+echo mail('fratrotta@gmail.com', 'Ecco un bel messaggio di prova', 'Messaggio di prova con un testo molto interessante. Questo lo scriviamo un po lungo in modo che, possibilmente non venga filtrato');
