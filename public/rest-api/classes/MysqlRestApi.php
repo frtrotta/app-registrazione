@@ -88,7 +88,7 @@ class MysqlRestApi extends RestApi {
                     $r = $entityProxy->update($id, $data);
                 }
                 else {
-                    // TODO Provide identifier
+                    throw new ClientRequestException('Please provide an id');
                 }
             } else {
                 throw new BadRequestException('Unable to parse JSON body');

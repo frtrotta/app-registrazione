@@ -104,37 +104,54 @@ class RegistrazioneApi extends MysqlRestApi {
                 $r = $this->_CRUDread($u);
                 break;
             case 'POST':
-                $authorized = false;
-                if ($this->loginModule->userIsAmministratore()) {
-                    $authorized = true;
-                }
-                
-                if ($authorized) {
-                    $r = $this->_CRUDupdate($u);
-                } else {
-                    throw new UnauthorizedException('User must be Amministratore to update users');
-                }
-                break;
             case 'PUT':
-                $authorized = false;
+                // creation and update
+                $id = null;
+                if (strpos($this->contentType, 'application/json') >= 0) {
+                    if (isset($this->args[0]) && is_numeric($this->args[0])) {
+                        $id = (int) $this->args[0];
+                    }
+                } else {
+                    throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+                }
 
-                if (isset($this->body['eAmministratore'])) {
-                    if ((bool) $this->body['eAmministratore']) {
-                        if ($this->loginModule->userIsAmministratore()) {
-                            $authorized = true;
-                        }
-                    } else {
+                $authorized = false;
+                if (is_integer($id)) {
+                    // update permissions
+                    if ($this->loginModule->userIsAmministratore()) {
                         $authorized = true;
                     }
                 } else {
-                    $authorized = true; // It won't pass coherence check
+                    // creation permissions
+                    if (isset($this->body['eAmministratore'])) {
+                        if ((bool) $this->body['eAmministratore']) {
+                            if ($this->loginModule->userIsAmministratore()) {
+                                $authorized = true;
+                            }
+                        } else {
+                            $authorized = true;
+                        }
+                    } else {
+                        $authorized = true; // It won't pass coherence check
+                    }
                 }
 
-                if ($authorized) {
-                    $r = $this->_CRUDcreate($u);
+                if (is_integer($id)) {
+                    // update permissions
+                    if ($authorized) {
+                        $r = $this->_CRUDupdate($u);
+                    } else {
+                        throw new UnauthorizedException('User must be Amministratore to update users');
+                    }
                 } else {
-                    throw new UnauthorizedException('User must be Amministratore to create an Amministratore');
+                    // creation
+                    if ($authorized) {
+                        $r = $this->_CRUDcreate($u);
+                    } else {
+                        throw new UnauthorizedException('User must be Amministratore to create an Amministratore');
+                    }
                 }
+
                 break;
             default:
                 throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');

@@ -92,7 +92,7 @@ class Utente extends MysqlProxyBase {
 
         // --- combinazioni
 
-        if ((isset($data['password']) && isset($data['facebookId'])) ||
+        if (($this->_is_string_with_length($data['password']) && isset($data['facebookId'])) ||
                 (isset($data['facebookId']) && !isset($data['password']))) {
             return false;
         }
