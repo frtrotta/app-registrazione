@@ -116,7 +116,7 @@ class Utente extends MysqlProxyBase {
     public function update($id, $data) {        
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
-        parent::update($id, $data);
+        return parent::update($id, $data);
     }
 
     public function add($data) {
