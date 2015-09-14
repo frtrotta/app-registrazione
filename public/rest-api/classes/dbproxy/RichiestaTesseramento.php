@@ -30,13 +30,13 @@ class RichiestaTesseramento extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!isset($data['id']) ||
+        if (!array_key_exists('id', data) ||
                 !isset($data['eseguitaIl']) ||
                 !isset($data['verificata'])
         ) {
             return false;
         }
-        if (!is_integer($data['id'])) {
+        if (!is_integer_optional($data['id'])) {
             return false;
         }
         
@@ -44,7 +44,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->is_bool($data['verificata'])) {
+        if (!is_bool($data['verificata'])) {
             return false;
         }
         

@@ -42,7 +42,7 @@ class Ordine extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!isset($data['id']) ||
+        if (!array_key_exists('id', data) ||
                 !isset($data['ricevutoIl']) ||
                 !isset($data['totale']) ||
                 !isset($data['pagato']) ||
@@ -55,7 +55,7 @@ class Ordine extends MysqlProxyBase {
         ) {
             return false;
         }
-        if (!is_integer($data['id'])) {
+        if (!is_integer_optional($data['id'])) {
             return false;
         }
 
@@ -67,11 +67,27 @@ class Ordine extends MysqlProxyBase {
             return false;
         }
         
-        if (!$this->is_bool($data['pagato'])) {
+        if (!is_bool($data['pagato'])) {
             return false;
         }
         
-        if (!$this->is_bool($data['ricevutaInviata'])) {
+        if (!is_bool($data['ricevutaInviata'])) {
+            return false;
+        }
+        
+        if (!$this->_is_datetime_optional(@$data['ricevutaInviataIl'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoCap'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoCitta'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['indirizzoPaese'])) {
             return false;
         }
         

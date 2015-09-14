@@ -274,7 +274,7 @@
                 } else {
                     testFailed($testCode, $r);
                 }
-                
+
                 $testCode = '10b';
                 // mi assicuro che l'utente letto non sia stato aggiornato
                 $u1_1978['email'] = $previous_email;
@@ -362,17 +362,15 @@
 //----------------------------------------------------------------------------
 
                 $testCode = '30';
-                // provo a creare un utente senza password
-                $u3 = createUtente(null, '', 'giuseppe', 'garibaldi', 'M', '1978-04-17', 'delete_u3@gmail.com', null, null, false);
+                // provo a creare un utente con password di lunghezza zero
+                $u3 = createUtente(null, '', 'ttttt', 'garibaldi', 'M', '1978-04-17', 'delete_u3@gmail.com', null, null, false);
 
                 $r = http_request(URL_BASE . 'Utente', null, 'PUT', 'application/json', json_encode($u3));
 
-                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = json_decode($r->response->body, true);
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body);
                     if ($body) {
-                        $u1_1978['id'] = $body['id'];
-                        //giuseppe($u1_1978, $body);
-                        if ($body == $u1_1978) {
+                        if ($body->code >= 90 && $body->code <= 99) {
                             testPassed($testCode);
                         } else {
                             $msg = var_export($body, true);
@@ -384,8 +382,69 @@
                 } else {
                     testFailed($testCode, $r);
                 }
-                
-                
+
+//----------------------------------------------------------------------------
+
+                $testCode = '31a';
+                // provo ad aggiornare un utente con nome di lunghezza zero
+                // leggo un utente
+                $r = http_request(URL_BASE . 'Utente/' . $u1_1978['id'], null, 'GET', null, null);
+                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body, true);
+                    if ($body) {
+                        $u_temp = $body;
+                        testPassed($testCode);
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
+                $testCode = '31b';
+                // modifico il nome impostandolo a lunghezza 0
+                // opero come amministratore
+                $u_temp['nome'] = '';
+                $r = http_request(URL_BASE . 'Utente/' . $u1_1978['id'], array($authConf['cookie-name'] => $cookie1), 'POST', 'application/json', json_encode($u_temp));
+
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body);
+                    if ($body) {
+                        if ($body->code >= 90 && $body->code <= 99) {
+                            testPassed($testCode);
+                        } else {
+                            $msg = var_export($body, true);
+                            testFailedMsg($testCode, $r, $msg);
+                        }
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
+                // verifico che non sia stato aggiornato
+                $testCode = '31c';
+                $r = http_request(URL_BASE . 'Utente/' . $u1_1978['id'], null, 'GET', null, null);
+
+                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body, true);
+                    if ($body) {
+                        $body['password'] = $u1_1978['password'];
+                        if ($body == $u1_1978) {
+                            testPassed($testCode);
+                        } else {
+                            $msg = var_export($body, true) . "\n" . var_export($u1_1978, true);
+                            testFailedMsg($testCode, $r, $msg);
+                        }
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
+
                 rimuoviUtenteTest($mysqlConf, $u1_1978['id']);
                 rimuoviUtenteTest($mysqlConf, $u1_2014['id']);
                 rimuoviUtenteTest($mysqlConf, $u2['id']);

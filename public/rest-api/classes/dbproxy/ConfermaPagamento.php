@@ -28,14 +28,14 @@ class ConfermaPagamento extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!isset($data['id']) ||
+        if (!array_key_exists('id', data) ||
                 !isset($data['idOrdine']) ||
                 !isset($data['idAmministratore']) ||
                 !isset($data['eseguitaIl'])
         ) {
             return false;
         }
-        if (!is_integer($data['id'])) {
+        if (!is_integer_optinal($data['id'])) {
             return false;
         }
 

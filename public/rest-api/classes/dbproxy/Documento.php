@@ -23,6 +23,10 @@ class Documento extends MysqlProxyBase {
                 !isset($data['idRichiestaTesseramento'])
         ) {
             return false;
+        }        
+        
+        if(!$this->_is_string_with_length($data['nomeFile'])) {
+            return false;
         }
         if (!is_integer($data['idRichiestaTesseramento'])) {
             return false;

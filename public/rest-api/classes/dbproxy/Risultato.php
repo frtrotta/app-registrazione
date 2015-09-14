@@ -37,13 +37,13 @@ class Risultato extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!isset($data['id']) ||
+        if (!array_key_exists('id', data) ||
                 !isset($data['idIscrizione']) ||
                 !isset($data['codiceConclusioneGara'])
         ) {
             return false;
         }
-        if (!is_integer($data['id'])) {
+        if (!is_integer_optional($data['id'])) {
             return false;
         }
         
@@ -52,22 +52,22 @@ class Risultato extends MysqlProxyBase {
         }
         
         //--- opzionali
-        if(!$this->_is_integer_optional($data['posizione'])) {
+        if(!$this->_is_integer_optional(@$data['posizione'])) {
             return false;
         }
-        if(!$this->_is_integer_optional($data['posizioneInSesso'])) {
+        if(!$this->_is_integer_optional(@$data['posizioneInSesso'])) {
             return false;
         }
-        if(!$this->_is_integer_optional($data['posizioneDopoNuoto'])) {
+        if(!$this->_is_integer_optional(@$data['posizioneDopoNuoto'])) {
             return false;
         }
-        if(!$this->_is_integer_optional($data['posizioneDopoBici'])) {
+        if(!$this->_is_integer_optional(@$data['posizioneDopoBici'])) {
             return false;
         }
-        if(!$this->_is_integer_optional($data['posizioneFrazioneBici'])) {
+        if(!$this->_is_integer_optional(@$data['posizioneFrazioneBici'])) {
             return false;
         }
-        if(!$this->_is_integer_optional($data['posizioneFrazioneCorsa'])) {
+        if(!$this->_is_integer_optional(@$data['posizioneFrazioneCorsa'])) {
             return false;
         }
         

@@ -50,14 +50,26 @@ class Gara extends MysqlProxyBase {
     }
     
     protected function _isCoherent($data) {
-        if (!isset($data['id']) ||
+        if (!array_key_exists('id', data) ||
                 !isset($data['nome']) ||
                 !isset($data['disputataIl']) ||
                 !isset($data['idTipoGara'])
         ) {
             return false;
         }
-        if (!is_integer($data['id'])) {
+        if (!is_integer_optional($data['id'])) {
+            return false;
+        }        
+        
+        if(!$this->_is_string_with_length($data['nome'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
             return false;
         }
 

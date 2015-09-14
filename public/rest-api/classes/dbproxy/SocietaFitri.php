@@ -26,6 +26,18 @@ class SocietaFitri extends MysqlProxyBase {
             return false;
         }
         
+        if(!$this->_is_string_with_length($data['nome'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['provincia'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length_optional(@$data['email'])) {
+            return false;
+        }
+        
         return true;
     }
     

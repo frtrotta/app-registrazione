@@ -43,6 +43,22 @@ class Utente extends MysqlProxyBase {
         if (isset($data['id']) && !is_integer($data['id'])) {
             return false;
         }
+        
+        if(!$this->_is_string_with_length($data['nome'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['cognome'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['sesso'])) {
+            return false;
+        }
+        
+        if(!$this->_is_string_with_length($data['email'])) {
+            return false;
+        }
 
         if (!is_bool($data['eAmministratore'])) {
             return false;
@@ -53,6 +69,22 @@ class Utente extends MysqlProxyBase {
         }
 
         // ---- opzionali
+        
+        if (!$this->_is_string_with_length_optional(@$data['password'])) {
+            return false;
+        }
+        
+        if (!$this->_is_string_with_length_optional(@$data['gettoneAutenticazione'])) {
+            return false;
+        }       
+        
+        if (!$this->_is_string_with_length_optional(@$data['telefono'])) {
+            return false;
+        }       
+        
+        if (!$this->_is_string_with_length_optional(@$data['facebookId'])) {
+            return false;
+        }
 
         if (!$this->_is_date_optional(@$data['gettoneAutenticazioneScadeIl'])) {
             return false;
@@ -152,7 +184,7 @@ class Utente extends MysqlProxyBase {
             }
         } else {
             $e = var_export($data, true);
-            throw new MysqlProxyBaseException("Incoherent data $e", 29);
+            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 90);
         }
         return $r;
     }
