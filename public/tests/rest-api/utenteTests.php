@@ -77,6 +77,7 @@
 //----------------------------------------------------------------------------
 
                 $testCode = '00';
+                // Chiedo l'elenco degli utenti
                 $r = http_request(URL_BASE . 'Utente');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
@@ -94,13 +95,14 @@
                     testFailed($testCode, $r);
                 }
 
-
-
-                // aggiunta di dati incoerenti
-                // rimozione di un utente
 //----------------------------------------------------------------------------
 
                 $testCode = '01';
+                // Aggiungo un utente con PUT
+                /* Nota data di nascita: questo utente mi servirà in seguito per verificare
+                 * rilevazione opportuna dei nati in 2014-06-29
+                 */
+  
                 $u1_2014 = createUtente(null, 'ciccio', 'alessio', 'formaggio', 'M', '2014-06-29', 'delete_u1_2014@gmail.com', null, null, false);
 
                 $r = http_request(URL_BASE . 'Utente', null, 'PUT', 'application/json;charset=UTF-8', json_encode($u1_2014));
@@ -123,12 +125,9 @@
                 }
 
 //----------------------------------------------------------------------------
-                function giuseppe($a1, $a2) {
-                    var_export(array_keys($a1));
-                    var_export(array_keys($a2));
-                }
 
                 $testCode = '02';
+                // Aggiungo un utente che ha gli stessi campi di altro utente con data di nasciata 2014-06-29.
                 $u1_1978 = createUtente(null, 'ciccio', 'alessio', 'formaggio', 'M', '1978-04-17', 'delete_u1_1978@gmail.com', null, null, false);
 
                 $r = http_request(URL_BASE . 'Utente', null, 'PUT', 'application/json', json_encode($u1_1978));
@@ -154,7 +153,7 @@
 //----------------------------------------------------------------------------               
 
                 $testCode = '03';
-
+                // Aggiungo nuovamente lo stesso utente di prima
                 $r = http_request(URL_BASE . 'Utente', null, 'PUT', 'application/json', json_encode($u1_1978));
 
                 if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
@@ -177,7 +176,7 @@
 //----------------------------------------------------------------------------               
 
                 $testCode = '04';
-
+                // Richiedo l'utente aggiunto prima e ne verifico i dati
                 $r = http_request(URL_BASE . 'Utente/' . $u1_1978['id'], null, 'GET', null, null);
 
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
@@ -201,7 +200,7 @@
 //----------------------------------------------------------------------------               
 
                 $testCode = '05';
-
+                // Eseguo una richiesta di utente, impiegando il filtro per email
                 $pars = ['email' => $u1_1978['email']];
                 $r = http_request(URL_BASE . 'Utente?' . urlencode(json_encode($pars)), null, 'GET', null, null);
 
@@ -228,6 +227,7 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+
 
 //----------------------------------------------------------------------------               
 
@@ -444,11 +444,63 @@
                     testFailed($testCode, $r);
                 }
 
+//----------------------------------------------------------------------------
+
+                $testCode = '40';
+                // Aggiungo un utente con metodo POST
+                $u_trotta = createUtente(null, 'ciccio', 'francesco', 'trotta', 'M', '1978-04-17', 'delete_u_trotta@gmail.com', null, null, false);
+
+                $r = http_request(URL_BASE . 'Utente', null, 'POST', 'application/json', json_encode($u_trotta));
+
+                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body, true);
+                    if ($body) {
+                        $u_trotta['id'] = $body['id'];
+                        $lastId = $body['id'];
+                        if ($body == $u_trotta) {
+                            testPassed($testCode);
+                        } else {
+                            $msg = var_export($body, true);
+                            testFailedMsg($testCode, $r, $msg);
+                        }
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
+//----------------------------------------------------------------------------
+
+                $testCode = '41';
+                // Aggiorno un utente con metodo PUT
+                $u_trotta = createUtente($lastId, 'ciccio', 'francesco è grande', 'trotta', 'M', '1978-04-17', 'delete_u_trotta@gmail.com', null, null, false);
+
+                $r = http_request(URL_BASE . 'Utente/'.$u_trotta['id'], array($authConf['cookie-name'] => $cookie1), 'PUT', 'application/json', json_encode($u_trotta));
+
+                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body, true);
+                    if ($body) {
+                        if ($body == $u_trotta) {
+                            testPassed($testCode);
+                        } else {
+                            $msg = var_export($body, true);
+                            testFailedMsg($testCode, $r, $msg);
+                        }
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
 
                 rimuoviUtenteTest($mysqlConf, $u1_1978['id']);
                 rimuoviUtenteTest($mysqlConf, $u1_2014['id']);
                 rimuoviUtenteTest($mysqlConf, $u2['id']);
                 rimuoviUtenteTest($mysqlConf, $amministratore['id']);
+                rimuoviUtenteTest($mysqlConf, $u_trotta['id']);
+                
                 //rimuoviUtenteTest($mysqlConf, $u3['id']);
                 ?>
             </tbody>
