@@ -103,7 +103,7 @@
                 $testCode = '01';
                 $u1_2014 = createUtente(null, 'ciccio', 'alessio', 'formaggio', 'M', '2014-06-29', 'delete_u1_2014@gmail.com', null, null, false);
 
-                $r = http_request(URL_BASE . 'Utente', null, 'PUT', 'application/json', json_encode($u1_2014));
+                $r = http_request(URL_BASE . 'Utente', null, 'PUT', 'application/json;charset=UTF-8', json_encode($u1_2014));
 
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);

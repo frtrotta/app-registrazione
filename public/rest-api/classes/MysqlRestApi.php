@@ -80,7 +80,7 @@ class MysqlRestApi extends RestApi {
 
     protected function _CRUDupdate($entityProxy) {
         $r = null;
-        if ($this->contentType === 'application/json') {
+        if (strpos($this->contentType, 'application/json') >= 0) {
             $data = $this->body;
             if ($data) {
                 if (isset($this->args[0])) {
@@ -101,7 +101,7 @@ class MysqlRestApi extends RestApi {
 
     protected function _CRUDcreate($entityProxy) {
         $r = null;
-        if ($this->contentType === 'application/json') {
+        if (strpos($this->contentType, 'application/json') >= 0) {
             $data = $this->body;
             if ($data) {
                 $r = $entityProxy->add($data);

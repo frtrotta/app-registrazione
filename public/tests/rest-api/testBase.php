@@ -51,6 +51,7 @@ function http_request($url, $cookies = NULL, $method = 'GET', $contentType = nul
         case 'DELETE':
             switch ($contentType) {
                 case 'application/json':
+                case 'application/json;charset=UTF-8':
                 case 'application/x-www-form-urlencoded':
                     $options[CURLOPT_CUSTOMREQUEST] = $method;
                     $options[CURLOPT_POST] = 1;
