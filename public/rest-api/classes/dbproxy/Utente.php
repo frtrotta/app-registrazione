@@ -43,20 +43,20 @@ class Utente extends MysqlProxyBase {
         if (isset($data['id']) && !is_integer($data['id'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['nome'])) {
+
+        if (!$this->_is_string_with_length($data['nome'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['cognome'])) {
+
+        if (!$this->_is_string_with_length($data['cognome'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['sesso'])) {
+
+        if (!$this->_is_string_with_length($data['sesso'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['email'])) {
+
+        if (!$this->_is_string_with_length($data['email'])) {
             return false;
         }
 
@@ -69,19 +69,19 @@ class Utente extends MysqlProxyBase {
         }
 
         // ---- opzionali
-        
+
         if (!$this->_is_string_with_length_optional(@$data['password'])) {
             return false;
         }
-        
+
         if (!$this->_is_string_with_length_optional(@$data['gettoneAutenticazione'])) {
             return false;
-        }       
-        
+        }
+
         if (!$this->_is_string_with_length_optional(@$data['telefono'])) {
             return false;
-        }       
-        
+        }
+
         if (!$this->_is_string_with_length_optional(@$data['facebookId'])) {
             return false;
         }
@@ -92,9 +92,15 @@ class Utente extends MysqlProxyBase {
 
         // --- combinazioni
 
-        if (($this->_is_string_with_length($data['password']) && isset($data['facebookId'])) ||
-                (isset($data['facebookId']) && !isset($data['password']))) {
+        if (!isset($data['facebookId']) && !isset($data['password'])) {
             return false;
+        }
+        
+        if (isset($data['password']) && isset($data['facebookId'])) {
+            if ($this->_is_string_with_length($data['facebookId']) &&
+                    $this->_is_string_with_length($data['password'])) {
+                return false;
+            }
         }
 
         return true;
@@ -110,7 +116,7 @@ class Utente extends MysqlProxyBase {
     public function add($data) {
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
-        
+
         // TODO solo un amministratore può creare un altro amministratore
 
         $r = null;

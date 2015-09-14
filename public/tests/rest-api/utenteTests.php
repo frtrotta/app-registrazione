@@ -494,6 +494,52 @@
                     testFailed($testCode, $r);
                 }
 
+//----------------------------------------------------------------------------
+
+                $testCode = '50';
+                // Aggiungo un utente con metodo POST, ma con password e facebookid nulli
+                $u_gazzella = createUtente(null, null, 'lorenzo', 'gazzella', 'M', '1978-04-17', 'delete_u_gazzella@gmail.com', null, null, false);
+
+                $r = http_request(URL_BASE . 'Utente', null, 'POST', 'application/json', json_encode($u_gazzella));
+
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body);
+                    if ($body) {
+                        if ($body->code === 90) {
+                            testPassed($testCode);
+                        } else {
+                            testFailedMsg($testCode, $r, $email);
+                        }
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
+//----------------------------------------------------------------------------
+
+                $testCode = '51';
+                // Aggiungo un utente con metodo POST, ma con password e facebookid nulli
+                $u_gazzella = createUtente(null, '', 'lorenzo', 'gazzella', 'M', '1978-04-17', 'delete_u_gazzella@gmail.com', null, null, false);
+
+                $r = http_request(URL_BASE . 'Utente', null, 'POST', 'application/json', json_encode($u_gazzella));
+
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body);
+                    if ($body) {
+                        if ($body->code === 90) {
+                            testPassed($testCode);
+                        } else {
+                            testFailedMsg($testCode, $r, $email);
+                        }
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
+
 
                 rimuoviUtenteTest($mysqlConf, $u1_1978['id']);
                 rimuoviUtenteTest($mysqlConf, $u1_2014['id']);
