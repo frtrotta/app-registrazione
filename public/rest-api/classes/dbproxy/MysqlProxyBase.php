@@ -456,7 +456,7 @@ abstract class MysqlProxyBase {
             $r[$this->fieldList[0]] = $this->conn->insert_id;
         } else {
             $e = var_export($data, true);
-            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 92);
+            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 92);
         }
         return $r;
     }
@@ -498,7 +498,7 @@ abstract class MysqlProxyBase {
                 }
             } else {
                 $e = var_export($data, true);
-                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 91);
+                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 91);
             }
         }
 

@@ -206,7 +206,7 @@ class Utente extends MysqlProxyBase {
             }
         } else {
             $e = var_export($data, true);
-            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 90);
+            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 90);
         }
         return $r;
     }
