@@ -56,7 +56,7 @@ abstract class RestApi {
 //            $this->verb = array_shift($this->args);
 //        }
 //
-//        /* TODO non funzionerebbe come Deployed perchè assume che il verb sia
+//        /* non funzionerebbe come Deployed perchè assume che il verb sia
 //         * non numerico. Ad esempio, però, uid di Deployd sono alfanumerici
 //         */
 

@@ -70,7 +70,7 @@ class Invito extends MysqlProxyBase {
         if (!isset($data['codice']) ||
                 !isset($data['nome']) ||
                 !isset($data['cognome']) ||
-                !isset($data['email']) || // TODO opzionale?
+                !isset($data['email']) ||
                 !isset($data['idIscrizione'])
         ) {
             return false;
