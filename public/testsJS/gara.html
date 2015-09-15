@@ -19,15 +19,24 @@ and open the template in the editor.
             angular.module("AppMdl", ["ngResource"])
             .controller("AppCtrl", function($resource, $http){
                 var vm = this;
-                var gara = $resource("http://localhost/app-registrazione/rest-api/Gara")
+                var gara = $resource("http://localhost/app-registrazione/rest-api/Gara");
                 
                 vm.mostraGareIndividuali = function(){
                     var gareIndividuali = [];
                     
                     gara.query(function(gara){
+                        var data = new Date();
                         for(var i=0; i<gara.length; i++){
                             if(gara[i].tipo.nome_it == "Individuale"){
-                                gareIndividuali.push(gara[i]);
+                                for(var j=0; j<gara[i].abilitazioneTipoIscrizione.length;j++){
+                                    var dataAbilitazione = Date.parse(gara[i].abilitazioneTipoIscrizione[j].finoAl);
+                                    if(data < dataAbilitazione){
+                                        gareIndividuali.push(gara[i]);
+                                        console.log(gara[i].abilitazioneTipoIscrizione[j].costo);
+                                        break;
+                                    }
+                                }
+                                
                             }
                         }
                         console.log(gareIndividuali);
@@ -40,7 +49,14 @@ and open the template in the editor.
                     gara.query(function(gara){
                         for(var i=0; i<gara.length; i++){
                             if(gara[i].tipo.nome_it == "In squadra"){
-                                gareASquadre.push(gara[i]);
+                                for(var j=0; j<gara[i].abilitazioneTipoIscrizione.length;j++){
+                                    var dataAbilitazione = Date.parse(gara[i].abilitazioneTipoIscrizione[j].finoAl);
+                                    if(data < dataAbilitazione){
+                                        gareASquadre.push(gara[i]);
+                                        console.log(gara[i].abilitazioneTipoIscrizione[j].costo);
+                                        break;
+                                    }
+                                }
                             }
                         }
                         console.log(gareASquadre);
@@ -49,10 +65,8 @@ and open the template in the editor.
             });
         </script>
         
-        <button type="button" ng-click="app.mostraGareIndividuali()">Mostra gare individuali</button>        
-        <button type="button" ng-click="app.mostraGareASquadre()">Mostra gare a squadre</button>
+        <button type="button" ng-click="app.mostraGareIndividuali()">Mostra gare individuali disponibili</button>        
+        <button type="button" ng-click="app.mostraGareASquadre()">Mostra gare a squadre disponibili</button>
 
-        
-        
     </body>
 </html>
