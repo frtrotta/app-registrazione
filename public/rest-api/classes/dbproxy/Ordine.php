@@ -42,7 +42,7 @@ class Ordine extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!array_key_exists('id', data) ||
+        if (
                 !isset($data['ricevutoIl']) ||
                 !isset($data['totale']) ||
                 !isset($data['pagato']) ||

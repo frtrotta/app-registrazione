@@ -29,7 +29,7 @@
                 function inserisciAmministratore($mysqlConf) {
                     //---- inserimento utente di test
 
-                    $email = 'delete_email_amministratore@test.com';
+                    $email = 'delete_email_amministratore@gmail.com';
                     $password = 'test';
 
                     $conn = new mysqli($mysqlConf['server'], $mysqlConf['username'], $mysqlConf['password'], $mysqlConf['database']);
@@ -75,7 +75,6 @@
 //
 //                inserisciUtenteTest($mysqlConf);
 //----------------------------------------------------------------------------
-
                 $testCode = '00';
                 // Chiedo l'elenco degli utenti
                 $r = http_request(URL_BASE . 'Utente');
@@ -539,6 +538,25 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+//----------------------------------------------------------------------------
+
+                $testCode = '52';
+                // Aggiungo un utente senza impostare il campo id
+                $u_gazzella_encoded = '{"password":"prova","gettoneAutenticazione":null,"gettoneAutenticazioneScadeIl":null,"nome":"prova","cognome":"prova","sesso":"M","natoIl":"1995/06/12","email":"delete_prova@gmail.com","telefono":"01234567890","eAmministratore":false,"facebookId":null}';
+
+                $r = http_request(URL_BASE . 'Utente', null, 'POST', 'application/json', $u_gazzella_encoded);
+
+                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                    $body = json_decode($r->response->body, true);
+                    if ($body) {
+                        $u_gazzella = $body;
+                        testPassed($testCode);
+                    } else {
+                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                    }
+                } else {
+                    testFailed($testCode, $r);
+                }
 
 
                 rimuoviUtenteTest($mysqlConf, $u1_1978['id']);
@@ -546,7 +564,8 @@
                 rimuoviUtenteTest($mysqlConf, $u2['id']);
                 rimuoviUtenteTest($mysqlConf, $amministratore['id']);
                 rimuoviUtenteTest($mysqlConf, $u_trotta['id']);
-                
+                rimuoviUtenteTest($mysqlConf, $u_gazzella['id']);
+
                 //rimuoviUtenteTest($mysqlConf, $u3['id']);
                 ?>
             </tbody>

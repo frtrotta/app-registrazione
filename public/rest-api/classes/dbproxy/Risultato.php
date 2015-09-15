@@ -37,7 +37,7 @@ class Risultato extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!array_key_exists('id', data) ||
+        if (
                 !isset($data['idIscrizione']) ||
                 !isset($data['codiceConclusioneGara'])
         ) {

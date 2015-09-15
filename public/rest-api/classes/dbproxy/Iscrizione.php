@@ -60,7 +60,7 @@ class Iscrizione extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data) {
-        if (!array_key_exists('id', data) ||
+        if (
                 !isset($data['eseguitaIl']) ||
                 !isset($data['haImmagine']) ||
                 !isset($data['idOrdine']) ||
