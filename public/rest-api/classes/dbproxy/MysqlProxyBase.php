@@ -11,7 +11,7 @@ abstract class MysqlProxyBase {
     /* The list of the fields in the correspondent SQL table
      * The first must be the IDENTITY field.
      */
-    public $conn; // TODO protected
+    protected $conn;
 
     public function __construct(&$connection, $tableName, $fieldList) {
         $this->conn = $connection;
