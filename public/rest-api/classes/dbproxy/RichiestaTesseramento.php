@@ -14,7 +14,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
 
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];
-        //TODO $data['eseguitaIl'] = new DateTime($data['eseguitaIl']);
+        //XXX $data['eseguitaIl'] = new DateTime($data['eseguitaIl']);
         $data['verificata'] = (boolean) $data['verificata'];
         $data['idTipoRichiestaTesseramento'] = (int) $data['idTipoRichiestaTesseramento'];
         $data['idAdesionePersonale'] = (int) $data['idAdesionePersonale'];

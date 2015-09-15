@@ -14,7 +14,7 @@ class Tesseramento extends MysqlProxyBase {
 
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];
-        //TODO $data['finoAl'] = new DateTime($data['finoAl']);
+        //XXX $data['finoAl'] = new DateTime($data['finoAl']);
         $data['idTipoTesseramento'] = (int) $data['idTipoTesseramento'];      
     }
 

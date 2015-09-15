@@ -190,7 +190,7 @@ class LoginModule {
             switch ($this->conn->affected_rows) {
                 case 0:
                     // token is not valid anymore
-                    // TODO $this->gettoneAutenticazione = NULL;
+                    // XXX $this->gettoneAutenticazione = NULL;
                     break;
                 case 1:
                     break;

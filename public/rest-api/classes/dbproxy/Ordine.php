@@ -20,11 +20,11 @@ class Ordine extends MysqlProxyBase {
 
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];
-        //TODO $data['ricevutoIl'] = new DateTime($data['ricevutoIl']);
+        //XXX $data['ricevutoIl'] = new DateTime($data['ricevutoIl']);
         $data['totale'] = (float) $data['totale'];
         $data['pagato'] = (boolean) $data['pagato'];        
         $data['ricevutaInviata'] = (boolean) $data['ricevutaInviata'];
-        //TODO $data['ricevutaInviataIl'] = new DateTime($data['ricevutaInviataIl']);
+        //XXX $data['ricevutaInviataIl'] = new DateTime($data['ricevutaInviataIl']);
         $data['idCliente'] = (int) $data['idCliente'];
         $data['idModalitaPagamento'] = (int) $data['idModalitaPagamento'];
     }

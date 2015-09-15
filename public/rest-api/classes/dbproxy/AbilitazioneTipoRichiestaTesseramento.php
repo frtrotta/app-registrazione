@@ -15,7 +15,7 @@ class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
         $data['idGara'] = (int) $data['idGara'];
         $data['idTipoRichiestaTesseramento'] = (int) $data['idTipoRichiestaTesseramento'];
         $data['costo'] = (float) $data['costo'];
-        //TODO $data['finoAl'] = new DateTime($data['finoAl']);
+        //XXX $data['finoAl'] = new DateTime($data['finoAl']);
     }
 
     protected function _complete(&$data, $view) {

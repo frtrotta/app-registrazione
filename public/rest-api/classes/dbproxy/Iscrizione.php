@@ -16,7 +16,7 @@ class Iscrizione extends MysqlProxyBase {
 
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];
-        //TODO $data['eseguitaIl'] = new DateTime($data['eseguitaIl']);
+        //XXX $data['eseguitaIl'] = new DateTime($data['eseguitaIl']);
         $data['pettorale'] = (int) $data['pettorale'];
         $data['haImmagine'] = (boolean) $data['haImmagine'];
         $data['idGara'] = (int) $data['idGara'];

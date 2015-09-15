@@ -17,7 +17,7 @@ class Gara extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['id'] = (int) $data['id'];
         $data['idTipoGara'] = (int) $data['idTipoGara'];
-        //TODO $data['disputataIl'] = new DateTime($data['disputataIl']);
+        //XXX $data['disputataIl'] = new DateTime($data['disputataIl']);
     }
 
     protected function _complete(&$data, $view) {

@@ -24,8 +24,8 @@ class TesseratiFitri extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['TESSERA'] = (int) $data['TESSERA'];
         $data['CODICE_SS'] = (int) $data['CODICE_SS'];
-        //TODO $data['DATA_NASCITA'] = new DateTime($data['DATA_NASCITA']);
-        //TODO $data['DATA_EMISSIONE'] = new DateTime($data['DATA_EMISSIONE']);
+        //XXX $data['DATA_NASCITA'] = new DateTime($data['DATA_NASCITA']);
+        //XXX $data['DATA_EMISSIONE'] = new DateTime($data['DATA_EMISSIONE']);
     }
 
     protected function _complete(&$data, $view) {

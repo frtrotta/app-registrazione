@@ -99,7 +99,7 @@ class RegistrazioneApi extends MysqlRestApi {
         $u = new dbproxy\Utente($this->conn);
         switch ($this->method) {
             case 'GET':
-                // TODO solo amministratori possono leggere la lista di tutti gli utenti
+                // XXX solo amministratori possono leggere la lista di tutti gli utenti
                 // gli altri possono solo verificare se email esiste
                 $r = $this->_CRUDread($u);
                 break;

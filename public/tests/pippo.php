@@ -21,7 +21,6 @@ function _sqlFormat($field) {
             $r = ($field) ? '1' : '0';
         } else {
             $r = (string) $field;
-            // TODO possibile convertire facilmente data in stringa? e data e ora?
         }
     }
     return $r;

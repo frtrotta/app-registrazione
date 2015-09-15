@@ -13,7 +13,7 @@ class AbilitazioneModalitaPagamento extends MysqlProxyBase {
     protected function _castData(&$data) {
         $data['idGara'] = (int) $data['idGara'];
         $data['idModalitaPagamento'] = (int) $data['idModalitaPagamento'];
-        //TODO $data['finoAl'] = new DateTime($data['finoAl']);
+        //XXX $data['finoAl'] = new DateTime($data['finoAl']);
     }
 
     protected function _complete(&$data, $view) {
