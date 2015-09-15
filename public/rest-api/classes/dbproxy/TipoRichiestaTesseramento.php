@@ -20,7 +20,7 @@ class TipoRichiestaTesseramento extends MysqlProxyBase {
     }
     
     protected function _isCoherent($data) {
-        if (!array_key_exists('id', data) ||
+        if (
                 !isset($data['nome_it']) ||
                 !isset($data['nome_en'])
         ) {
