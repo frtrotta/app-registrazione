@@ -65,14 +65,24 @@ class MysqlRestApi extends RestApi {
      */
     protected function _CRUDread($entityProxy, $removeUnsecureFields = true) {
         $r = null;
-        if (count($this->request)) {
-            $r = $entityProxy->getSelected($this->request, true, $removeUnsecureFields);
+        $view = null;
+        $selectionClause = $this->request;
+        if (count($selectionClause)) {
+            $selectionClause = $this->request;
+            if (isset($selectionClause['view'])) {
+                $view = $selectionClause['view'];
+                unset($selectionClause['view']);
+            }
+        }
+
+        if (count($selectionClause)) {
+            $r = $entityProxy->getSelected($selectionClause, $view, $removeUnsecureFields);
         } else {
             if (isset($this->args[0])) {
                 $id = $this->args[0];
-                $r = $entityProxy->get($id, true, $removeUnsecureFields);
+                $r = $entityProxy->get($id, $view, $removeUnsecureFields);
             } else {
-                $r = $entityProxy->getAll(true, $removeUnsecureFields);
+                $r = $entityProxy->getAll($view, $removeUnsecureFields);
             }
         }
         return $r;
@@ -86,8 +96,7 @@ class MysqlRestApi extends RestApi {
                 if (isset($this->args[0])) {
                     $id = $this->args[0];
                     $r = $entityProxy->update($id, $data);
-                }
-                else {
+                } else {
                     throw new ClientRequestException('Please provide an id');
                 }
             } else {

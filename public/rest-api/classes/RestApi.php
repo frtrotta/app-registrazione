@@ -17,12 +17,12 @@ abstract class RestApi {
      */
     protected $endpoint = '';
 
-    /**
-     * Property: verb
-     * An optional additional descriptor about the endpoint, used for things that can
-     * not be handled by the basic methods. eg: /files/process
-     */
-    protected $verb = '';
+//    /**
+//     * Property: verb
+//     * An optional additional descriptor about the endpoint, used for things that can
+//     * not be handled by the basic methods. eg: /files/process
+//     */
+//    protected $verb = '';
 
     /**
      * Property: args
@@ -52,13 +52,13 @@ abstract class RestApi {
          * while literal keys won't be touched.
          */
 
-        if (isset($this->args[0]) && !is_numeric($this->args[0])) {
-            $this->verb = array_shift($this->args);
-        }
-
-        /* TODO non funzionerebbe come Deployed perchè assume che il verb sia
-         * non numerico. Ad esempio, però, uid di Deployd sono alfanumerici
-         */
+//        if (isset($this->args[0]) && !is_numeric($this->args[0])) {
+//            $this->verb = array_shift($this->args);
+//        }
+//
+//        /* TODO non funzionerebbe come Deployed perchè assume che il verb sia
+//         * non numerico. Ad esempio, però, uid di Deployd sono alfanumerici
+//         */
 
         /* HTTP Verb Tunneling
          * https://dev.onedrive.com/misc/verb-tunneling.htm

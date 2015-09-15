@@ -11,14 +11,19 @@
 
                 define("URL_BASE", "http://localhost/app-registrazione/rest-api/");
 
-                $testCode = '01';
+                $testCode = '01 - elenco completo senza vista';
                 $r = http_request(URL_BASE . 'TesseratiFitri');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $list = json_decode($r->response->body);
+                    $list = json_decode($r->response->body, true);
                     if ($list) {
                         $n = count($list);
                         if ($n === 50) {
-                            testPassed($testCode);
+                            if(isset($list[0]['CODICE_SS'])) {
+                                testPassed($testCode);
+                            } else {
+                                $msg = var_export($list['0'], true);
+                                testFailedMsg($testCode, $r, $msg);
+                            }
                         } else {
                             $msg = "Unexpected number of result ($n)";
                             testFailedMsg($testCode, $r, $msg);
@@ -30,8 +35,10 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+                
+//--------------------------------------------------------------------------------------
 
-                $testCode = '02';
+                $testCode = '02 - elenco completo senza vista';
                 $r = http_request(URL_BASE . 'TesseratiFitri');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $list = json_decode($r->response->body, true);
@@ -60,8 +67,10 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+                
+//--------------------------------------------------------------------------------------
 
-                $testCode = '03';
+                $testCode = '03 - Elemento singolo senza vista';
                 $r = http_request(URL_BASE . 'TesseratiFitri/124');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $t = json_decode($r->response->body, true);
@@ -70,7 +79,8 @@
                         if ($t['TESSERA'] === 124 &&
                                 $t['COGNOME'] === 'Pilotti' &&
                                 $t['NOME'] === 'Eugenio' &&
-                                $t['DATA_NASCITA'] === '1958-11-03'
+                                $t['DATA_NASCITA'] === '1958-11-03' &&
+                                isset($t['CODICE_SS'])
                         ) {
                             testPassed($testCode);
                         } else {
@@ -85,8 +95,10 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+                
+//--------------------------------------------------------------------------------------
 
-                $testCode = '04';
+                $testCode = '04 - Elemento singolo non esistente';
                 $r = http_request(URL_BASE . 'TesseratiFitri?ttt');
                 if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $t = json_decode($r->response->body, true);
@@ -108,8 +120,10 @@
                 } else {
                     testFailed($testCode, $r);
                 }
+                
+//--------------------------------------------------------------------------------------
 
-                $testCode = '05';
+                $testCode = '05 - Elemento singolo selezionato con query, senza vista';
                 $r = http_request(URL_BASE . 'TesseratiFitri?{%22TESSERA%22:1291}');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $list = json_decode($r->response->body, true);
@@ -130,8 +144,8 @@
                             }
                         } else {
                             $msg = "Unexpected number of result ($n)";
-                        testFailedMsg($testCode, $r, $msg);
-                    }
+                            testFailedMsg($testCode, $r, $msg);
+                        }
                     } else {
                         $msg = 'Unable to parse JSON body';
                         testFailedMsg($testCode, $r, $msg);
@@ -140,8 +154,10 @@
                     testFailed($testCode, $r);
                 }
                 
-                
-                $testCode = '06';
+//--------------------------------------------------------------------------------------
+
+
+                $testCode = '06 - Elemento singolo selezionato con query, senza vista';
                 $r = http_request(URL_BASE . 'TesseratiFitri?{%22TESSERA%22:427,%22COGNOME%22:%22Cattania%22}');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $list = json_decode($r->response->body, true);
@@ -162,8 +178,8 @@
                             }
                         } else {
                             $msg = "Unexpected number of result ($n)";
-                        testFailedMsg($testCode, $r, $msg);
-                    }
+                            testFailedMsg($testCode, $r, $msg);
+                        }
                     } else {
                         $msg = 'Unable to parse JSON body';
                         testFailedMsg($testCode, $r, $msg);
@@ -172,7 +188,9 @@
                     testFailed($testCode, $r);
                 }
                 
-                $testCode = '067';
+//--------------------------------------------------------------------------------------
+
+                $testCode = '07 - Elementi selezionati in modo articolato, senza vista';
                 $r = http_request(URL_BASE . 'TesseratiFitri?{%22sort%22:{%22TESSERA%22:-1},%22limit%22:3,%22skip%22:2,%22TESSERA%22:{%22le%22:94861}}');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $list = json_decode($r->response->body, true);
@@ -193,8 +211,8 @@
                             }
                         } else {
                             $msg = "Unexpected number of result ($n)";
-                        testFailedMsg($testCode, $r, $msg);
-                    }
+                            testFailedMsg($testCode, $r, $msg);
+                        }
                     } else {
                         $msg = 'Unable to parse JSON body';
                         testFailedMsg($testCode, $r, $msg);
@@ -202,8 +220,6 @@
                 } else {
                     testFailed($testCode, $r);
                 }
-                
-                
                 ?>
             </tbody>
         </table>

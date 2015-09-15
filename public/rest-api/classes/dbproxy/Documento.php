@@ -12,10 +12,22 @@ class Documento extends MysqlProxyBase {
         $data['idRichiestaTesseramento'] = (int) $data['idRichiestaTesseramento'];
     }
     
-    protected function _complete(&$data) {
+    protected function _complete(&$data, $view) {
+        if (isset($view)) {
+            switch ($view) {
+                case 'invito':
+                    break;
+                case 'default':
         $rt = new RichiestaTesseramento($this->conn);
-        $data['richiestaDiTesseramento'] = $rt->get($data['idRichiestaTesseramento'], true);
+        $data['richiestaDiTesseramento'] = $rt->get($data['idRichiestaTesseramento'], $view);
         unset($data['idRichiestaTesseramento']);
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
+        }
     }
 
     protected function _isCoherent($data) {

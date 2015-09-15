@@ -3,6 +3,7 @@
 namespace dbproxy;
 
 class ConfermaPagamento extends MysqlProxyBase {
+
     public function __construct(&$connection) {
         parent::__construct($connection, 'conferma_pagamento', ['id',
             'idOrdine',
@@ -14,17 +15,27 @@ class ConfermaPagamento extends MysqlProxyBase {
         $data['id'] = (int) $data['id'];
         $data['idOrdine'] = (int) $data['idOrdine'];
         //TODO $data['eseguitaIl'] = new DateTime($data['eseguitaIl']);
-        $data['idAmministratore'] = (int) $data['idAmministratore'];        
+        $data['idAmministratore'] = (int) $data['idAmministratore'];
     }
 
-    protected function _complete(&$data) {
-        $o = new Ordine($this->conn);
-        $data['ordine'] = $o->get($data['idOrdine'], true);
-        unset($data['idOrdine']);
-        
-        $a = new Utente($this->conn);
-        $data['amministratore'] = $a->get($data['idAmministratore'], true);
-        unset($data['idAmministratore']);
+    protected function _complete(&$data, $view) {
+        if (isset($view)) {
+            switch ($view) {
+                case 'default':
+                    $o = new Ordine($this->conn);
+                    $data['ordine'] = $o->get($data['idOrdine'], $view);
+                    unset($data['idOrdine']);
+
+                    $a = new Utente($this->conn);
+                    $data['amministratore'] = $a->get($data['idAmministratore'], $view);
+                    unset($data['idAmministratore']);
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
+        }
     }
 
     protected function _isCoherent($data) {
@@ -46,15 +57,16 @@ class ConfermaPagamento extends MysqlProxyBase {
         if (!is_integer($data['idAmministratore'])) {
             return false;
         }
-        
+
         if (!$this->_is_datetime($data['eseguitaIl'])) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     protected function _removeUnsecureFields(&$data) {
         
     }
+
 }

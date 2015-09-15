@@ -3,6 +3,7 @@
 namespace dbproxy;
 
 class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
+
     public function __construct(&$connection) {
         parent::__construct($connection, 'abilitazione_tipo_richiesta_tesseramento', ['idGara',
             'idTipoRichiestaTesseramento',
@@ -15,12 +16,22 @@ class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
         $data['idTipoRichiestaTesseramento'] = (int) $data['idTipoRichiestaTesseramento'];
         $data['costo'] = (float) $data['costo'];
         //TODO $data['finoAl'] = new DateTime($data['finoAl']);
-    }   
+    }
 
-    protected function _complete(&$data) {
-        $ti = new TipoRichiestaTesseramento($this->conn);
-        $data['tipoRichiestaTesseramento'] = $ti->get($data['idTipoRichiestaTesseramento']);
-        unset($data['idTipoRichiestaTesseramento']);
+    protected function _complete(&$data, $view) {
+        if (isset($view)) {
+            switch ($view) {
+                case 'default':
+                    $ti = new TipoRichiestaTesseramento($this->conn);
+                    $data['tipoRichiestaTesseramento'] = $ti->get($data['idTipoRichiestaTesseramento'], $view);
+                    unset($data['idTipoRichiestaTesseramento']);
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
+        }
     }
 
     protected function _isCoherent($data) {
@@ -38,19 +49,20 @@ class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
         if (!is_integer($data['idGara'])) {
             return false;
         }
-        
+
         if (!$this->_is_datetime($data['finoAl'])) {
             return false;
         }
-        
+
         if (!is_float($data['costo'])) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     protected function _removeUnsecureFields(&$data) {
         
     }
+
 }

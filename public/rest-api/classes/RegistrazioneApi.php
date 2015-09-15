@@ -76,7 +76,7 @@ class RegistrazioneApi extends MysqlRestApi {
         $r = null;
         if ($this->method === 'GET') {
             $tf = new dbproxy\TesseratiFitri($this->conn);
-            $r = $this->_CRUDread($tf);
+            $r = $this->_CRUDread($tf); // TODO view
         } else {
             throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
@@ -87,7 +87,7 @@ class RegistrazioneApi extends MysqlRestApi {
         $r = null;
         $g = new dbproxy\Gara($this->conn);
         if ($this->method === 'GET') {
-            $r = $this->_CRUDread($g);
+            $r = $this->_CRUDread($g, 'default'); // TODO view
         } else {
             throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
@@ -101,7 +101,7 @@ class RegistrazioneApi extends MysqlRestApi {
             case 'GET':
                 // TODO solo amministratori possono leggere la lista di tutti gli utenti
                 // gli altri possono solo verificare se email esiste
-                $r = $this->_CRUDread($u);
+                $r = $this->_CRUDread($u); // TODO view
                 break;
             case 'POST':
             case 'PUT':

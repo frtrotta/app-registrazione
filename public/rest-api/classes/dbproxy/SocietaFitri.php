@@ -12,8 +12,20 @@ class SocietaFitri extends MysqlProxyBase {
         $data['codice'] = (int) $data['codice'];  
     }
     
-    protected function _complete(&$data) {
+    protected function _complete(&$data, $view) {
         
+        if (isset($view)) {
+            switch ($view) {
+                case 'invito':
+                case 'ordine':
+                case 'default':
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
+        }
     }
 
     protected function _isCoherent($data) {
