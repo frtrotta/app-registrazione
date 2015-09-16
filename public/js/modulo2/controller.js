@@ -1,5 +1,5 @@
 angular.module("registrazione")
-.controller("registrazioneController", ["$resource", function($resource){
+.controller("registrazioneController", ["$resource", "$filter", function($resource, $filter){
     
     var vm = this;
     var utenti = $resource("http://localhost/app-registrazione/rest-api/Utente/:id", {id:"@id"});
@@ -14,7 +14,7 @@ angular.module("registrazione")
             nome:vm.nuovoUtente.nome,
             cognome:vm.nuovoUtente.cognome,
             sesso:vm.nuovoUtente.sesso,
-            natoIl:vm.nuovoUtente.dataDiNascita.getFullYear() + "/" + (vm.nuovoUtente.dataDiNascita.getMonth()+1) + "/" + vm.nuovoUtente.dataDiNascita.getDate(),
+            natoIl:$filter('date')(vm.nuovoUtente.dataDiNascita, 'yyyy/MM/dd'),
             email:vm.nuovoUtente.email,
             telefono:vm.nuovoUtente.telefono,
             eAmministratore:false,
@@ -24,7 +24,7 @@ angular.module("registrazione")
         new utenti(utente).$save().then(
             function(result){
                 console.log(result);
-                vm.nuovoUtente = null;
+                //vm.nuovoUtente = null;
             }, function(reject){
                console.log(reject);
             }
