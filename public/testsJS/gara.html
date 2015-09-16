@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html ng-app="AppMdl">
+    <head>
+        <title>Test gara</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.angularjs.org/1.4.3/angular.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-resource.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-route.js" type="text/javascript"></script>
+    </head>
+    <body ng-controller="AppCtrl as app">
+        
+        <script>
+            angular.module("AppMdl", ["ngResource"])
+            .controller("AppCtrl", function($resource, $http){
+                var vm = this;
+                var gara = $resource("http://localhost/app-registrazione/rest-api/Gara");
+                
+                vm.mostraGareIndividuali = function(){
+                    var gareIndividuali = [];
+                    
+                    gara.query(function(gara){
+                        var data = new Date();
+                        for(var i=0; i<gara.length; i++){
+                            if(gara[i].tipo.nome_it == "Individuale"){
+                                for(var j=0; j<gara[i].abilitazioneTipoIscrizione.length;j++){
+                                    var dataAbilitazione = Date.parse(gara[i].abilitazioneTipoIscrizione[j].finoAl);
+                                    if(data < dataAbilitazione){
+                                        gareIndividuali.push(gara[i]);
+                                        console.log(gara[i].abilitazioneTipoIscrizione[j].costo);
+                                        break;
+                                    }
+                                }
+                                
+                            }
+                        }
+                        console.log(gareIndividuali);
+                    });
+                };
+                
+                vm.mostraGareASquadre = function(){
+                    var gareASquadre = [];
+                    
+                    gara.query(function(gara){
+                        for(var i=0; i<gara.length; i++){
+                            if(gara[i].tipo.nome_it == "In squadra"){
+                                for(var j=0; j<gara[i].abilitazioneTipoIscrizione.length;j++){
+                                    var dataAbilitazione = Date.parse(gara[i].abilitazioneTipoIscrizione[j].finoAl);
+                                    if(data < dataAbilitazione){
+                                        gareASquadre.push(gara[i]);
+                                        console.log(gara[i].abilitazioneTipoIscrizione[j].costo);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        console.log(gareASquadre);
+                    });
+                }
+            });
+        </script>
+        
+        <button type="button" ng-click="app.mostraGareIndividuali()">Mostra gare individuali disponibili</button>        
+        <button type="button" ng-click="app.mostraGareASquadre()">Mostra gare a squadre disponibili</button>
+
+    </body>
+</html>

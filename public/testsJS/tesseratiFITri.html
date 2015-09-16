@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html ng-app="AppMdl">
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.angularjs.org/1.4.3/angular.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-resource.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-route.js" type="text/javascript"></script>
+    </head>
+    <body ng-controller="AppCtrl as app">
+        <script>
+            angular.module("AppMdl", ["ngResource"])
+            .controller("AppCtrl", function($http, $resource){
+                
+                var vm = this;
+                
+                vm.tesserato = function(nome, cognome, dataNascita, sesso){
+                    
+                    if(dataNascita){
+                        var data = dataNascita.getFullYear() + "/" + (dataNascita.getMonth() + 1) + "/" + dataNascita.getDate();
+                    }
+                        
+                    var tesseratiFitri = $resource("http://localhost/app-registrazione/rest-api/TesseratiFitri");
+                    
+                    console.log(tesseratiFitri.query({nome:nome, cognome:cognome, data_nascita:data, sesso:sesso}));
+                                        
+                };
+                
+            });
+        </script>
+        
+        <form>
+            <input type="text" ng-model="nome"/>
+            <input type="text" ng-model="cognome"/>
+            <input type="date" ng-model="dataNascita"/>        
+            <input type="radio" name="sesso" ng-model="sesso" value="M">Maschio<br>
+            <input type="radio" name="sesso" ng-model="sesso" value="F">Femmina
+            <button type="button" ng-click="app.tesserato(nome, cognome, dataNascita, sesso)">Tesserato</button>
+        </form>
+        
+        
+        
+    </body>
+</html>

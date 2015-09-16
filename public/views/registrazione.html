@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+
+<html ng-app="registrazione">
+    <head>
+        <title>Registrazione</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.angularjs.org/1.4.3/angular.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-resource.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-route.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <script src="../js/modulo2/modulo.js" type="text/javascript"></script>
+        <script src="../js/modulo2/controller.js" type="text/javascript"></script>
+    </head>
+    <body ng-controller="registrazioneController as registrazioneCtrl">
+        
+        <div class="row">
+            <div class="col-sm-4 col-sm-offset-4">
+                <form name="registrazione" novalidate>
+                    <div class="form-group" ng-class="registrazione.nome.$error.required ? 'has-error' : 'has-success'">
+                        <label>Nome</label>
+                        <input name="nome" class="form-control" ng-model="registrazioneCtrl.nuovoUtente.nome" required />
+                    </div>
+                    <div class="form-group" ng-class="registrazione.cognome.$error.required ? 'has-error' : 'has-success'">
+                        <label>Cognome</label>
+                        <input name="cognome" class="form-control" ng-model="registrazioneCtrl.nuovoUtente.cognome" required />
+                    </div>
+                    <div class="form-group" ng-class="registrazione.password.$error.required ? 'has-error' : 'has-success'">
+                        <label>Password</label>
+                        <input type="password" name="password" class="form-control" ng-model="registrazioneCtrl.nuovoUtente.password" required />
+                    </div>
+                    <div class="form-group" ng-class="registrazione.dataDiNascita.$error.required ? 'has-error' : 'has-success'">
+                        <label>Data di nascita</label>
+                        <input type="date" name="dataDiNascita" class="form-control" ng-model="registrazioneCtrl.nuovoUtente.dataDiNascita" required />
+                    </div>
+                    <div class="form-group" ng-class="registrazione.telefono.$error.required ? 'has-error' : 'has-success'">
+                        <label>Telefono</label><!--TODO Di che tipo è il numero telefonico, come lo valido?-->
+                        <input name="telefono" class="form-control" ng-model="registrazioneCtrl.nuovoUtente.telefono" required />
+                    </div>
+                    <div class="form-group" ng-class="registrazione.email.$error.required ? 'has-error' : 'has-success'">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" ng-model="registrazioneCtrl.nuovoUtente.email" required />
+                    </div>
+                    <div class="form-group" ng-class="registrazione.sesso.$error.required ? 'has-error' : 'has-success'">
+                        <label>Sesso</label><br><!--TODO validazione radio button-->
+                        <input type="radio" name="sesso" ng-model="registrazioneCtrl.nuovoUtente.sesso" value="M">Maschio<br>
+                        <input type="radio" name="sesso" ng-model="registrazioneCtrl.nuovoUtentes.sesso" value="F">Femmina
+                    </div>
+
+                    <div class="text-center">
+                        <button ng-disabled="registrazione.$invalid" class="btn btn-primary" ng-click="registrazioneCtrl.registraUtente()">Registrati</button>
+                    </div>           
+                </form>
+            </div>
+        </div>
+        
+        
+    </body>
+</html>

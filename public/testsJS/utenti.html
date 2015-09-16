@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html ng-app="AppMdl">
+    <head>
+        <title>Test utenti</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.angularjs.org/1.4.3/angular.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-resource.js" type="text/javascript"></script>
+        <script src="https://code.angularjs.org/1.4.3/angular-route.js" type="text/javascript"></script>
+    </head>
+    <body ng-controller="AppCtrl as app">
+        <script>
+            angular.module("AppMdl", ["ngResource"])
+            .controller("AppCtrl", function($resource, $http){
+                var vm = this;
+                
+                var utenti = $resource("http://localhost/app-registrazione/rest-api/Utente/:id", {id:"@id"});
+                
+                console.log(utenti.query({nome:"Lorenzo"}));
+                console.log(utenti.query());
+                
+                vm.nuovoUtente= function(){
+                    var utente = {
+                        id:null,
+                        password:"prova",
+                        gettoneAutenticazione:null,
+                        gettoneAutenticazioneScadeIl:null,
+                        nome:"prova",
+                        cognome:"prova",
+                        sesso:"M",
+                        natoIl:"1995/6/12",
+                        email:"prova@gmail.com",
+                        telefono:"01234567890",
+                        eAmministratore:false,
+                        facebookId:null
+                    }
+                    
+                    new utenti(utente).$save().then(
+                        function(result){
+                            console.log(result);
+                        }, function(reject){
+                           console.log(reject);
+                        }
+                    );
+                    
+                    //$http.put("http://localhost/app-registrazione/rest-api/Utente", utente)
+                    //.success(function(data){
+                    //    console.log(data)
+                    //}).error(function(error){
+                    //    console.log(error);
+                    //});
+                    
+                }
+            });
+        </script>
+        
+        <button type="button" ng-click="app.nuovoUtente()">Nuovo utente</button>
+        
+    </body>
+</html>
