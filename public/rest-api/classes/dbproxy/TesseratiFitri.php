@@ -37,93 +37,93 @@ class TesseratiFitri extends MysqlProxyBase {
                     unset($data['CODICE_SS']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
         }
     }
 
-    protected function _isCoherent($data, $view) {
-        if (!isset($data['CODICE_SS']) ||
-                !isset($data['TESSERA']) ||
-                !isset($data['COGNOME']) ||
-                !isset($data['NOME']) ||
-                !isset($data['SESSO']) ||
-                !isset($data['DATA_NASCITA']) ||
-                !isset($data['CITTADINANZA']) ||
-                !isset($data['CATEGORIA']) ||
-                !isset($data['QUALIFICA']) ||
-                !isset($data['DATA_EMISSIONE']) ||
-                !isset($data['TIPO_TESSERA'])
-        ) {
-            return false;
-        }
-        if (!is_integer($data['CODICE_SS'])) {
-            return false;
-        }
-
-        if (!is_integer($data['TESSERA'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['COGNOME'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['NOME'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['SESSO'])) {
-            return false;
-        }
-
-        if (!$this->_is_date($data['DATA_NASCITA'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['CITTADINANZA'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['CATEGORIA'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['QUALIFICA'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length_optional(@$data['LIVELLO'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length_optional(@$data['STATO'])) {
-            return false;
-        }
-
-        if (!$this->_is_date($data['DATA_EMISSIONE'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['TIPO_TESSERA'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length_optional(@$data['DISABILITA'])) {
-            return false;
-        }
-        
-        if(isset($view)) {
-            switch($view) {
-                default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
-            }
-        }
-
-        return true;
-    }
+//    protected function _isCoherent($data, $view) {
+//        if (!isset($data['CODICE_SS']) ||
+//                !isset($data['TESSERA']) ||
+//                !isset($data['COGNOME']) ||
+//                !isset($data['NOME']) ||
+//                !isset($data['SESSO']) ||
+//                !isset($data['DATA_NASCITA']) ||
+//                !isset($data['CITTADINANZA']) ||
+//                !isset($data['CATEGORIA']) ||
+//                !isset($data['QUALIFICA']) ||
+//                !isset($data['DATA_EMISSIONE']) ||
+//                !isset($data['TIPO_TESSERA'])
+//        ) {
+//            return false;
+//        }
+//        if (!is_integer($data['CODICE_SS'])) {
+//            return false;
+//        }
+//
+//        if (!is_integer($data['TESSERA'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['COGNOME'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['NOME'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['SESSO'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_date($data['DATA_NASCITA'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['CITTADINANZA'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['CATEGORIA'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['QUALIFICA'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length_optional(@$data['LIVELLO'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length_optional(@$data['STATO'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_date($data['DATA_EMISSIONE'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['TIPO_TESSERA'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length_optional(@$data['DISABILITA'])) {
+//            return false;
+//        }
+//        
+//        if(isset($view)) {
+//            switch($view) {
+//                default:
+//                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
+//            }
+//        }
+//
+//        return true;
+//    }
 
     protected function _removeUnsecureFields(&$data) {
         

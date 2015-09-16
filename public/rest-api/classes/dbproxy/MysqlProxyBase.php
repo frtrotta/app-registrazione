@@ -211,7 +211,13 @@ abstract class MysqlProxyBase {
         }
     }
 
-    abstract protected function _isCoherent($data, $view);
+    /**
+     * To be overridden only in case of creation and/or update.
+     * It return true or a string that provides information about the error encountered.
+     */
+    protected function _isCoherent($data, $view) {
+        throw new \Exception('Method not implemented');
+    }
 
     abstract protected function _removeUnsecureFields(&$data);
 
@@ -422,7 +428,7 @@ abstract class MysqlProxyBase {
 
     protected function _is_integer_optional($value) {
         if (isset($value)) {
-            return $this->is_integer($value);
+            return is_integer($value);
         } else {
             return true;
         }
@@ -456,11 +462,6 @@ abstract class MysqlProxyBase {
      * @return $data with the generated identifier
      */
     protected function _baseAdd($data) {
-//        if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
-//                /* Se add diventa una funzione che deve essere richiamata da update della specifica
-//                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
-//                 * Guarda, però, come è implementato il metodo add di Utente
-//                 */
             $query = 'INSERT INTO `' . $this->tableName . '` '
                     . $this->_createFieldListAndValues($data);
             $this->conn->query($query);
@@ -475,9 +476,6 @@ abstract class MysqlProxyBase {
             }
             $r = $data;
             $r[$this->fieldList[0]] = $this->conn->insert_id;
-//        } else {
-//            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 92);
-//        }
         return $r;
     }    
     
@@ -525,7 +523,7 @@ abstract class MysqlProxyBase {
                         throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
                 }
 //            } else {
-//                throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 91);
+//                throw new ClientRequestException('Incoherent data for ' . get_class($this) . '. The data you provided did not meet expectations: please check and try again.', 91);
 //            }
         }
 

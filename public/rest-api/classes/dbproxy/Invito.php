@@ -45,7 +45,7 @@ class Invito extends MysqlProxyBase {
                     break;
 
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -59,26 +59,26 @@ class Invito extends MysqlProxyBase {
                 !isset($data['email']) ||
                 !isset($data['idIscrizione'])
         ) {
-            return false;
+            return 'At least one required field is missing';
         }
 
         if (!$this->_is_string_with_length($data['codice'])) {
-            return false;
+            return 'codice is a 0-length string';
         }
 
         if (!$this->_is_string_with_length($data['nome'])) {
-            return false;
+            return 'nome is a 0-length string';
         }
 
         if (!$this->_is_string_with_length($data['cognome'])) {
-            return false;
+           return 'cognome is a 0-length string';
         }
 
         if (!$this->_is_string_with_length($data['email'])) {
-            return false;
+            return 'email is a 0-length string';
         }
         if (!is_integer($data['idIscrizione'])) {
-            return false;
+            return 'idIscrizione is not integer';
         }
         
         if(isset($view)) {
@@ -86,11 +86,11 @@ class Invito extends MysqlProxyBase {
                 case 'ordine':
                     // Nell'ordine nessun invito può avere un'adesione personale
                     if(isset($data['idAdesionePersonale'])) {
-                        return false;
+                        return 'idAdesionePersonale cannot be set';
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
             }
         }
 
@@ -102,8 +102,9 @@ class Invito extends MysqlProxyBase {
     }
 
     public function add(&$data, $view) {
-        if (!$this->_isCoherent($data, $view)) {
-            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        $check = $this->_isCoherent($data, $view);
+        if ($check !== true) {
+            throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
         
         $r = $this->_baseAdd($data);
@@ -115,7 +116,7 @@ class Invito extends MysqlProxyBase {
                     // Relazione con iscrizione aggiunta in _baseAdd
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
         return $r;

@@ -58,58 +58,58 @@ class Gara extends MysqlProxyBase {
                 case 'ordine':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
         }
     }
 
-    protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['nome']) ||
-                !isset($data['disputataIl']) ||
-                !isset($data['idTipoGara'])
-        ) {
-            return false;
-        }
-        if (!$this->is_integer_optional($data['id'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length($data['nome'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
-            return false;
-        }
-
-        if (!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
-            return false;
-        }
-
-        if (!is_integer($data['idTipoGara'])) {
-            return false;
-        }
-
-        if (!$this->_is_datetime($data['disputataIl'])) {
-            return false;
-        }
-
-        if (!$this->_is_datetime($data['iscrizioneModificabileFinoAl'])) {
-            return false;
-        }
-        
-        if(isset($view)) {
-            switch($view) {
-                default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
-            }
-        }
-
-        return true;
-    }
+//    protected function _isCoherent($data, $view) {
+//        if (
+//                !isset($data['nome']) ||
+//                !isset($data['disputataIl']) ||
+//                !isset($data['idTipoGara'])
+//        ) {
+//            return false;
+//        }
+//        if (!$this->_is_integer_optional(@$data['id'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length($data['nome'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
+//            return false;
+//        }
+//
+//        if (!is_integer($data['idTipoGara'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_datetime($data['disputataIl'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_datetime($data['iscrizioneModificabileFinoAl'])) {
+//            return false;
+//        }
+//        
+//        if(isset($view)) {
+//            switch($view) {
+//                default:
+//                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
+//            }
+//        }
+//
+//        return true;
+//    }
 
     protected function _removeUnsecureFields(&$data) {
         

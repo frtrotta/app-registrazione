@@ -37,7 +37,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
                     unset($data['idAdesionePersonale']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -50,22 +50,22 @@ class RichiestaTesseramento extends MysqlProxyBase {
                 !isset($data['verificata']) ||
                 !isset($data['idTipoRichiestaTesseramento'])
         ) {
-            return false;
+            return 'At least one of the required fiedl is not set';
         }
-        if (!$this->is_integer_optional($data['id'])) {
-            return false;
+        if (!$this->_is_integer_optional(@$data['id'])) {
+            return 'is is set but it is not integer';
         }
 
         if (!$this->_is_datetime($data['eseguitaIl'])) {
-            return false;
+            return 'eseguitaIl is not a valid datetime';
         }
 
         if (!is_bool($data['verificata'])) {
-            return false;
+            return 'verificata is not boolean';
         }
 
         if (!is_integer($data['idTipoRichiestaTesseramento'])) {
-            return false;
+            return 'idTipoRichiestaTesseramento is not integer';
         }
 
         if (isset($view)) {
@@ -73,7 +73,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
                 case 'ordine':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
             }
         }
 
@@ -85,8 +85,9 @@ class RichiestaTesseramento extends MysqlProxyBase {
     }
 
     public function add(&$data, $view) {
-        if (!$this->_isCoherent($data, $view)) {
-            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        $check = $this->_isCoherent($data, $view);
+        if ($check !== true) {
+            throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
 
         $r = $this->_baseAdd($data);
@@ -103,7 +104,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
         return $r;

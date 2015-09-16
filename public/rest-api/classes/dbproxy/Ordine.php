@@ -51,7 +51,7 @@ class Ordine extends MysqlProxyBase {
                 case 'default':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -70,64 +70,64 @@ class Ordine extends MysqlProxyBase {
                 !isset($data['idModalitaPagamento']) ||
                 !isset($data['idCliente'])
         ) {
-            return false;
+            return 'At least one required field is not set';
         }
-        if (!$this->is_integer_optional($data['id'])) {
-            return false;
+        if (!$this->_is_integer_optional(@$data['id'])) {
+            return 'id is set but it is not integer';
         }
 
         if (!is_float($data['totale'])) {
-            return false;
+            return 'totale is not float';
         }
 
         if (!$this->_is_datetime($data['ricevutoIl'])) {
-            return false;
+            return 'ricevutoIl is not a valid datetime';
         }
 
         if (!is_bool($data['pagato'])) {
-            return false;
+            return 'pagato is not boolean';
         }
 
         if (!is_bool($data['ricevutaInviata'])) {
-            return false;
+            return 'ricevutaInviata is not boolean';
         }
 
         if (!$this->_is_datetime_optional(@$data['ricevutaInviataIl'])) {
-            return false;
+            return 'ricevutaInviataIl is set but it is not a valid datetime';
         }
 
         if (!$this->_is_string_with_length($data['indirizzoCap'])) {
-            return false;
+            return 'indirizzoCap is a 0-length string';
         }
 
         if (!$this->_is_string_with_length($data['indirizzoCitta'])) {
-            return false;
+            return 'indirizzoCitta is a 0òlength string';
         }
 
         if (!$this->_is_string_with_length($data['indirizzoPaese'])) {
-            return false;
+            return 'indirizzoPaese is a 0-length string';
         }
 
         if (!is_integer($data['idModalitaPagamento'])) {
-            return false;
+            return 'idModalitaPagamento is not integer';
         }
 
         if (!is_integer($data['idModalitaCliente'])) {
-            return false;
+            return 'idModalitaCliente is not integer';
         }
 
         if (isset($view)) {
             switch ($view) {
                 case 'ordine':
                     if (!isset($data['iscrizioni'])) {
-                        return false;
+                        return 'iscrizioni is not set';
                     }
                     if (is_array($data['iscrizioni'])) {
-                        return false;
+                        return 'iscrizioni is not an array';
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
             }
         }
 
@@ -140,7 +140,7 @@ class Ordine extends MysqlProxyBase {
 
     public function add(&$data, $view) {
         if (!$this->_isCoherent($data, $view)) {
-            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+            throw new ClientRequestException('Incoherent data for ' . get_class($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
         }
         
         $r = $this->_baseAdd($data);
@@ -157,7 +157,7 @@ class Ordine extends MysqlProxyBase {
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
         return $r;

@@ -19,30 +19,30 @@ class CodiceConclusioneGara extends MysqlProxyBase {
                 case 'default':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
         }
     }
     
-    protected function _isCoherent($data, $view) {
-        if (!isset($data['nome']) ||
-                !isset($data['descrizione_it']) ||
-                !isset($data['descrizione_en'])
-        ) {
-            return false;
-        }
-        
-        if(isset($view)) {
-            switch($view) {
-                default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
-            }
-        }
-        
-        return true;
-    }
+//    protected function _isCoherent($data, $view) {
+//        if (!isset($data['nome']) ||
+//                !isset($data['descrizione_it']) ||
+//                !isset($data['descrizione_en'])
+//        ) {
+//            return false;
+//        }
+//        
+//        if(isset($view)) {
+//            switch($view) {
+//                default:
+//                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
+//            }
+//        }
+//        
+//        return true;
+//    }
     
     protected function _removeUnsecureFields(&$data) {
         

@@ -27,46 +27,46 @@ class AbilitazioneTipoIscrizione extends MysqlProxyBase {
                     unset($data['idTipoIscrizione']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
         }
     }
 
-    protected function _isCoherent($data, $view) {
-        if (!isset($data['idGara']) ||
-                !isset($data['idTipoIscrizione']) ||
-                !isset($data['finoAl']) ||
-                !isset($data['costo'])
-        ) {
-            return false;
-        }
-        if (!is_integer($data['idGara'])) {
-            return false;
-        }
-
-        if (!is_integer($data['idTipoIscrizione'])) {
-            return false;
-        }
-
-        if (!$this->_is_datetime($data['finoAl'])) {
-            return false;
-        }
-
-        if (!is_float($data['costo'])) {
-            return false;
-        }
-        
-        if(isset($view)) {
-            switch($view) {
-                default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
-            }
-        }
-
-        return true;
-    }
+//    protected function _isCoherent($data, $view) {
+//        if (!isset($data['idGara']) ||
+//                !isset($data['idTipoIscrizione']) ||
+//                !isset($data['finoAl']) ||
+//                !isset($data['costo'])
+//        ) {
+//            return false;
+//        }
+//        if (!is_integer($data['idGara'])) {
+//            return false;
+//        }
+//
+//        if (!is_integer($data['idTipoIscrizione'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_datetime($data['finoAl'])) {
+//            return false;
+//        }
+//
+//        if (!is_float($data['costo'])) {
+//            return false;
+//        }
+//        
+//        if(isset($view)) {
+//            switch($view) {
+//                default:
+//                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
+//            }
+//        }
+//
+//        return true;
+//    }
 
     protected function _removeUnsecureFields(&$data) {
         

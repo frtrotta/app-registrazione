@@ -519,7 +519,7 @@
                 if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body);
                     if ($body) {
-                        if ($body->code === 90) {
+                        if ($body->code === 91) {
                             testPassed($testCode);
                         } else {
                             testFailedMsg($testCode, $r, $email);
@@ -534,7 +534,7 @@
 //----------------------------------------------------------------------------
 
                 $testCode = '51';
-                // Aggiungo un utente con metodo POST, ma con password e facebookid nulli
+                // Aggiungo un utente con metodo POST, ma con password a lunghezza 0 e facebooid nullo
                 $u_gazzella = createUtente(null, '', 'lorenzo', 'gazzella', 'M', '1978-04-17', 'delete_u_gazzella@gmail.com', null, null, false);
 
                 $r = http_request(URL_BASE . 'Utente', null, 'POST', 'application/json', json_encode($u_gazzella));
@@ -542,7 +542,7 @@
                 if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body);
                     if ($body) {
-                        if ($body->code === 90) {
+                        if ($body->code === 91) {
                             testPassed($testCode);
                         } else {
                             testFailedMsg($testCode, $r, $email);

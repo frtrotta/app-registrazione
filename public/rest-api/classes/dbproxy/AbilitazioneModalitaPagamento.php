@@ -25,41 +25,41 @@ class AbilitazioneModalitaPagamento extends MysqlProxyBase {
                     unset($data['idModalitaPagamento']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
         }
     }
 
-    protected function _isCoherent($data, $view) {
-        if (!isset($data['idGara']) ||
-                !isset($data['idModalitaPagamento']) ||
-                !isset($data['finoAl'])
-        ) {
-            return false;
-        }
-        if (!is_integer($data['idGara'])) {
-            return false;
-        }
-
-        if (!is_integer($data['idModalitaPagamento'])) {
-            return false;
-        }
-
-        if (!$this->_is_datetime($data['finoAl'])) {
-            return false;
-        }
-        
-        if(isset($view)) {
-            switch($view) {
-                default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
-            }
-        }
-
-        return true;
-    }
+//    protected function _isCoherent($data, $view) {
+//        if (!isset($data['idGara']) ||
+//                !isset($data['idModalitaPagamento']) ||
+//                !isset($data['finoAl'])
+//        ) {
+//            return false;
+//        }
+//        if (!is_integer($data['idGara'])) {
+//            return false;
+//        }
+//
+//        if (!is_integer($data['idModalitaPagamento'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_datetime($data['finoAl'])) {
+//            return false;
+//        }
+//        
+//        if(isset($view)) {
+//            switch($view) {
+//                default:
+//                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
+//            }
+//        }
+//
+//        return true;
+//    }
 
     protected function _removeUnsecureFields(&$data) {
         

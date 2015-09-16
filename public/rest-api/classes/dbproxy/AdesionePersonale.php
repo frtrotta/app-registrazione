@@ -57,7 +57,7 @@ class AdesionePersonale extends MysqlProxyBase {
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -72,58 +72,58 @@ class AdesionePersonale extends MysqlProxyBase {
                 !isset($data['indirizzoPaese']) ||
                 !isset($data['idUtente'])
         ) {
-            return false;
+            return 'At least one required field is missing';
         }
-        if (!$this->is_integer_optional($data['id'])) {
-            return false;
+        if (!$this->_is_integer_optional(@$data['id'])) {
+            return 'id is set but it is not integer';
         }
 
         if (!$this->_is_string_with_length($data['categoriaFitri'])) {
-            return false;
+            return 'categoriaFitri is a 0-length string';
         }
 
         if (!$this->_is_string_with_length($data['indirizzoCap'])) {
-            return false;
+            return 'indirizzoCap is a 0-length string';
         }
 
         if (!$this->_is_string_with_length($data['indirizzoCitta'])) {
-            return false;
+            return 'indirizzoCitta is a 0-length string';
         }
 
         if (!$this->_is_string_with_length($data['indirizzoPaese'])) {
-            return false;
+            return 'indirizzoPaese is a 0-length string';
         }
 
         if (!is_integer($data['idUtente'])) {
-            return false;
+            return 'idUtente is not integer';
         }
 
         if (isset($view)) {
             switch ($view) {
                 case 'ordine':
                     if (!isset($data['idRichiestaTesseramento'])) {
-                        return false;
+                        return 'idRichiestaTesseramento is not set';
                     }
                     if (!is_integer($data['idRichiestaTesseramento'])) {
-                        return false;
+                        return 'idRichiestaTesseramento is not integer';
                     }
-                    if (!$this->_is_integer_optional($data['idSquadra'])) {
-                        return false;
+                    if (!$this->_is_integer_optional(@$data['idSquadra'])) {
+                        return 'idSquadra is set but it is not integer';
                     }
-                    if (!$this->_is_integer_optional($data['idIscrizione'])) {
-                        return false;
+                    if (!$this->_is_integer_optional(@$data['idIscrizione'])) {
+                        return 'idIscrizione is set but it is not integer';
                     }
                     if ((isset($data['idSquadra']) && isset($data['idIscrizione'])) ||
                             (!isset($data['idSquadra']) && !isset($data['idIscrizione']))) {
-                        return false;
+                        return 'idSquadra and idIscrizione cannot both be set';
                     }
                     // Nessuna adesione personale può essere correlata ad un invito, durante l'ordine
                     if (isset($data['idInvito'])) {
-                        return false;
+                        return 'idInvito cannot be set';
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
             }
         }
 
@@ -135,8 +135,9 @@ class AdesionePersonale extends MysqlProxyBase {
     }
 
     public function add(&$data, $view) {
-        if (!$this->_isCoherent($data, $view)) {
-            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        $check = $this->_isCoherent($data, $view);
+        if ($check !== true) {
+            throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
 
         $r = $this->_baseAdd($data);
@@ -159,7 +160,7 @@ class AdesionePersonale extends MysqlProxyBase {
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
         return $r;

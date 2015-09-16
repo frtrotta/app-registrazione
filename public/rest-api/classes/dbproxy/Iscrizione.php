@@ -74,7 +74,7 @@ class Iscrizione extends MysqlProxyBase {
                     $data['inviti'] = $i->getSelected($selectionClause, $view);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -88,37 +88,37 @@ class Iscrizione extends MysqlProxyBase {
                 !isset($data['idOrdine']) ||
                 !isset($data['idGara'])
         ) {
-            return false;
+            return 'At least one required field is missing';
         }
-        if (!$this->is_integer_optional($data['id'])) {
-            return false;
+        if (!$this->_is_integer_optional(@$data['id'])) {
+            return 'is is set but it is not integer';
         }
 
         if (!is_integer($data['idOrdine'])) {
-            return false;
+            return 'idOrdine is not integer';
         }
 
         if (!is_integer($data['idGara'])) {
-            return false;
+            return 'idGara is not integer';
         }
 
         if (!$this->_is_datetime($data['eseguitaIl'])) {
-            return false;
+            return 'eseguitaIl is not a valid datetime';
         }
 
         if (!$this->_is_integer_optional(@$data['pettorale'])) {
-            return false;
+            return 'pettorale is set but it is not integer';
         }
 
         if (!$this->_is_string_with_length_optional(@$data['motto'])) {
-            return false;
+            return 'motto is set but it is a 0-length string';
         }
 
         /* Must be either related to a squadra or to an adesione personale
          */
         if ((isset($data['squadra']) && isset($data['adesionePersonale'])) ||
                 (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
-            return false;
+            return 'Either squadra or adesionePersonale must be set';
         }
 
         if (isset($view)) {
@@ -130,26 +130,26 @@ class Iscrizione extends MysqlProxyBase {
                     // se ha una squadra con un'adesione personale, non può avere tre inviti (non implementato)
 
                     if (isset($data['adesionePersonale']) && isset($data['inviti'])) {
-                        return false;
+                        return 'adesionePersonale and inviti cannot be both set';
                     }
 
                     if (isset($data['squadra']) && !isset($data['inviti'])) {
-                        return false;
+                        return 'If squadra is set, inviti must be set as well';
                     }
 
                     if (isset($data['inviti'])) {
                         if (!is_array($data['inviti'])) {
-                            return false;
+                            return 'inviti is not an array';
                         }
                     }
 
-                    if (isset($data['squadra']) && count($data['inviti']) < 2) {
-                        return false;
+                    if (isset($data['squadra']) && (count($data['inviti']) < 2 || count($data['inviti']) > 3)) {
+                        return 'If squadra is set, the size of inviti can be either 2 or 3';
                     }
 
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
             }
         }
 
@@ -161,8 +161,9 @@ class Iscrizione extends MysqlProxyBase {
     }
 
     public function add(&$data, $view) {
-        if (!$this->_isCoherent($data, $view)) {
-            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        $check = $this->_isCoherent($data, $view);
+        if ($check !== true) {
+            throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
 
         $r = $this->_baseAdd($data);
@@ -196,7 +197,7 @@ class Iscrizione extends MysqlProxyBase {
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
         return $r;

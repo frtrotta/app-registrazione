@@ -31,46 +31,46 @@ class ConfermaPagamento extends MysqlProxyBase {
                     unset($data['idAmministratore']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
         }
     }
 
-    protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['idOrdine']) ||
-                !isset($data['idAmministratore']) ||
-                !isset($data['eseguitaIl'])
-        ) {
-            return false;
-        }
-        if (!is_integer_optinal($data['id'])) {
-            return false;
-        }
-
-        if (!is_integer($data['idOrdine'])) {
-            return false;
-        }
-
-        if (!is_integer($data['idAmministratore'])) {
-            return false;
-        }
-
-        if (!$this->_is_datetime($data['eseguitaIl'])) {
-            return false;
-        }
-        
-        if(isset($view)) {
-            switch($view) {
-                default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
-            }
-        }
-
-        return true;
-    }
+//    protected function _isCoherent($data, $view) {
+//        if (
+//                !isset($data['idOrdine']) ||
+//                !isset($data['idAmministratore']) ||
+//                !isset($data['eseguitaIl'])
+//        ) {
+//            return false;
+//        }
+//        if (!is_integer_optinal($data['id'])) {
+//            return false;
+//        }
+//
+//        if (!is_integer($data['idOrdine'])) {
+//            return false;
+//        }
+//
+//        if (!is_integer($data['idAmministratore'])) {
+//            return false;
+//        }
+//
+//        if (!$this->_is_datetime($data['eseguitaIl'])) {
+//            return false;
+//        }
+//        
+//        if(isset($view)) {
+//            switch($view) {
+//                default:
+//                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
+//            }
+//        }
+//
+//        return true;
+//    }
 
     protected function _removeUnsecureFields(&$data) {
         

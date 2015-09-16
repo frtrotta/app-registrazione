@@ -27,7 +27,7 @@ class Tesseramento extends MysqlProxyBase {
                 case 'default':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -41,34 +41,34 @@ class Tesseramento extends MysqlProxyBase {
                 !isset($data['idTipoTesseramento'])
                 
         ) {
-            return false;
+            return 'At least one required field is missing';
         }
-        if (!$this->is_integer_optional($data['id'])) {
-            return false;
+        if (!$this->_is_integer_optional(@$data['id'])) {
+            return 'id is set but it is not integer';
         }
         
         if (!$this->_is_datetime($data['finoAl'])) {
-            return false;
+            return 'finoAl is not a valid datetime';
         }
         
         if (!is_integer($data['idTipoTesseramento'])) {
-            return false;
+            return 'idTipoTesseramento is not integer';
         }
         
-        if (!$this->is_integer_optional(@$data['codiceSocietaFitri'])) {
-            return false;
+        if (!$this->_is_integer_optional(@$data['codiceSocietaFitri'])) {
+            return 'codiceSocietaFitri is set but it is not integer';
         }
         
         if(!$this->_is_string_with_length_optional(@$data['matricola'])) {
-            return false;
+            return 'matricola is a 0-length string';
         }
         
         if(!$this->_is_string_with_length_optional(@$data['stranieroSocieta'])) {
-            return false;
+            return 'stranieroSocieta is a 0-length string';
         }
         
         if(!$this->_is_string_with_length_optional(@$data['stranieroStato'])) {
-            return false;
+            return 'stranieroStato is a 0-length string';
         }
         
         // combinazioni
@@ -88,7 +88,7 @@ class Tesseramento extends MysqlProxyBase {
                 isset($data['stranieroSocieta']) &&
                 isset($data['stranieroStato']))
                 ) {
-            return false;
+            return 'The combination of matricola, codiceSocietaFitri, stranieroSocieta and/or stranieroStato is not valid';
         }
         
         if(isset($view)) {
@@ -96,7 +96,7 @@ class Tesseramento extends MysqlProxyBase {
                 case 'ordine':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 60);
             }
         }
         
@@ -108,8 +108,9 @@ class Tesseramento extends MysqlProxyBase {
     }
 
     public function add(&$data, $view) {
-        if (!$this->_isCoherent($data, $view)) {
-            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        $check = $this->_isCoherent($data, $view);
+        if ($check !== true) {
+            throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
 
         $r = $this->_baseAdd($data);
@@ -120,7 +121,7 @@ class Tesseramento extends MysqlProxyBase {
                 case 'ordine':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+                    throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
         return $r;
