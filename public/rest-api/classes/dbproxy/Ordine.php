@@ -30,7 +30,7 @@ class Ordine extends MysqlProxyBase {
         $data['idModalitaPagamento'] = (int) $data['idModalitaPagamento'];
     }
 
-    protected function _complete(&$data) {
+    protected function _complete(&$data, $view) {
 
         $mp = new ModalitaPagamento($this->conn);
         $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
@@ -51,7 +51,7 @@ class Ordine extends MysqlProxyBase {
                 case 'default':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -122,14 +122,12 @@ class Ordine extends MysqlProxyBase {
                     if (!isset($data['iscrizioni'])) {
                         return false;
                     }
-                    if(is_array($data['iscrizioni'])) {
+                    if (is_array($data['iscrizioni'])) {
                         return false;
                     }
-                case 'iscrizione':
-                case 'invito':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
 
@@ -138,6 +136,31 @@ class Ordine extends MysqlProxyBase {
 
     protected function _removeUnsecureFields(&$data) {
         
+    }
+
+    public function add(&$data, $view) {
+        if (!$this->_isCoherent($data, $view)) {
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        }
+        
+        $r = $this->_baseAdd($data);
+        $r = array_merge($data, $r);
+        
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    $iProxy = new Iscrizione($this->conn);
+                    foreach ($data['iscrizioni'] as &$i) {
+                        $i['idOrdine'] = $data['id'];
+                        $ir = $iProxy->add($i, $view);
+                        $i = array_merge($i, $ir);
+                    }
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+            }
+        }
+        return $r;
     }
 
 }

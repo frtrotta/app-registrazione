@@ -27,7 +27,7 @@ class Tesseramento extends MysqlProxyBase {
                 case 'default':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -93,8 +93,10 @@ class Tesseramento extends MysqlProxyBase {
         
         if(isset($view)) {
             switch($view) {
+                case 'ordine':
+                    break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
         
@@ -103,5 +105,24 @@ class Tesseramento extends MysqlProxyBase {
     
     protected function _removeUnsecureFields(&$data) {
         
+    }
+
+    public function add(&$data, $view) {
+        if (!$this->_isCoherent($data, $view)) {
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        }
+
+        $r = $this->_baseAdd($data);
+        $r = array_merge($data, $r);
+
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+            }
+        }
+        return $r;
     }
 }

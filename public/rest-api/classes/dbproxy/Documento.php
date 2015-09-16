@@ -23,7 +23,7 @@ class Documento extends MysqlProxyBase {
         unset($data['idRichiestaTesseramento']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -46,8 +46,10 @@ class Documento extends MysqlProxyBase {
         
         if(isset($view)) {
             switch($view) {
+                case 'ordine':
+                    break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
         
@@ -56,6 +58,26 @@ class Documento extends MysqlProxyBase {
     
     protected function _removeUnsecureFields(&$data) {
         
+    }
+
+    public function add(&$data, $view) {
+        throw new \Exception('pippo');
+        if (!$this->_isCoherent($data, $view)) {
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        }
+        
+        $r = $this->_baseAdd($data);
+        $r = array_merge($data, $r);
+        
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+            }
+        }
+        return $r;
     }
 
 }

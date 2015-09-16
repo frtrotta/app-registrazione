@@ -30,7 +30,7 @@ class AdesionePersonale extends MysqlProxyBase {
 
                     $cf = new CategoriaFitri($this->conn);
                     $data['categoriaFitri'] = $u->get($data['categoriaFitri'], $view);
-                    
+
                     $rt = new RichiestaTesseramento($this->conn);
                     $selectionClause = ['idAdesionePersonale' => $data['id']];
                     $data['richiestaTesseramento'] = $rt->getSelected($selectionClause, $view)[0];
@@ -57,7 +57,7 @@ class AdesionePersonale extends MysqlProxyBase {
                     }
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -78,6 +78,10 @@ class AdesionePersonale extends MysqlProxyBase {
             return false;
         }
 
+        if (!$this->_is_string_with_length($data['categoriaFitri'])) {
+            return false;
+        }
+
         if (!$this->_is_string_with_length($data['indirizzoCap'])) {
             return false;
         }
@@ -93,11 +97,33 @@ class AdesionePersonale extends MysqlProxyBase {
         if (!is_integer($data['idUtente'])) {
             return false;
         }
-        
-        if(isset($view)) {
-            switch($view) {
+
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    if (!isset($data['idRichiestaTesseramento'])) {
+                        return false;
+                    }
+                    if (!is_integer($data['idRichiestaTesseramento'])) {
+                        return false;
+                    }
+                    if (!$this->_is_integer_optional($data['idSquadra'])) {
+                        return false;
+                    }
+                    if (!$this->_is_integer_optional($data['idIscrizione'])) {
+                        return false;
+                    }
+                    if ((isset($data['idSquadra']) && isset($data['idIscrizione'])) ||
+                            (!isset($data['idSquadra']) && !isset($data['idIscrizione']))) {
+                        return false;
+                    }
+                    // Nessuna adesione personale può essere correlata ad un invito, durante l'ordine
+                    if (isset($data['idInvito'])) {
+                        return false;
+                    }
+                    break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
 
@@ -106,6 +132,37 @@ class AdesionePersonale extends MysqlProxyBase {
 
     protected function _removeUnsecureFields(&$data) {
         
+    }
+
+    public function add(&$data, $view) {
+        if (!$this->_isCoherent($data, $view)) {
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        }
+
+        $r = $this->_baseAdd($data);
+        $r = array_merge($data, $r);
+
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    $rtProxy = new RichiestaTesseramento($this->conn);
+                    $data['richiestaTesseramento']['idAdesionePersonale'] = $data['id'];
+                    $rrt = $rtProxy->add($data['richiestaTesseramento'], $view);
+                    $data['richiestaTesseramento'] = array_merge($data['richiestaTesseramento'], $rrt);
+
+                    if (isset($data['idIscrizione'])) {
+                        $this->_addOptionalRelation('idIscrizione', $data['idIscrizione'], 'idAdesionePersonale', $data['id'], 'iscrizione__adesione_personale');
+                    }
+                    
+                    if (isset($data['idSquadra'])) {
+                        $this->_addOptionalRelation('idAdesionePersonale', $data['id'], 'idSquadra', $data['idSquadra'], 'adesione_personale__squadra');
+                    }
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+            }
+        }
+        return $r;
     }
 
 }

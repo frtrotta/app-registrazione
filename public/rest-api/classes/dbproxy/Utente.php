@@ -33,7 +33,7 @@ class Utente extends MysqlProxyBase {
                 case 'default':
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -118,7 +118,7 @@ class Utente extends MysqlProxyBase {
         if (isset($view)) {
             switch ($view) {
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
 
@@ -137,15 +137,14 @@ class Utente extends MysqlProxyBase {
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
         if ($this->_isCoherent($data, null)) {
-            $r = $this->_updateBase($id, $data);
+            $r = $this->_baseUpdate($id, $data);
         } else {
-            $e = var_export($data, true);
-            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 90);
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 90);
         }
         return $r;
     }
 
-    public function add($data, $view) {
+    public function add(&$data, $view) {
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
 
@@ -204,7 +203,7 @@ class Utente extends MysqlProxyBase {
                         $rs->free();
                         $exists = true;
                         // Aggiorno i dati inseriti
-                        $r = $this->_updateBase((int) $row[0], $data);
+                        $r = $this->_baseUpdate((int) $row[0], $data);
                         break;
                     case 0:
                         $rs->free();
@@ -216,11 +215,10 @@ class Utente extends MysqlProxyBase {
 
             // Se non esiste, procedo normalmente
             if (!$exists) {
-                $r = $this->_addBase($data);
+                $r = $this->_baseAdd($data);
             }
         } else {
-            $e = var_export($data, true);
-            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 90);
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 90);
         }
         return $r;
     }

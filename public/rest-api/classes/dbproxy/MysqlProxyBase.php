@@ -197,6 +197,19 @@ abstract class MysqlProxyBase {
         }
         return $this->fetch_all();
     }
+    
+    protected function _addOptionalRelation($idField, $idValue, $childIdField, $childIdValue, $tableName) {
+        $idValue = $this->_sqlFormat($idValue);
+        $childIdValue = $this->_sqlFormat($childIdValue);
+        $query = "INSERTO INTO `$tableName`"
+                . " (`$idField`, `$childIdField`)"
+                . " VALUES"
+                . " ($idValue, $childIdValue)";
+        $rs = $this->conn->query($query);
+        if ($this->conn->errno) {
+            throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+        }
+    }
 
     abstract protected function _isCoherent($data, $view);
 
@@ -431,7 +444,7 @@ abstract class MysqlProxyBase {
         }
     }    
     
-    public function add($data, $view) {
+    public function add(&$data, $view) {
         throw new \Exception('Method not implemented');
     }
 
@@ -442,7 +455,7 @@ abstract class MysqlProxyBase {
      * @param associative array $data
      * @return $data with the generated identifier
      */
-    protected function _addBase($data) {
+    protected function _baseAdd($data) {
 //        if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
 //                /* Se add diventa una funzione che deve essere richiamata da update della specifica
 //                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
@@ -463,8 +476,7 @@ abstract class MysqlProxyBase {
             $r = $data;
             $r[$this->fieldList[0]] = $this->conn->insert_id;
 //        } else {
-//            $e = var_export($data, true);
-//            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 92);
+//            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 92);
 //        }
         return $r;
     }    
@@ -479,7 +491,7 @@ abstract class MysqlProxyBase {
      * @return null or the updated (passed) data
      * @throws Exception
      */
-    protected function _updateBase($id, $data) {
+    protected function _baseUpdate($id, $data) {
         $r = null;
         $current = $this->get($id);
         if ($current) {
@@ -513,8 +525,7 @@ abstract class MysqlProxyBase {
                         throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
                 }
 //            } else {
-//                $e = var_export($data, true);
-//                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 91);
+//                throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 91);
 //            }
         }
 

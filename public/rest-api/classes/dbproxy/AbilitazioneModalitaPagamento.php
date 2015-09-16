@@ -25,7 +25,7 @@ class AbilitazioneModalitaPagamento extends MysqlProxyBase {
                     unset($data['idModalitaPagamento']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -54,7 +54,7 @@ class AbilitazioneModalitaPagamento extends MysqlProxyBase {
         if(isset($view)) {
             switch($view) {
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
 

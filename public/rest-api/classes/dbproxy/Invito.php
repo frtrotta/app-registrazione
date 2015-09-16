@@ -19,37 +19,23 @@ class Invito extends MysqlProxyBase {
     protected function _complete(&$data, $view) {
         if (isset($view)) {
             switch ($view) {
-                case 'invito':
-                    $i = new Iscrizione($this->conn);
-                    $data['iscrizione'] = $i->get($data['idIscrizione'], $view);
-                    unset($data['idIscrizione']);
-
-                    $ap = new AdesionePersonale($this->conn);
-                    $temp = $this->_getOptionalChildIds('idInvito', $data[$this->fieldList[0]], 'idAdesionePersonale', 'adesione_personale__invito');
-                    $n = count($temp);
-                    switch ($n) {
-                        case 0:
-                            break;
-                        case 1:
-                            $data['adesionePersonale'] = $s->get($temp[0], $view);
-                            break;
-                        default:
-                            throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
-                    }
-                    break;
                 case 'default':
                     $i = new Iscrizione($this->conn);
                     $data['iscrizione'] = $i->get($data['idIscrizione'], $view);
                     unset($data['idIscrizione']);
                 case 'iscrizione':
-                    $ap = new AdesionePersonale($this->conn);
+                case 'invito':
+                    $i = new Iscrizione($this->conn);
+                    $data['iscrizione'] = $i->get($data['idIscrizione'], $view);
+                    unset($data['idIscrizione']);
+
                     $temp = $this->_getOptionalChildIds('idInvito', $data[$this->fieldList[0]], 'idAdesionePersonale', 'adesione_personale__invito');
                     $n = count($temp);
                     switch ($n) {
                         case 0:
                             break;
                         case 1:
-                            $data['adesionePersonale'] = $s->get($temp[0], null);
+                            $data['idAdesionePersonale'] = $temp[0];
                             break;
                         default:
                             throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
@@ -59,7 +45,7 @@ class Invito extends MysqlProxyBase {
                     break;
 
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -97,8 +83,14 @@ class Invito extends MysqlProxyBase {
         
         if(isset($view)) {
             switch($view) {
+                case 'ordine':
+                    // Nell'ordine nessun invito può avere un'adesione personale
+                    if(isset($data['idAdesionePersonale'])) {
+                        return false;
+                    }
+                    break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
 
@@ -107,6 +99,26 @@ class Invito extends MysqlProxyBase {
 
     protected function _removeUnsecureFields(&$data) {
         
+    }
+
+    public function add(&$data, $view) {
+        if (!$this->_isCoherent($data, $view)) {
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        }
+        
+        $r = $this->_baseAdd($data);
+        $r = array_merge($data, $r);
+        
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    // Relazione con iscrizione aggiunta in _baseAdd
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+            }
+        }
+        return $r;
     }
 
 }

@@ -62,7 +62,7 @@ class Iscrizione extends MysqlProxyBase {
                     $data['ordine'] = $o->get($data['idOrdine'], $view);
                     unset($data['idOrdine']);
                     break;
-                
+
                 case 'iscrizione':
                     $r = new Risultato($this->conn);
                     $selectionClause = ['idIscrizione' => $data['id']];
@@ -74,7 +74,7 @@ class Iscrizione extends MysqlProxyBase {
                     $data['inviti'] = $i->getSelected($selectionClause, $view);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -120,11 +120,36 @@ class Iscrizione extends MysqlProxyBase {
                 (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
             return false;
         }
-        
-        if(isset($view)) {
-            switch($view) {
+
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    // se ha un'adesione personale, non può avere un invito
+                    // se ha un'adesione personale, non può avere una squadra
+                    // se ha una squadra, deve avere almeno due inviti
+                    // se ha una squadra con un'adesione personale, non può avere tre inviti (non implementato)
+
+                    if (isset($data['adesionePersonale']) && isset($data['inviti'])) {
+                        return false;
+                    }
+
+                    if (isset($data['squadra']) && !isset($data['inviti'])) {
+                        return false;
+                    }
+
+                    if (isset($data['inviti'])) {
+                        if (!is_array($data['inviti'])) {
+                            return false;
+                        }
+                    }
+
+                    if (isset($data['squadra']) && count($data['inviti']) < 2) {
+                        return false;
+                    }
+
+                    break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
 
@@ -133,6 +158,48 @@ class Iscrizione extends MysqlProxyBase {
 
     protected function _removeUnsecureFields(&$data) {
         
+    }
+
+    public function add(&$data, $view) {
+        if (!$this->_isCoherent($data, $view)) {
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        }
+
+        $r = $this->_baseAdd($data);
+        $r = array_merge($data, $r);
+
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    if (isset($data['inviti'])) {
+                        // Questi inviti non possono avere alcuna adesione personale
+                        $iProxy = new Invito($this->conn);
+                        foreach ($data['inviti'] as &$i) {
+                            $i['idIscrizione'] = $data['id'];
+                            $ir = $iProxy->add($i, $view);
+                            $i = array_merge($i, $ir);
+                        }
+                    }
+
+                    if (isset($data['adesionePersonale'])) {
+                        $aProxy = new AdesionePersonale($this->conn);
+                        $data['adesionePersonale']['idIscrizione'] = $data['id'];
+                        $ra = $aProxy->add($data['adesionePersonale'], $view);
+                        $data['adesionePersonale'] = array_merge($data['adesionePersonale'], $ra);
+                    }
+
+                    if (isset($data['squadra'])) {
+                        $sProxy = new Squadra($this->conn);
+                        $data['squadra']['idIscrizione'] = $data['id'];
+                        $rs = $sProxy->add($data['squadra'], $view);
+                        $data['squadra'] = array_merge($data['squadra'], $ra);
+                    }
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+            }
+        }
+        return $r;
     }
 
 }

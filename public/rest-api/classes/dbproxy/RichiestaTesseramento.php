@@ -37,7 +37,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
                     unset($data['idAdesionePersonale']);
                     break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 71);
             }
         } else {
             throw new ClientRequestException('view requested', 70);
@@ -47,7 +47,8 @@ class RichiestaTesseramento extends MysqlProxyBase {
     protected function _isCoherent($data, $view) {
         if (
                 !isset($data['eseguitaIl']) ||
-                !isset($data['verificata'])
+                !isset($data['verificata']) ||
+                !isset($data['idTipoRichiestaTesseramento'])
         ) {
             return false;
         }
@@ -62,11 +63,17 @@ class RichiestaTesseramento extends MysqlProxyBase {
         if (!is_bool($data['verificata'])) {
             return false;
         }
-        
-        if(isset($view)) {
-            switch($view) {
+
+        if (!is_integer($data['idTipoRichiestaTesseramento'])) {
+            return false;
+        }
+
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    break;
                 default:
-                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 60);
             }
         }
 
@@ -75,6 +82,31 @@ class RichiestaTesseramento extends MysqlProxyBase {
 
     protected function _removeUnsecureFields(&$data) {
         
+    }
+
+    public function add(&$data, $view) {
+        if (!$this->_isCoherent($data, $view)) {
+            throw new ClientRequestException('Incoherent data for ' . getclasse($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+        }
+
+        $r = $this->_baseAdd($data);
+        $r = array_merge($data, $r);
+
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    if (isset($data['tesseramento'])) {
+                        $tProxy = new Tesseramento($this->conn);
+                        $data['tesseramento']['idRichiestaTesseramento'] = $data['id'];
+                        $rt = $tProxy->add($data['tesseramento'], $view);
+                        $data['tesseramento'] = array_merge($data['tesseramento'], $t);
+                    }
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view for ' . getclass($this) . ': ' . $view, 50);
+            }
+        }
+        return $r;
     }
 
 }
