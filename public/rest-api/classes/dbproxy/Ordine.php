@@ -59,7 +59,7 @@ class Ordine extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['ricevutoIl']) ||
                 !isset($data['totale']) ||
@@ -107,6 +107,13 @@ class Ordine extends MysqlProxyBase {
         
         if(!$this->_is_string_with_length($data['indirizzoPaese'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
         
         return true;

@@ -36,7 +36,7 @@ class Squadra extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['nome'])
         ) {
@@ -49,6 +49,13 @@ class Squadra extends MysqlProxyBase {
 
         if (!$this->_is_string_with_length($data['nome'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

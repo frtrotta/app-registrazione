@@ -35,7 +35,7 @@ class Tesseramento extends MysqlProxyBase {
         
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['finoAl']) ||
                 !isset($data['idTipoTesseramento'])
@@ -89,6 +89,13 @@ class Tesseramento extends MysqlProxyBase {
                 isset($data['stranieroStato']))
                 ) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
         
         return true;

@@ -81,7 +81,7 @@ class Iscrizione extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['eseguitaIl']) ||
                 !isset($data['haImmagine']) ||
@@ -119,6 +119,13 @@ class Iscrizione extends MysqlProxyBase {
         if ((isset($data['squadra']) && isset($data['adesionePersonale'])) ||
                 (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

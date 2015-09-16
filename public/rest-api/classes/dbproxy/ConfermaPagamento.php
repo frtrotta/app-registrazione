@@ -38,7 +38,7 @@ class ConfermaPagamento extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['idOrdine']) ||
                 !isset($data['idAmministratore']) ||
@@ -60,6 +60,13 @@ class ConfermaPagamento extends MysqlProxyBase {
 
         if (!$this->_is_datetime($data['eseguitaIl'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

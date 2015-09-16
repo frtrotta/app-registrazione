@@ -35,7 +35,7 @@ class VerificaRichiestaTesseramento extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['eseguitaIl']) ||
                 !isset($data['esito']) ||
@@ -62,6 +62,13 @@ class VerificaRichiestaTesseramento extends MysqlProxyBase {
 
         if (!$this->_is_datetime($data['eseguitaIl'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

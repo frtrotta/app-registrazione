@@ -64,7 +64,7 @@ class AdesionePersonale extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['categoriaFitri']) ||
                 !isset($data['indirizzoCap']) ||
@@ -92,6 +92,13 @@ class AdesionePersonale extends MysqlProxyBase {
 
         if (!is_integer($data['idUtente'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

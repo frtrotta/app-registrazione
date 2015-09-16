@@ -34,7 +34,7 @@ class AbilitazioneTipoIscrizione extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['idGara']) ||
                 !isset($data['idTipoIscrizione']) ||
                 !isset($data['finoAl']) ||
@@ -56,6 +56,13 @@ class AbilitazioneTipoIscrizione extends MysqlProxyBase {
 
         if (!is_float($data['costo'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

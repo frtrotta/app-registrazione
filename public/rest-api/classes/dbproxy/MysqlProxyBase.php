@@ -198,7 +198,7 @@ abstract class MysqlProxyBase {
         return $this->fetch_all();
     }
 
-    abstract protected function _isCoherent($data);
+    abstract protected function _isCoherent($data, $view);
 
     abstract protected function _removeUnsecureFields(&$data);
 
@@ -438,8 +438,12 @@ abstract class MysqlProxyBase {
      * @param associative array $data
      * @return $data with the generated identifier
      */
-    protected function add($data) {
-        if ($this->_isCoherent($data)) {
+    protected function add($data) { // TODO: modificare il nome
+        if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
+                /* Se add diventa una funzione che deve essere richiamata da update della specifica
+                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
+                 * Guarda, però, come è implementato il metodo add di Utente
+                 */
             $query = 'INSERT INTO `' . $this->tableName . '` '
                     . $this->_createFieldListAndValues($data);
             $this->conn->query($query);
@@ -467,12 +471,16 @@ abstract class MysqlProxyBase {
      * @return null or the updated (passed) data
      * @throws Exception
      */
-    protected function update($id, $data) {
+    protected function update($id, $data) { // TODO: modificare il nome
         $r = null;
         $current = $this->get($id);
         if ($current) {
             $data = array_merge($current, $data);
-            if ($this->_isCoherent($data)) {
+            if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
+                /* Se update diventa una funzione che deve essere richiamata da update della specifica
+                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
+                 * Guarda, però, come è implementato il metodo add di Utente
+                 */
                 $identifierFieldName = $this->fieldList[0];
                 unset($data[$identifierFieldName]);
                 $identifierFieldValue = $id;

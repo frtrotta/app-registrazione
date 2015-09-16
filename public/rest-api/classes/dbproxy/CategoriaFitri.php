@@ -26,7 +26,7 @@ class CategoriaFitri extends MysqlProxyBase {
         }        
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['nome']) ||
                 !isset($data['nomeEsteso']) ||
                 !isset($data['iniziaDaAnni'])
@@ -35,6 +35,13 @@ class CategoriaFitri extends MysqlProxyBase {
         }
         if (!is_integer($data['iniziaDaAnni'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
         
         return true;

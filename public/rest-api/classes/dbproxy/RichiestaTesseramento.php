@@ -44,7 +44,7 @@ class RichiestaTesseramento extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['eseguitaIl']) ||
                 !isset($data['verificata'])
@@ -61,6 +61,13 @@ class RichiestaTesseramento extends MysqlProxyBase {
 
         if (!is_bool($data['verificata'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

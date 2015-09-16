@@ -66,7 +66,7 @@ class Invito extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['codice']) ||
                 !isset($data['nome']) ||
                 !isset($data['cognome']) ||
@@ -93,6 +93,13 @@ class Invito extends MysqlProxyBase {
         }
         if (!is_integer($data['idIscrizione'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

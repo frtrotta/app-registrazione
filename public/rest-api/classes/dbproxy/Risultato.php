@@ -49,7 +49,7 @@ class Risultato extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['idIscrizione']) ||
                 !isset($data['codiceConclusioneGara'])
@@ -82,6 +82,13 @@ class Risultato extends MysqlProxyBase {
         }
         if (!$this->_is_integer_optional(@$data['posizioneFrazioneCorsa'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

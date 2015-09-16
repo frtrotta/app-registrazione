@@ -34,7 +34,7 @@ class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['idTipoRichiestaTesseramento']) ||
                 !isset($data['idGara']) ||
                 !isset($data['finoAl']) ||
@@ -56,6 +56,13 @@ class AbilitazioneTipoRichiestaTesseramento extends MysqlProxyBase {
 
         if (!is_float($data['costo'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

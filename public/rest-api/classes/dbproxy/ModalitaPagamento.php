@@ -31,7 +31,7 @@ class ModalitaPagamento extends MysqlProxyBase {
         }        
     }
     
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['nome_it']) ||
                 !isset($data['nome_en'])
@@ -56,6 +56,13 @@ class ModalitaPagamento extends MysqlProxyBase {
         
         if(!$this->_is_string_with_length_optional(@$data['descrizione_it'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
         return true;
     }

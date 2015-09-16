@@ -65,7 +65,7 @@ class Gara extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['nome']) ||
                 !isset($data['disputataIl']) ||
@@ -99,6 +99,13 @@ class Gara extends MysqlProxyBase {
 
         if (!$this->_is_datetime($data['iscrizioneModificabileFinoAl'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

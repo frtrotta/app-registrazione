@@ -32,7 +32,7 @@ class AbilitazioneModalitaPagamento extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['idGara']) ||
                 !isset($data['idModalitaPagamento']) ||
                 !isset($data['finoAl'])
@@ -49,6 +49,13 @@ class AbilitazioneModalitaPagamento extends MysqlProxyBase {
 
         if (!$this->_is_datetime($data['finoAl'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

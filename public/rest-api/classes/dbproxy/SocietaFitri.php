@@ -28,7 +28,7 @@ class SocietaFitri extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['codice']) ||
                 !isset($data['nome'])
         ) {
@@ -48,6 +48,13 @@ class SocietaFitri extends MysqlProxyBase {
         
         if(!$this->_is_string_with_length_optional(@$data['email'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
         
         return true;

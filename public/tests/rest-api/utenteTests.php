@@ -71,9 +71,24 @@
                     $conn->close();
                 }
 
+                function rimuoviUtentiEventualmenteRimasti($mysqlConf) {
+                    $conn = new mysqli($mysqlConf['server'], $mysqlConf['username'], $mysqlConf['password'], $mysqlConf['database']);
+                    if ($conn->connect_errno) {
+                        throw new Exception("Connection error: $this->conn->connect_error");
+                    }
+                    $query = "DELETE FROM utente "
+                            . " WHERE "
+                            . " email like 'delete_%@gmail.com'";
+                    $conn->query($query);
+                    if ($conn->errno) {
+                        throw new Exception($conn->error);
+                    }
+                    $conn->close();
+                }
+
                 define("URL_BASE", "http://localhost/app-registrazione/rest-api/");
 //
-//                inserisciUtenteTest($mysqlConf);
+                rimuoviUtentiEventualmenteRimasti($mysqlConf);
 //----------------------------------------------------------------------------
                 $testCode = '00';
                 // Chiedo l'elenco degli utenti
@@ -101,7 +116,7 @@
                 /* Nota data di nascita: questo utente mi servirà in seguito per verificare
                  * rilevazione opportuna dei nati in 2014-06-29
                  */
-  
+
                 $u1_2014 = createUtente(null, 'ciccio', 'alessio', 'formaggio', 'M', '2014-06-29', 'delete_u1_2014@gmail.com', null, null, false);
 
                 $r = http_request(URL_BASE . 'Utente', null, 'PUT', 'application/json;charset=UTF-8', json_encode($u1_2014));
@@ -475,7 +490,7 @@
                 // Aggiorno un utente con metodo PUT
                 $u_trotta = createUtente($lastId, 'ciccio', 'francesco è grande', 'trotta', 'M', '1978-04-17', 'delete_u_trotta@gmail.com', null, null, false);
 
-                $r = http_request(URL_BASE . 'Utente/'.$u_trotta['id'], array($authConf['cookie-name'] => $cookie1), 'PUT', 'application/json', json_encode($u_trotta));
+                $r = http_request(URL_BASE . 'Utente/' . $u_trotta['id'], array($authConf['cookie-name'] => $cookie1), 'PUT', 'application/json', json_encode($u_trotta));
 
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);

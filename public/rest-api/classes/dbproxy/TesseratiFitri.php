@@ -44,7 +44,7 @@ class TesseratiFitri extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['CODICE_SS']) ||
                 !isset($data['TESSERA']) ||
                 !isset($data['COGNOME']) ||
@@ -113,6 +113,13 @@ class TesseratiFitri extends MysqlProxyBase {
 
         if (!$this->_is_string_with_length_optional(@$data['DISABILITA'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
 
         return true;

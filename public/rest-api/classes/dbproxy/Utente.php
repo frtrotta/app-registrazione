@@ -40,7 +40,7 @@ class Utente extends MysqlProxyBase {
         }        
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (
                 !isset($data['nome']) ||
                 !isset($data['cognome']) ||
@@ -114,6 +114,13 @@ class Utente extends MysqlProxyBase {
                 return false;
             }
         }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
+        }
 
         return true;
     }
@@ -136,7 +143,7 @@ class Utente extends MysqlProxyBase {
         unset($data['gettoneAutenticazioneScadeIl']);
 
         $r = null;
-        if ($this->_isCoherent($data)) {
+        if ($this->_isCoherent($data, null)) {
             $nome = $data['nome'];
             $cognome = $data['cognome'];
             $email = $data['email'];

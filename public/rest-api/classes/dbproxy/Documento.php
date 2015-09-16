@@ -30,7 +30,7 @@ class Documento extends MysqlProxyBase {
         }
     }
 
-    protected function _isCoherent($data) {
+    protected function _isCoherent($data, $view) {
         if (!isset($data['nomeFile']) ||
                 !isset($data['idRichiestaTesseramento'])
         ) {
@@ -42,6 +42,13 @@ class Documento extends MysqlProxyBase {
         }
         if (!is_integer($data['idRichiestaTesseramento'])) {
             return false;
+        }
+        
+        if(isset($view)) {
+            switch($view) {
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 60);
+            }
         }
         
         return true;
