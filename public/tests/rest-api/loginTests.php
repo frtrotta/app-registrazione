@@ -48,7 +48,7 @@
 
 //----------------------------------------------------------------------------
 
-                $testCode = '00a';
+                $testCode = '00a - Login senza fornire estremi autenticazione';
                 $r = http_request(URL_BASE . 'Login');
                 if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
@@ -66,7 +66,7 @@
                     testFailed($testCode, $r);
                 }
                 
-                $testCode = '00b';
+                $testCode = '00b - Login fornendo estremi autenticazione non corretti (email vuota) in query string, NVP';
                 $r = http_request(URL_BASE . 'Login?email=&password=test');
                 if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
@@ -85,7 +85,7 @@
                 }
                 
                 
-                $testCode = '00c';
+                $testCode = '00c - Login fornendo estremi autenticazione corretti in query string, NVP';
                 $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=');
                 if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
@@ -105,7 +105,7 @@
 
 //----------------------------------------------------------------------------
                 
-                $testCode = '01a';
+                $testCode = '01a - Login fornendo estremi autenticazione corretti in query string, JSON';
                 $r = http_request(URL_BASE . 'Login?'.urlencode('{"email":"email@test.com","password":"test"}'));
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     testPassed($testCode);
@@ -113,7 +113,7 @@
                     testFailed($testCode, $r);
                 }
                 
-                $testCode = '01b';
+                $testCode = '01b - Login fornendo estremi autenticazione corretti in corpo, JSON';
                 $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/json', '{"email":"email@test.com","password":"test"}');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     testPassed($testCode);
@@ -121,7 +121,7 @@
                     testFailed($testCode, $r);
                 }
                 
-                $testCode = '01c';
+                $testCode = '01c - Login fornendo estremi autenticazione corretti in corpo, NVP';
                 $r = http_request(URL_BASE . 'Login', null, 'POST', 'application/x-www-form-urlencoded', 'email=email%40test.com&password=test');
                 if ($r->response->code === 200 && isset($r->response->cookies[$authConf['cookie-name']]) && $r->response->contentType === 'application/json') {
                     testPassed($testCode);

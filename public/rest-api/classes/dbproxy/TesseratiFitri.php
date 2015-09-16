@@ -28,10 +28,20 @@ class TesseratiFitri extends MysqlProxyBase {
         //TODO $data['DATA_EMISSIONE'] = new DateTime($data['DATA_EMISSIONE']);
     }
 
-    protected function _complete(&$data) {
-        $sf = new SocietaFitri($this->conn);
-        $data['societa'] = $sf->get($data['CODICE_SS'], true);
-        unset($data['CODICE_SS']);
+    protected function _complete(&$data, $view) {
+        if (isset($view)) {
+            switch ($view) {
+                case 'default':
+                    $sf = new SocietaFitri($this->conn);
+                    $data['societa'] = $sf->get($data['CODICE_SS'], $view);
+                    unset($data['CODICE_SS']);
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
+        }
     }
 
     protected function _isCoherent($data) {
@@ -55,61 +65,61 @@ class TesseratiFitri extends MysqlProxyBase {
 
         if (!is_integer($data['TESSERA'])) {
             return false;
-        }        
-        
-        if(!$this->_is_string_with_length($data['COGNOME'])) {
+        }
+
+        if (!$this->_is_string_with_length($data['COGNOME'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['NOME'])) {
-            return false;
-        }       
-        
-        if(!$this->_is_string_with_length($data['SESSO'])) {
+
+        if (!$this->_is_string_with_length($data['NOME'])) {
             return false;
         }
-        
+
+        if (!$this->_is_string_with_length($data['SESSO'])) {
+            return false;
+        }
+
         if (!$this->_is_date($data['DATA_NASCITA'])) {
             return false;
-        }        
-        
-        if(!$this->_is_string_with_length($data['CITTADINANZA'])) {
+        }
+
+        if (!$this->_is_string_with_length($data['CITTADINANZA'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['CATEGORIA'])) {
-            return false;
-        }       
-        
-        if(!$this->_is_string_with_length($data['QUALIFICA'])) {
+
+        if (!$this->_is_string_with_length($data['CATEGORIA'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length_optional(@$data['LIVELLO'])) {
+
+        if (!$this->_is_string_with_length($data['QUALIFICA'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length_optional(@$data['STATO'])) {
+
+        if (!$this->_is_string_with_length_optional(@$data['LIVELLO'])) {
             return false;
         }
-        
+
+        if (!$this->_is_string_with_length_optional(@$data['STATO'])) {
+            return false;
+        }
+
         if (!$this->_is_date($data['DATA_EMISSIONE'])) {
             return false;
-        }       
-        
-        if(!$this->_is_string_with_length($data['TIPO_TESSERA'])) {
+        }
+
+        if (!$this->_is_string_with_length($data['TIPO_TESSERA'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length_optional(@$data['DISABILITA'])) {
+
+        if (!$this->_is_string_with_length_optional(@$data['DISABILITA'])) {
             return false;
         }
-        
+
         return true;
     }
 
-    
     protected function _removeUnsecureFields(&$data) {
         
     }
+
 }

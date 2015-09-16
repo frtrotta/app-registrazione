@@ -23,39 +23,61 @@ class Iscrizione extends MysqlProxyBase {
         $data['idOrdine'] = (int) $data['idOrdine'];
     }
 
-    protected function _complete(&$data) {
-        $g = new Gara($this->conn);
-        $data['gara'] = $g->get($data['idGara'], true);
-        unset($data['idGara']);
+    protected function _complete(&$data, $view) {
+        if (isset($view)) {
+            $g = new Gara($this->conn);
+            $data['gara'] = $g->get($data['idGara'], $view);
+            unset($data['idGara']);
 
-        $o = new Ordine($this->conn);
-        $data['ordine'] = $o->get($data['idOrdine'], true);
-        unset($data['idOrdine']);
+            $s = new Squadra($this->conn);
+            $temp = $this->_getOptionalChildIds('idIscrizione', $data[$this->fieldList[0]], 'idSquadra', 'iscrizione__squadra');
+            $n = count($temp);
+            switch ($n) {
+                case 0:
+                    break;
+                case 1:
+                    $data['squadra'] = $s->get($temp[0], $view);
+                    break;
+                default:
+                    throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
+            }
 
-        $s = new Squadra($this->conn);
-        $temp = $this->_getOptionalChildIds('idIscrizione', $data[$this->fieldList[0]], 'idSquadra', 'iscrizione__squadra');
-        $n = count($temp);
-        switch ($n) {
-            case 0:
-                break;
-            case 1:
-                $data['squadra'] = $s->get($temp[0], true);
-                break;
-            default:
-                throw new MysqlProxyBaseException("Unespected child number ($n)", 30);
-        }
+            $ap = new AdesionePersonale($this->conn);
+            $temp = $this->_getOptionalChildIds('idIscrizione', $data[$this->fieldList[0]], 'idAdesionePersonale', 'iscrizione__adesione_personale');
+            $n = count($temp);
+            switch ($n) {
+                case 0:
+                    break;
+                case 1:
+                    $data['adesionePersonale'] = $ap->get($temp[0], $view);
+                    break;
+                default:
+                    throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
+            }
 
-        $ap = new AdesionePersonale($this->conn);
-        $temp = $this->_getOptionalChildIds('idIscrizione', $data[$this->fieldList[0]], 'idAdesionePersonale', 'iscrizione__adesione_personale');
-        $n = count($temp);
-        switch ($n) {
-            case 0:
-                break;
-            case 1:
-                $data['adesionePersonale'] = $ap->get($temp[0], true);
-                break;
-            default:
-                throw new MysqlProxyBaseException("Unespected child number ($n)", 30);
+            switch ($view) {
+                case 'default':
+                case 'invito':
+                    $o = new Ordine($this->conn);
+                    $data['ordine'] = $o->get($data['idOrdine'], $view);
+                    unset($data['idOrdine']);
+                    break;
+                
+                case 'iscrizione':
+                    $r = new Risultato($this->conn);
+                    $selectionClause = ['idIscrizione' => $data['id']];
+                    $data['risultato'] = $r->getSelected($selectionClause, $view)[0];
+                case 'ordine':
+
+                    $i = new Inviti($this->conn);
+                    $selectionClause = ['idIscrizione' => $data['id']];
+                    $data['inviti'] = $i->getSelected($selectionClause, $view);
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
         }
     }
 
@@ -86,7 +108,7 @@ class Iscrizione extends MysqlProxyBase {
 
         if (!$this->_is_integer_optional(@$data['pettorale'])) {
             return false;
-        }       
+        }
 
         if (!$this->_is_string_with_length_optional(@$data['motto'])) {
             return false;
@@ -94,14 +116,14 @@ class Iscrizione extends MysqlProxyBase {
 
         /* Must be either related to a squadra or to an adesione personale
          */
-        if( (isset($data['squadra']) && isset($data['adesionePersonale'])) ||
-            (!isset($data['squadra']) &&!isset($data['adesionePersonale']))) {
+        if ((isset($data['squadra']) && isset($data['adesionePersonale'])) ||
+                (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
             return false;
         }
 
         return true;
     }
-    
+
     protected function _removeUnsecureFields(&$data) {
         
     }

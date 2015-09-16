@@ -32,13 +32,31 @@ class Ordine extends MysqlProxyBase {
     
 
     protected function _complete(&$data) {
-        $u = new Utente($this->conn);
-        $data['cliente'] = $u->get($data['idCliente'], true);
-        unset($data['idCliente']);
         
         $mp = new ModalitaPagamento($this->conn);
         $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
         unset($data['idModalitaPagamento']);
+        
+        $u = new Utente($this->conn);
+        $data['cliente'] = $u->get($data['idCliente'], true);
+        unset($data['idCliente']);
+        
+        if (isset($view)) {
+            switch ($view) {
+                case 'ordine':
+                    $i = new Iscrizione($this->conn);
+                    $selectionClause = ['idOrdine' => $data['id']];
+                    $data['iscrizioni'] = $i->getSelected($selectionClause, $view);
+                case 'invito':
+                case 'iscrizione':
+                case 'default':
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
+        }
     }
 
     protected function _isCoherent($data) {

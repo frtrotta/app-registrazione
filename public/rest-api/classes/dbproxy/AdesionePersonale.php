@@ -18,25 +18,49 @@ class AdesionePersonale extends MysqlProxyBase {
         $data['idUtente'] = (int) $data['idUtente'];
     }
 
-    protected function _complete(&$data) {
-        $u = new Utente($this->conn);
-        $data['utente'] = $u->get($data['idUtente'], true);
-        unset($data['idUtente']);
+    protected function _complete(&$data, $view) {
+        if (isset($view)) {
+            switch ($view) {
+                case 'invito':
+                case 'iscrizione':
+                case 'ordine':
+                    $u = new Utente($this->conn);
+                    $data['utente'] = $u->get($data['idUtente'], $view);
+                    unset($data['idUtente']);
 
-        $cf = new CategoriaFitri($this->conn);
-        $data['categoriaFitri'] = $u->get($data['categoriaFitri'], true);
+                    $cf = new CategoriaFitri($this->conn);
+                    $data['categoriaFitri'] = $u->get($data['categoriaFitri'], $view);
+                    
+                    $rt = new RichiestaTesseramento($this->conn);
+                    $selectionClause = ['idAdesionePersonale' => $data['id']];
+                    $data['richiestaTesseramento'] = $rt->getSelected($selectionClause, $view)[0];
+                    break;
+                case 'default':
+                    $u = new Utente($this->conn);
+                    $data['utente'] = $u->get($data['idUtente'], $view);
+                    unset($data['idUtente']);
 
-        $s = new Squadra($this->conn);
-        $temp = $this->_getOptionalChildIds('idAdesionePersonale', $data[$this->fieldList[0]], 'idSquadra', 'adesione_personale__squadra');
-        $n = count($temp);
-        switch($n) {
-            case 0:
-                break;
-            case 1:
-                $data['squadra'] = $s->get($temp[0], true);
-                break;
-            default:
-                throw new MysqlProxyBaseException("Unespected child number ($n)", 30);
+                    $cf = new CategoriaFitri($this->conn);
+                    $data['categoriaFitri'] = $u->get($data['categoriaFitri'], $view);
+
+                    $s = new Squadra($this->conn);
+                    $temp = $this->_getOptionalChildIds('idAdesionePersonale', $data[$this->fieldList[0]], 'idSquadra', 'adesione_personale__squadra');
+                    $n = count($temp);
+                    switch ($n) {
+                        case 0:
+                            break;
+                        case 1:
+                            $data['squadra'] = $s->get($temp[0], true);
+                            break;
+                        default:
+                            throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
+                    }
+                    break;
+                default:
+                    throw new ClientRequestException('Unsupported view: ' . $view, 71);
+            }
+        } else {
+            throw new ClientRequestException('view requested', 70);
         }
     }
 
@@ -53,16 +77,16 @@ class AdesionePersonale extends MysqlProxyBase {
         if (!is_integer_optional($data['id'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['indirizzoCap'])) {
+
+        if (!$this->_is_string_with_length($data['indirizzoCap'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['indirizzoCitta'])) {
+
+        if (!$this->_is_string_with_length($data['indirizzoCitta'])) {
             return false;
         }
-        
-        if(!$this->_is_string_with_length($data['indirizzoPaese'])) {
+
+        if (!$this->_is_string_with_length($data['indirizzoPaese'])) {
             return false;
         }
 
@@ -72,7 +96,7 @@ class AdesionePersonale extends MysqlProxyBase {
 
         return true;
     }
-    
+
     protected function _removeUnsecureFields(&$data) {
         
     }

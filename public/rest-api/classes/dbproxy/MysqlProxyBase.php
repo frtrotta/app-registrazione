@@ -179,9 +179,9 @@ abstract class MysqlProxyBase {
     abstract protected function _castData(&$data);
 
     /**
-     * Completed the data with the possibile related data
+     * Complete the data with the possibile related data, according to the view
      */
-    abstract protected function _complete(&$data);
+    abstract protected function _complete(&$data, $view);
 
     /**
      * 
@@ -208,7 +208,15 @@ abstract class MysqlProxyBase {
         }
     }
 
-    public function get($id, $complete = false, $removeUnsecureFields = true) {
+    /**
+     * 
+     * @param mixed $id
+     * @param string $view: either null for no completion, or the name of the view
+     * @param boolean $removeUnsecureFields
+     * @return associative array
+     * @throws MysqlProxyBaseException
+     */
+    public function get($id, $view = null, $removeUnsecureFields = true) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
@@ -221,8 +229,8 @@ abstract class MysqlProxyBase {
         $r = $rs->fetch_assoc();
         if ($r) {
             $this->_castData($r);
-            if ($complete) {
-                $this->_complete($r);
+            if ($view) {
+                $this->_complete($r, $view);
             }
             if ($removeUnsecureFields) {
                 $this->_removeUnsecureFields($r);
@@ -230,17 +238,17 @@ abstract class MysqlProxyBase {
         }
         return $r;
     }
-
+    
     /**
-     * Gets the instances based on the valuse provided by the pars.
-     * The values are in in AND.
      * 
-     * @param associative array  $selectionClause
-     * @param int $limit the number of returnes rows
+     * @param associative array $selectionClause
+     * @param string $view: either null for no completion, or the name of the view
+     * @param boolean $removeUnsecureFields
      * @return array of associative arrays
-     * @throws \Exception
+     * @throws ClientRequestException
+     * @throws MysqlProxyBaseException
      */
-    public function getSelected($selectionClause, $complete = false, $removeUnsecureFields = true) {
+    public function getSelected($selectionClause, $view = null, $removeUnsecureFields = true) {
         $r = null;
         if (is_array($selectionClause)) {
             $query = 'SELECT '
@@ -263,8 +271,8 @@ abstract class MysqlProxyBase {
         if ($r) {
             foreach ($r as &$temp) {
                 $this->_castData($temp);
-                if ($complete) {
-                    $this->_complete($temp);
+                if ($view) {
+                    $this->_complete($temp, $view);
                 }
 
                 if ($removeUnsecureFields) {
@@ -275,7 +283,15 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    public function getAll($complete = false, $removeUnsecureFields = true, $limit = 50) {
+    /**
+     * 
+     * @param string $view: either null for no completion, or the name of the view
+     * @param boolean $removeUnsecureFields
+     * @param integer $limit
+     * @return array of associative arrays
+     * @throws MysqlProxyBaseException
+     */
+    public function getAll($view = null, $removeUnsecureFields = true, $limit = 50) {
         $r = null;
         $query = 'SELECT '
                 . $this->_getFieldListString()
@@ -290,8 +306,8 @@ abstract class MysqlProxyBase {
         if ($r) {
             foreach ($r as &$temp) {
                 $this->_castData($temp);
-                if ($complete) {
-                    $this->_complete($temp);
+                if ($view) {
+                    $this->_complete($temp, $view);
                 }
                 if ($removeUnsecureFields) {
                     $this->_removeUnsecureFields($temp);
@@ -440,7 +456,7 @@ abstract class MysqlProxyBase {
             $r[$this->fieldList[0]] = $this->conn->insert_id;
         } else {
             $e = var_export($data, true);
-            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 92);
+            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 92);
         }
         return $r;
     }
@@ -482,7 +498,7 @@ abstract class MysqlProxyBase {
                 }
             } else {
                 $e = var_export($data, true);
-                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please checkt and try again.', 91);
+                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 91);
             }
         }
 
