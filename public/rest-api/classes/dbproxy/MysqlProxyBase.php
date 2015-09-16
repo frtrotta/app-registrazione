@@ -438,7 +438,7 @@ abstract class MysqlProxyBase {
      * @param associative array $data
      * @return $data with the generated identifier
      */
-    public function add($data) {
+    protected function add($data) {
         if ($this->_isCoherent($data)) {
             $query = 'INSERT INTO `' . $this->tableName . '` '
                     . $this->_createFieldListAndValues($data);
@@ -467,7 +467,7 @@ abstract class MysqlProxyBase {
      * @return null or the updated (passed) data
      * @throws Exception
      */
-    public function update($id, $data) {
+    protected function update($id, $data) {
         $r = null;
         $current = $this->get($id);
         if ($current) {
@@ -505,7 +505,7 @@ abstract class MysqlProxyBase {
         return $r;
     }
 
-    public function delete($id) {
+    protected function delete($id) {
         $r = false;
         $query = 'DELETE FROM `' . $this->tableName . '` '
                 . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);
