@@ -247,7 +247,7 @@
 
                 $testCode = '10-preliminare';
 
-                $r = http_request(URL_BASE . 'Utente/' . $u1_1978['id'], null, 'POST', 'application/json', null);
+                $r = http_request(URL_BASE . 'Utente/' . $u1_1978['id'], null, 'POST', 'application/json', json_encode($u1_1978));
 
                 if ($r->response->code === 401 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body);

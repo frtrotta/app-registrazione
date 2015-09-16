@@ -108,15 +108,17 @@ class RegistrazioneApi extends MysqlRestApi {
                 // creation and update
                 $id = null;
                 if (strpos($this->contentType, 'application/json') >= 0) {
-                    if (isset($this->args[0]) && is_numeric($this->args[0])) {
-                        $id = (int) $this->args[0];
+//                    if (isset($this->args[0]) && is_numeric($this->args[0])) {
+                    if(isset($this->id)){
+//                        $id = (int) $this->args[0];
+                        $id = $this->id;
                     }
                 } else {
                     throw new BadRequestException('Unexpected content type: ' . $this->contentType);
                 }
 
                 $authorized = false;
-                if (is_integer($id)) {
+                if (isset($id)) {
                     // update permissions
                     if ($this->loginModule->userIsAmministratore()) {
                         $authorized = true;
@@ -136,7 +138,7 @@ class RegistrazioneApi extends MysqlRestApi {
                     }
                 }
 
-                if (is_integer($id)) {
+                if (isset($id)) {
                     // update permissions
                     if ($authorized) {
                         $r = $this->_CRUDupdate($u);

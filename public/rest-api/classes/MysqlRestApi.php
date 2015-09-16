@@ -65,21 +65,23 @@ class MysqlRestApi extends RestApi {
      */
     protected function _CRUDread($entityProxy, $removeUnsecureFields = true) {
         $r = null;
-        $view = null;
+        $view = $this->view;
         $selectionClause = $this->request;
-        if (count($selectionClause)) {
-            $selectionClause = $this->request;
-            if (isset($selectionClause['view'])) {
-                $view = $selectionClause['view'];
-                unset($selectionClause['view']);
-            }
-        }
+        $id = $this->id;
+//        if (count($selectionClause)) {
+//            $selectionClause = $this->request;
+//            if (isset($selectionClause['view'])) {
+//                $view = $selectionClause['view'];
+//                unset($selectionClause['view']);
+//            }
+//        }
 
         if (count($selectionClause)) {
             $r = $entityProxy->getSelected($selectionClause, $view, $removeUnsecureFields);
         } else {
-            if (isset($this->args[0])) {
-                $id = $this->args[0];
+//            if (isset($this->args[0])) {
+//                $id = $this->args[0];
+            if (isset($id)) {
                 $r = $entityProxy->get($id, $view, $removeUnsecureFields);
             } else {
                 $r = $entityProxy->getAll($view, $removeUnsecureFields);
@@ -92,9 +94,11 @@ class MysqlRestApi extends RestApi {
         $r = null;
         if (strpos($this->contentType, 'application/json') >= 0) {
             $data = $this->body;
+            $id = $this->id;
             if ($data) {
-                if (isset($this->args[0])) {
-                    $id = $this->args[0];
+//                if (isset($this->args[0])) {
+//                    $id = $this->args[0];
+                if (isset($id)) {
                     $r = $entityProxy->update($id, $data);
                 } else {
                     throw new ClientRequestException('Please provide an id');
@@ -110,9 +114,9 @@ class MysqlRestApi extends RestApi {
 
     protected function _CRUDcreate($entityProxy) {
         $r = null;
-        $view = null;
         if (strpos($this->contentType, 'application/json') >= 0) {
             $data = $this->body;
+            $view = $this->view;
             if ($data) {
                 $r = $entityProxy->add($data, $view);
             } else {

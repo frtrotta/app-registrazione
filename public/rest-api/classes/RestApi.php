@@ -9,13 +9,25 @@ abstract class RestApi {
      * Property: method
      * The HTTP method this request was made in, either GET, POST, PUT or DELETE
      */
-    protected $method = '';
+    protected $method = null;
 
     /**
      * Property: endpoint
      * The Model requested in the URI. eg: /files
      */
-    protected $endpoint = '';
+    protected $endpoint = null;
+
+    /**
+     * Property: id
+     * The id of the entity to be handled. Must be numeric
+     */
+    protected $id = null;
+
+    /**
+     * Property: view
+     * The view applied to the retrival or creation of the entities.
+     */
+    protected $view = null;
 
 //    /**
 //     * Property: verb
@@ -46,19 +58,13 @@ abstract class RestApi {
         $this->args = explode('/', rtrim($request, '/'));
         $this->endpoint = array_shift($this->args);
 
-        /* array_shift() shifts the first value of the array off and returns it,
-         * shortening the array by one element and moving everything down. All 
-         * numerical array keys will be modified to start counting from zero 
-         * while literal keys won't be touched.
-         */
+        if (isset($this->args[0]) && is_numeric($this->args[0])) {
+            $this->id = (int)array_shift($this->args);
+        }
 
-//        if (isset($this->args[0]) && !is_numeric($this->args[0])) {
-//            $this->verb = array_shift($this->args);
-//        }
-//
-//        /* non funzionerebbe come Deployed perchè assume che il verb sia
-//         * non numerico. Ad esempio, però, uid di Deployd sono alfanumerici
-//         */
+        if (isset($this->args[0])) {
+            $this->view = array_shift($this->args);
+        }
 
         /* HTTP Verb Tunneling
          * https://dev.onedrive.com/misc/verb-tunneling.htm
@@ -168,8 +174,8 @@ abstract class RestApi {
             //TOD throw new Exception('Error in JSON encoding: (' . json_last_error() . ') "' . json_last_error_msg()) . '"';
         }
         echo $r;
-    }  
-    
+    }
+
     /**
      * Complete list at http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
      * 

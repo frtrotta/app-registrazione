@@ -59,7 +59,7 @@
 
                $testCode = '02 - Richiesta di un elemento con vista default';
 
-                $r = http_request(URL_BASE . 'Gara/2?view=default');
+                $r = http_request(URL_BASE . 'Gara/2/default');
                 if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
                     if ($body ['id'] === 2 && $body['nome'] === 'TdM AISLA Olimpico MTB Individuale' && $body['descrizione_it'] === null && $body['descrizione_en'] === NULL && $body['disputataIl'] === '2014-06-29 00:00:00' && $body['tipo']['id'] === 1
