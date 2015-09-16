@@ -38,7 +38,7 @@ class ModalitaPagamento extends MysqlProxyBase {
         ) {
             return false;
         }
-        if (!is_integer_optional($data['id'])) {
+        if (!$this->is_integer_optional($data['id'])) {
             return false;
         }        
         

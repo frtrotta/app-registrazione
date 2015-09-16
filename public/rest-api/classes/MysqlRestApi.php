@@ -110,10 +110,11 @@ class MysqlRestApi extends RestApi {
 
     protected function _CRUDcreate($entityProxy) {
         $r = null;
+        $view = null;
         if (strpos($this->contentType, 'application/json') >= 0) {
             $data = $this->body;
             if ($data) {
-                $r = $entityProxy->add($data);
+                $r = $entityProxy->add($data, $view);
             } else {
                 throw new BadRequestException('Unable to parse JSON body');
             }

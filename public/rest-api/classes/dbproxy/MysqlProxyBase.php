@@ -429,6 +429,10 @@ abstract class MysqlProxyBase {
         } else {
             return true;
         }
+    }    
+    
+    public function add($data, $view) {
+        throw new \Exception('Method not implemented');
     }
 
     /**
@@ -438,12 +442,12 @@ abstract class MysqlProxyBase {
      * @param associative array $data
      * @return $data with the generated identifier
      */
-    protected function add($data) { // TODO: modificare il nome
-        if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
-                /* Se add diventa una funzione che deve essere richiamata da update della specifica
-                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
-                 * Guarda, però, come è implementato il metodo add di Utente
-                 */
+    protected function _addBase($data) {
+//        if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
+//                /* Se add diventa una funzione che deve essere richiamata da update della specifica
+//                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
+//                 * Guarda, però, come è implementato il metodo add di Utente
+//                 */
             $query = 'INSERT INTO `' . $this->tableName . '` '
                     . $this->_createFieldListAndValues($data);
             $this->conn->query($query);
@@ -458,11 +462,15 @@ abstract class MysqlProxyBase {
             }
             $r = $data;
             $r[$this->fieldList[0]] = $this->conn->insert_id;
-        } else {
-            $e = var_export($data, true);
-            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 92);
-        }
+//        } else {
+//            $e = var_export($data, true);
+//            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 92);
+//        }
         return $r;
+    }    
+    
+    public function update($id, $data) {
+        throw new \Exception('Method not implemented');
     }
 
     /**
@@ -471,16 +479,16 @@ abstract class MysqlProxyBase {
      * @return null or the updated (passed) data
      * @throws Exception
      */
-    protected function update($id, $data) { // TODO: modificare il nome
+    protected function _updateBase($id, $data) {
         $r = null;
         $current = $this->get($id);
         if ($current) {
             $data = array_merge($current, $data);
-            if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
-                /* Se update diventa una funzione che deve essere richiamata da update della specifica
-                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
-                 * Guarda, però, come è implementato il metodo add di Utente
-                 */
+//            if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
+//                /* Se update diventa una funzione che deve essere richiamata da update della specifica
+//                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
+//                 * Guarda, però, come è implementato il metodo add di Utente
+//                 */
                 $identifierFieldName = $this->fieldList[0];
                 unset($data[$identifierFieldName]);
                 $identifierFieldValue = $id;
@@ -504,16 +512,20 @@ abstract class MysqlProxyBase {
                     default:
                         throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
                 }
-            } else {
-                $e = var_export($data, true);
-                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 91);
-            }
+//            } else {
+//                $e = var_export($data, true);
+//                throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 91);
+//            }
         }
 
         return $r;
     }
+    
+    public function delete($id) {
+        throw new \Exception('Method not implemented');
+    }
 
-    protected function delete($id) {
+    protected function _deleteBase($id) {
         $r = false;
         $query = 'DELETE FROM `' . $this->tableName . '` '
                 . ' WHERE ' . $this->fieldList[0] . ' = ' . $this->_sqlFormat($id);

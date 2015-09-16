@@ -37,7 +37,7 @@ class Utente extends MysqlProxyBase {
             }
         } else {
             throw new ClientRequestException('view requested', 70);
-        }        
+        }
     }
 
     protected function _isCoherent($data, $view) {
@@ -107,16 +107,16 @@ class Utente extends MysqlProxyBase {
         if (!isset($data['facebookId']) && !isset($data['password'])) {
             return false;
         }
-        
+
         if (isset($data['password']) && isset($data['facebookId'])) {
             if ($this->_is_string_with_length($data['facebookId']) &&
                     $this->_is_string_with_length($data['password'])) {
                 return false;
             }
         }
-        
-        if(isset($view)) {
-            switch($view) {
+
+        if (isset($view)) {
+            switch ($view) {
                 default:
                     throw new ClientRequestException('Unsupported view: ' . $view, 60);
             }
@@ -131,19 +131,26 @@ class Utente extends MysqlProxyBase {
         unset($data['gettoneAutenticazioneScadeIl']);
         // TODO unset($data['facebookId']);
     }
-    
-    public function update($id, $data) {        
+
+    public function update($id, $data) {
+        $r = null;
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
-        return parent::update($id, $data);
+        if ($this->_isCoherent($data, null)) {
+            $r = $this->_updateBase($id, $data);
+        } else {
+            $e = var_export($data, true);
+            throw new ClientRequestException('Incoherent data. The data you provided did not meet expectations: please check and try again.', 90);
+        }
+        return $r;
     }
 
-    public function add($data) {
+    public function add($data, $view) {
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
 
         $r = null;
-        if ($this->_isCoherent($data, null)) {
+        if ($this->_isCoherent($data, $view)) {
             $nome = $data['nome'];
             $cognome = $data['cognome'];
             $email = $data['email'];
@@ -197,7 +204,7 @@ class Utente extends MysqlProxyBase {
                         $rs->free();
                         $exists = true;
                         // Aggiorno i dati inseriti
-                        $r = $this->update((int) $row[0], $data);
+                        $r = $this->_updateBase((int) $row[0], $data);
                         break;
                     case 0:
                         $rs->free();
@@ -209,7 +216,7 @@ class Utente extends MysqlProxyBase {
 
             // Se non esiste, procedo normalmente
             if (!$exists) {
-                $r = parent::add($data);
+                $r = $this->_addBase($data);
             }
         } else {
             $e = var_export($data, true);
