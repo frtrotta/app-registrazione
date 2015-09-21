@@ -24,13 +24,14 @@ class RichiestaTesseramento extends MysqlProxyBase {
         if (isset($view)) {
             switch ($view) {
                 case 'iscrizione':
-                    $d = new Documento;
+                    $d = new Documento($this->conn);
                     $selectionClause = ['idRichiestaTesseramento' => $data['id']];
                     $data['documenti'] = $d->getSelected($selectionClause, $view);
                 case 'ordine':
                     $trt = new TipoRichiestaTesseramento($this->conn);
                     $data['tipoRichiestaTesseramento'] = $trt->get($data['idTipoRichiestaTesseramento'], true);
                     unset($data['idTipoRichiestaTesseramento']);
+                    break;
                 case 'default':
                     $ap = new AdesionePersonale($this->conn);
                     $data['adesionePersonale'] = $ap->get($data['idAdesionePersonale'], true);
@@ -45,13 +46,16 @@ class RichiestaTesseramento extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['eseguitaIl']) ||
-                !isset($data['verificata']) ||
-                !isset($data['idTipoRichiestaTesseramento'])
-        ) {
-            return 'At least one of the required fiedl is not set';
+        if (!isset($data['eseguitaIl'])) {
+            return 'eseguitaIl is missing';
         }
+        if (!isset($data['verificata'])) {
+            return 'verificata is missing';
+        }
+        if (!isset($data['idTipoRichiestaTesseramento'])) {
+            return 'idTipoRichiestaTesseramento is missing';
+        }
+        
         if (!$this->_is_integer_optional(@$data['id'])) {
             return 'is is set but it is not integer';
         }
@@ -84,21 +88,20 @@ class RichiestaTesseramento extends MysqlProxyBase {
         
     }
 
-    public function add(&$data, $view) {
+    public function add($data, $view) {
         $check = $this->_isCoherent($data, $view);
         if ($check !== true) {
             throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
 
         $r = $this->_baseAdd($data);
-        $r = array_merge($data, $r);
 
         if (isset($view)) {
             switch ($view) {
                 case 'ordine':
                     if (isset($data['tesseramento'])) {
                         $tProxy = new Tesseramento($this->conn);
-                        $data['tesseramento']['idRichiestaTesseramento'] = $data['id'];
+                        $data['tesseramento']['idRichiestaTesseramento'] = $r['id'];
                         $rt = $tProxy->add($data['tesseramento'], $view);
                         $data['tesseramento'] = array_merge($data['tesseramento'], $t);
                     }
@@ -107,6 +110,8 @@ class RichiestaTesseramento extends MysqlProxyBase {
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
+                
+        $r = array_merge($data, $r);
         return $r;
     }
 

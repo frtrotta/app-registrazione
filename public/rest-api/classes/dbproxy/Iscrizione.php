@@ -7,7 +7,7 @@ class Iscrizione extends MysqlProxyBase {
     public function __construct(&$connection) {
         parent::__construct($connection, 'iscrizione', ['id',
             'eseguitaIl',
-            'pattorale',
+            'pettorale',
             'motto',
             'haImmagine',
             'idGara',
@@ -67,11 +67,13 @@ class Iscrizione extends MysqlProxyBase {
                     $r = new Risultato($this->conn);
                     $selectionClause = ['idIscrizione' => $data['id']];
                     $data['risultato'] = $r->getSelected($selectionClause, $view)[0];
+                    unset($data['risultato']['idIscrizione']);
                 case 'ordine':
 
-                    $i = new Inviti($this->conn);
+                    $i = new Invito($this->conn);
                     $selectionClause = ['idIscrizione' => $data['id']];
                     $data['inviti'] = $i->getSelected($selectionClause, $view);
+                    $this->_unsetField($data['inviti'], 'idIscrizione');
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
@@ -82,14 +84,19 @@ class Iscrizione extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['eseguitaIl']) ||
-                !isset($data['haImmagine']) ||
-                !isset($data['idOrdine']) ||
-                !isset($data['idGara'])
-        ) {
-            return 'At least one required field is missing';
+        if (!isset($data['eseguitaIl'])) {
+            return 'eseguitaIl is missing';
         }
+        if (!isset($data['haImmagine'])) {
+            return 'haImmagine is missing';
+        }
+        if (!isset($data['idOrdine'])) {
+            return 'idOrdine is missing';
+        }
+        if (!isset($data['idGara'])) {
+            return 'idGara is missing';
+        }
+
         if (!$this->_is_integer_optional(@$data['id'])) {
             return 'is is set but it is not integer';
         }
@@ -114,12 +121,9 @@ class Iscrizione extends MysqlProxyBase {
             return 'motto is set but it is a 0-length string';
         }
 
-        /* Must be either related to a squadra or to an adesione personale
+        /* Must be either related to a squadra or to an adesione personale.
+         * NO: it could also have Invito only
          */
-        if ((isset($data['squadra']) && isset($data['adesionePersonale'])) ||
-                (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
-            return 'Either squadra or adesionePersonale must be set';
-        }
 
         if (isset($view)) {
             switch ($view) {
@@ -141,6 +145,12 @@ class Iscrizione extends MysqlProxyBase {
                         if (!is_array($data['inviti'])) {
                             return 'inviti is not an array';
                         }
+                    } else {
+
+                        if ((isset($data['squadra']) && isset($data['adesionePersonale'])) ||
+                                (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
+                            return 'Either squadra or adesionePersonale must be set where no invito is given';
+                        }
                     }
 
                     if (isset($data['squadra']) && (count($data['inviti']) < 2 || count($data['inviti']) > 3)) {
@@ -160,14 +170,13 @@ class Iscrizione extends MysqlProxyBase {
         
     }
 
-    public function add(&$data, $view) {
+    public function add($data, $view) {
         $check = $this->_isCoherent($data, $view);
         if ($check !== true) {
             throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
 
         $r = $this->_baseAdd($data);
-        $r = array_merge($data, $r);
 
         if (isset($view)) {
             switch ($view) {
@@ -176,7 +185,7 @@ class Iscrizione extends MysqlProxyBase {
                         // Questi inviti non possono avere alcuna adesione personale
                         $iProxy = new Invito($this->conn);
                         foreach ($data['inviti'] as &$i) {
-                            $i['idIscrizione'] = $data['id'];
+                            $i['idIscrizione'] = $r['id'];
                             $ir = $iProxy->add($i, $view);
                             $i = array_merge($i, $ir);
                         }
@@ -184,16 +193,16 @@ class Iscrizione extends MysqlProxyBase {
 
                     if (isset($data['adesionePersonale'])) {
                         $aProxy = new AdesionePersonale($this->conn);
-                        $data['adesionePersonale']['idIscrizione'] = $data['id'];
+                        $data['adesionePersonale']['idIscrizione'] = $r['id'];
                         $ra = $aProxy->add($data['adesionePersonale'], $view);
                         $data['adesionePersonale'] = array_merge($data['adesionePersonale'], $ra);
                     }
 
                     if (isset($data['squadra'])) {
                         $sProxy = new Squadra($this->conn);
-                        $data['squadra']['idIscrizione'] = $data['id'];
+                        $data['squadra']['idIscrizione'] = $r['id'];
                         $rs = $sProxy->add($data['squadra'], $view);
-                        $data['squadra'] = array_merge($data['squadra'], $ra);
+                        $data['squadra'] = array_merge($data['squadra'], $rs);
                     }
                     break;
                 default:

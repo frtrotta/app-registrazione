@@ -41,17 +41,25 @@ class Utente extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['nome']) ||
-                !isset($data['cognome']) ||
-                !isset($data['sesso']) ||
-                !isset($data['natoIl']) ||
-                !isset($data['email']) ||
-                !isset($data['eAmministratore'])
-        ) {
-            return 'At least one of the required fields is missing';
+        if (!isset($data['nome'])) {
+            return 'nome is missing';
         }
-
+        if (!isset($data['cognome'])) {
+            return 'cognome is missing';
+        }
+        if (!isset($data['sesso'])) {
+            return 'sesso is missing';
+        }
+        if (!isset($data['natoIl'])) {
+            return 'natoIl is missing';
+        }
+        if (!isset($data['email'])) {
+            return 'email is missing';
+        }
+        if (!isset($data['eAmministratore'])) {
+            return 'eAmministratore is missing';
+        }
+        
         if (!$this->_is_integer_optional(@$data['id'])) {
             return 'is is set but it is not integer';
         }
@@ -138,7 +146,7 @@ class Utente extends MysqlProxyBase {
         return $r;
     }
 
-    public function add(&$data, $view) {
+    public function add($data, $view) {
         unset($data['gettoneAutenticazione']);
         unset($data['gettoneAutenticazioneScadeIl']);
 

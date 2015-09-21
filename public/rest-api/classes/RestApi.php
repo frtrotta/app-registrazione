@@ -161,7 +161,7 @@ abstract class RestApi {
                 $this->body = $this->_parseNameValuePairs(file_get_contents('php://input'));
                 break;
             default:
-                throw new BadRequestException('Unsupported content type: ' . $this->contentType);
+                throw new UnprocessableEntityException('Unsupported content type: ' . $this->contentType, 1);
         }
     }
 

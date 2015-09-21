@@ -5,7 +5,9 @@ namespace dbproxy;
 class Invito extends MysqlProxyBase {
 
     public function __construct(&$connection) {
-        parent::__construct($connection, 'invito', ['codice',
+        parent::__construct($connection, 'invito', [
+            'id',
+            'codice',
             'nome',
             'cognome',
             'email',
@@ -28,7 +30,8 @@ class Invito extends MysqlProxyBase {
                     $i = new Iscrizione($this->conn);
                     $data['iscrizione'] = $i->get($data['idIscrizione'], $view);
                     unset($data['idIscrizione']);
-
+                case 'ordine':
+                    
                     $temp = $this->_getOptionalChildIds('idInvito', $data[$this->fieldList[0]], 'idAdesionePersonale', 'adesione_personale__invito');
                     $n = count($temp);
                     switch ($n) {
@@ -39,9 +42,7 @@ class Invito extends MysqlProxyBase {
                             break;
                         default:
                             throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
-                    }
-                    break;
-                case 'ordine':
+                    }                    
                     break;
 
                 default:
@@ -53,15 +54,22 @@ class Invito extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (!isset($data['codice']) ||
-                !isset($data['nome']) ||
-                !isset($data['cognome']) ||
-                !isset($data['email']) ||
-                !isset($data['idIscrizione'])
-        ) {
-            return 'At least one required field is missing';
+        if (!isset($data['codice'])) {
+            return 'codice is missing';
         }
-
+        if (!isset($data['nome'])) {
+            return 'nome is missing';
+        }
+        if (!isset($data['cognome'])) {
+            return 'cognome is missing';
+        }
+        if (!isset($data['email'])) {
+            return 'email is missing';
+        }
+        if (!isset($data['idIscrizione'])) {
+            return 'idIscrizione is missing';
+        }
+        
         if (!$this->_is_string_with_length($data['codice'])) {
             return 'codice is a 0-length string';
         }
@@ -98,17 +106,42 @@ class Invito extends MysqlProxyBase {
     }
 
     protected function _removeUnsecureFields(&$data) {
-        
+        unset($data['codice']);
+    }
+    
+    private function _generateCodice() {
+        $unique = false;
+        while(!$unique) {
+            $codice = sha1(microtime() . 'evviva il kite');
+            $query = 'SELECT '
+                    . ' codice'
+                    . ' FROM invito'
+                    . " WHERE codice = '$codice'";
+            $rs = $this->conn->query($query);
+            if ($this->conn->errno) {
+                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+            }
+            if ($rs) {
+                if ($rs->num_rows === 0) {
+                    $unique = true;
+                    $rs->free();
+                }
+            } else {
+                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+            }
+        }
+        return $codice;
     }
 
-    public function add(&$data, $view) {
+    public function add($data, $view) {
+        $data['codice'] = $this->_generateCodice();
+        
         $check = $this->_isCoherent($data, $view);
         if ($check !== true) {
             throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
         
         $r = $this->_baseAdd($data);
-        $r = array_merge($data, $r);
         
         if (isset($view)) {
             switch ($view) {
@@ -119,6 +152,8 @@ class Invito extends MysqlProxyBase {
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
+                
+        $r = array_merge($data, $r);
         return $r;
     }
 

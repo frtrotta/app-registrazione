@@ -36,13 +36,13 @@ class Tesseramento extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['finoAl']) ||
-                !isset($data['idTipoTesseramento'])
-                
-        ) {
-            return 'At least one required field is missing';
+        if (!isset($data['finoAl'])) {
+            return 'finoAl is missing';
         }
+        if (!isset($data['idTipoTesseramento'])) {
+            return 'idTipoTesseramento is missing';
+        }
+        
         if (!$this->_is_integer_optional(@$data['id'])) {
             return 'id is set but it is not integer';
         }
@@ -107,14 +107,13 @@ class Tesseramento extends MysqlProxyBase {
         
     }
 
-    public function add(&$data, $view) {
+    public function add($data, $view) {
         $check = $this->_isCoherent($data, $view);
         if ($check !== true) {
             throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
 
         $r = $this->_baseAdd($data);
-        $r = array_merge($data, $r);
 
         if (isset($view)) {
             switch ($view) {
@@ -124,6 +123,8 @@ class Tesseramento extends MysqlProxyBase {
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
+                
+        $r = array_merge($data, $r);
         return $r;
     }
 }

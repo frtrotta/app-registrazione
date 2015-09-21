@@ -68,19 +68,10 @@ class MysqlRestApi extends RestApi {
         $view = $this->view;
         $selectionClause = $this->request;
         $id = $this->id;
-//        if (count($selectionClause)) {
-//            $selectionClause = $this->request;
-//            if (isset($selectionClause['view'])) {
-//                $view = $selectionClause['view'];
-//                unset($selectionClause['view']);
-//            }
-//        }
 
         if (count($selectionClause)) {
             $r = $entityProxy->getSelected($selectionClause, $view, $removeUnsecureFields);
         } else {
-//            if (isset($this->args[0])) {
-//                $id = $this->args[0];
             if (isset($id)) {
                 $r = $entityProxy->get($id, $view, $removeUnsecureFields);
             } else {
@@ -96,34 +87,39 @@ class MysqlRestApi extends RestApi {
             $data = $this->body;
             $id = $this->id;
             if ($data) {
-//                if (isset($this->args[0])) {
-//                    $id = $this->args[0];
                 if (isset($id)) {
                     $r = $entityProxy->update($id, $data);
                 } else {
-                    throw new ClientRequestException('Please provide an id');
+                    throw new UnprocessableEntityException('Please provide an id', 100);
                 }
             } else {
-                throw new BadRequestException('Unable to parse JSON body');
+                throw new UnprocessableEntityException('Unable to parse JSON body', 101);
             }
         } else {
-            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+            throw new UnprocessableEntityException('Unexpected content type: ' . $this->contentType, 102);
         }
         return $r;
     }
 
-    protected function _CRUDcreate($entityProxy) {
+    protected function _CRUDcreate($entityProxy, $view) {
         $r = null;
         if (strpos($this->contentType, 'application/json') >= 0) {
             $data = $this->body;
             $view = $this->view;
             if ($data) {
-                $r = $entityProxy->add($data, $view);
+                //$this->conn->autocommit(false);
+                $this->conn->begin_transaction();
+                try {
+                    $r = $entityProxy->add($data, $view);
+                    $this->conn->commit();
+                } catch (\Exception $ex) {
+                    throw $ex;
+                }
             } else {
-                throw new BadRequestException('Unable to parse JSON body');
+                throw new UnprocessableEntityException('Unable to parse JSON body', 200);
             }
         } else {
-            throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+            throw new UnprocessableEntityException('Unexpected content type: ' . $this->contentType, 201);
         }
         return $r;
     }
