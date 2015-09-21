@@ -16,6 +16,7 @@ class Invito extends MysqlProxyBase {
 
     protected function _castData(&$data) {
         $data['idIscrizione'] = (int) $data['idIscrizione'];
+        $data['id'] = (int) $data['id'];
     }
 
     protected function _complete(&$data, $view) {
