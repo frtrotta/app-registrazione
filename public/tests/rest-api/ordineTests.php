@@ -62,7 +62,7 @@
                     $o['ricevutaInviata'] = false;
                     $o['ricevutaInviataIl'] = null;
                     $o['note'] = 'Ordine del ' . $o['ricevutoIl'];
-                    $o['clienteIndirizzoCap'] = 'CAP ' . $o['ricevutoIl'];
+                    $o['clienteIndirizzoCap'] = substr('CAP ' . $o['ricevutoIl'], 0, 10);
                     $o['clienteIndirizzoCitta'] = 'Citta ' . $o['ricevutoIl'];
                     $o['clienteIndirizzoPaese'] = 'Paese ' . $o['ricevutoIl'];
                     $o['idModalitaPagamento'] = $idModalitaPagamento;
@@ -99,7 +99,6 @@
                     $inv['nome'] = 'nome ' . $temp;
                     $inv['cognome'] = 'cognome ' . $temp;
                     $inv['email'] = 'delete_' . $temp . '@gmail.com';
-                    var_export($inv);
                     return $inv;
                 }
 
@@ -111,7 +110,7 @@
                     $temp = substr(sha1((new \DateTime())->format('Ymhsi')), 0, 20);
                     $ap = [];
                     $ap['categoriaFitri'] = 'S3';
-                    $ap['indirizzoCap'] = 'CAP ' . $temp;
+                    $ap['indirizzoCap'] = substr('CAP ' . $temp, 0, 10);
                     $ap['indirizzoCitta'] = 'Citta ' . $temp;
                     $ap['indirizzoPaese'] = 'Paese ' . $temp;
                     $ap['richiestaTesseramento'] = $richiestaTesseramento;

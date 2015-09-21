@@ -25,10 +25,6 @@ class Iscrizione extends MysqlProxyBase {
 
     protected function _complete(&$data, $view) {
         if (isset($view)) {
-            $g = new Gara($this->conn);
-            $data['gara'] = $g->get($data['idGara'], $view);
-            unset($data['idGara']);
-
             $s = new Squadra($this->conn);
             $temp = $this->_getOptionalChildIds('idIscrizione', $data[$this->fieldList[0]], 'idSquadra', 'iscrizione__squadra');
             $n = count($temp);
@@ -58,6 +54,9 @@ class Iscrizione extends MysqlProxyBase {
             switch ($view) {
                 case 'default':
                 case 'invito':
+                    $g = new Gara($this->conn);
+                    $data['gara'] = $g->get($data['idGara'], $view);
+                    unset($data['idGara']);
                     $o = new Ordine($this->conn);
                     $data['ordine'] = $o->get($data['idOrdine'], $view);
                     unset($data['idOrdine']);
@@ -185,31 +184,29 @@ class Iscrizione extends MysqlProxyBase {
                         // Questi inviti non possono avere alcuna adesione personale
                         $iProxy = new Invito($this->conn);
                         foreach ($data['inviti'] as &$i) {
-                            $i['idIscrizione'] = $r['id'];
-                            $ir = $iProxy->add($i, $view);
-                            $i = array_merge($i, $ir);
+                            $i['idIscrizione'] = $r[$this->fieldList[0]];
+                            $iProxy->add($i, $view);
                         }
                     }
 
                     if (isset($data['adesionePersonale'])) {
                         $aProxy = new AdesionePersonale($this->conn);
-                        $data['adesionePersonale']['idIscrizione'] = $r['id'];
-                        $ra = $aProxy->add($data['adesionePersonale'], $view);
-                        $data['adesionePersonale'] = array_merge($data['adesionePersonale'], $ra);
+                        $data['adesionePersonale']['idIscrizione'] = $r[$this->fieldList[0]];
+                        $aProxy->add($data['adesionePersonale'], $view);
                     }
 
                     if (isset($data['squadra'])) {
                         $sProxy = new Squadra($this->conn);
-                        $data['squadra']['idIscrizione'] = $r['id'];
-                        $rs = $sProxy->add($data['squadra'], $view);
-                        $data['squadra'] = array_merge($data['squadra'], $rs);
+                        $data['squadra']['idIscrizione'] = $r[$this->fieldList[0]];
+                        $sProxy->add($data['squadra'], $view);
                     }
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-        return $r;
+
+        return $this->get($this->fieldList[0], $view);
     }
 
 }

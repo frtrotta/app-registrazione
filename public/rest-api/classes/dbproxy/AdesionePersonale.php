@@ -21,21 +21,21 @@ class AdesionePersonale extends MysqlProxyBase {
     protected function _complete(&$data, $view) {
         if (isset($view)) {
             switch ($view) {
-                case 'invito':
                 case 'iscrizione':
-                case 'ordine':
+                case 'invito':
                     $u = new Utente($this->conn);
                     $data['utente'] = $u->get($data['idUtente'], $view);
                     unset($data['idUtente']);
 
                     $cf = new CategoriaFitri($this->conn);
                     $data['categoriaFitri'] = $u->get($data['categoriaFitri'], $view);
-
+                case 'ordine':
                     $rt = new RichiestaTesseramento($this->conn);
                     $selectionClause = ['idAdesionePersonale' => $data['id']];
                     $data['richiestaTesseramento'] = $rt->getSelected($selectionClause, $view)[0];
                     unset($data['richiestaTesseramento']['idAdesionePersonale']);
                     break;
+
                 case 'default':
                     $u = new Utente($this->conn);
                     $data['utente'] = $u->get($data['idUtente'], $view);
@@ -112,20 +112,20 @@ class AdesionePersonale extends MysqlProxyBase {
                     if (!isset($data['richiestaTesseramento'])) {
                         return 'idRichiestaTesseramento is not set';
                     }
-                    
+
                     if (!$this->_is_integer_optional(@$data['idSquadra'])) {
                         return 'idSquadra is set but it is not integer';
                     }
-                    
+
                     if (!$this->_is_integer_optional(@$data['idIscrizione'])) {
                         return 'idIscrizione is set but it is not integer';
                     }
-                    
+
                     if ((isset($data['idSquadra']) && isset($data['idIscrizione'])) ||
                             (!isset($data['idSquadra']) && !isset($data['idIscrizione']))) {
                         return 'idSquadra and idIscrizione cannot both be set';
                     }
-                    
+
                     // Nessuna adesione personale può essere correlata ad un invito, durante l'ordine
                     if (isset($data['idInvito'])) {
                         return 'idInvito cannot be set';
@@ -155,26 +155,23 @@ class AdesionePersonale extends MysqlProxyBase {
             switch ($view) {
                 case 'ordine':
                     $rtProxy = new RichiestaTesseramento($this->conn);
-                    $data['richiestaTesseramento']['idAdesionePersonale'] = $r['id'];
-                    $rrt = $rtProxy->add($data['richiestaTesseramento'], $view);
-                    $data['richiestaTesseramento'] = array_merge($data['richiestaTesseramento'], $rrt);
+                    $data['richiestaTesseramento']['idAdesionePersonale'] = $r[$this->fieldList[0]];
+                    $rtProxy->add($data['richiestaTesseramento'], $view);
 
                     if (isset($data['idIscrizione'])) {
-                        $this->_addOptionalRelation('idIscrizione', $data['idIscrizione'], 'idAdesionePersonale', $r['id'], 'iscrizione__adesione_personale');
+                        $this->_addOptionalRelation('idIscrizione', $data['idIscrizione'], 'idAdesionePersonale', $r[$this->fieldList[0]], 'iscrizione__adesione_personale');
                     }
 
                     if (isset($data['idSquadra'])) {
-                        $this->_addOptionalRelation('idAdesionePersonale', $r['id'], 'idSquadra', $data['idSquadra'], 'adesione_personale__squadra');
+                        $this->_addOptionalRelation('idAdesionePersonale', $r[$this->fieldList[0]], 'idSquadra', $data['idSquadra'], 'adesione_personale__squadra');
                     }
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-        
-        
-        $r = array_merge($data, $r);
-        return $r;
+
+        return $this->get($this->fieldList[0], $view);
     }
 
 }

@@ -31,24 +31,23 @@ class Ordine extends MysqlProxyBase {
     }
 
     protected function _complete(&$data, $view) {
-
-        $mp = new ModalitaPagamento($this->conn);
-        $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
-        unset($data['idModalitaPagamento']);
-
-        $u = new Utente($this->conn);
-        $data['cliente'] = $u->get($data['idCliente'], true);
-        unset($data['idCliente']);
-
         if (isset($view)) {
             switch ($view) {
                 case 'ordine':
                     $i = new Iscrizione($this->conn);
                     $selectionClause = ['idOrdine' => $data['id']];
                     $data['iscrizioni'] = $i->getSelected($selectionClause, $view);
+                    break;
                 case 'invito':
                 case 'iscrizione':
                 case 'default':
+                    $mp = new ModalitaPagamento($this->conn);
+                    $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
+                    unset($data['idModalitaPagamento']);
+
+                    $u = new Utente($this->conn);
+                    $data['cliente'] = $u->get($data['idCliente'], true);
+                    unset($data['idCliente']);
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
@@ -166,18 +165,16 @@ class Ordine extends MysqlProxyBase {
                 case 'ordine':
                     $iProxy = new Iscrizione($this->conn);
                     foreach ($data['iscrizioni'] as &$i) {
-                        $i['idOrdine'] = $r['id'];
+                        $i['idOrdine'] = $r[$this->fieldList[0]];
                         $ir = $iProxy->add($i, $view);
-                        $i = array_merge($i, $ir);
                     }
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-                
-        $r = array_merge($data, $r);
-        return $r;
+
+        return $this->get($r[$this->fieldList[0]], $view);
     }
 
 }

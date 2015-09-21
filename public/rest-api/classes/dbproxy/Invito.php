@@ -152,9 +152,8 @@ class Invito extends MysqlProxyBase {
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-                
-        $r = array_merge($data, $r);
-        return $r;
+        
+        return $this->get($this->fieldList[0], $view);
     }
 
 }

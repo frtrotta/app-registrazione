@@ -27,10 +27,13 @@ class RichiestaTesseramento extends MysqlProxyBase {
                     $d = new Documento($this->conn);
                     $selectionClause = ['idRichiestaTesseramento' => $data['id']];
                     $data['documenti'] = $d->getSelected($selectionClause, $view);
-                case 'ordine':
+                    
                     $trt = new TipoRichiestaTesseramento($this->conn);
                     $data['tipoRichiestaTesseramento'] = $trt->get($data['idTipoRichiestaTesseramento'], true);
                     unset($data['idTipoRichiestaTesseramento']);
+                case 'ordine':
+                    $t = new Tesseramento($this->conn);
+                    $data['tesseramento'] = $t->get($data['id'], true);
                     break;
                 case 'default':
                     $ap = new AdesionePersonale($this->conn);
@@ -101,18 +104,16 @@ class RichiestaTesseramento extends MysqlProxyBase {
                 case 'ordine':
                     if (isset($data['tesseramento'])) {
                         $tProxy = new Tesseramento($this->conn);
-                        $data['tesseramento']['idRichiestaTesseramento'] = $r['id'];
-                        $rt = $tProxy->add($data['tesseramento'], $view);
-                        $data['tesseramento'] = array_merge($data['tesseramento'], $t);
+                        $data['tesseramento']['idRichiestaTesseramento'] = $r[$this->fieldList[0]];
+                        $tProxy->add($data['tesseramento'], $view);
                     }
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-                
-        $r = array_merge($data, $r);
-        return $r;
+        
+        return $this->get($this->fieldList[0], $view);
     }
 
 }

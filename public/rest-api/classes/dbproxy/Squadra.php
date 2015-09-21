@@ -102,19 +102,17 @@ class Squadra extends MysqlProxyBase {
                     // Se c'è la squadra, c'è un'unica adesione personale
                     $apProxy = new AdesionePersonale($this->conn);
                     $ap = $data['adesioniPersonali'][0];
-                    $ap['idSquadra'] = $r['id'];
-                    $apr = $apProxy->add($ap, $view);
-                    $data['adesioniPersonali'][0] = array_merge($ap, $apr);
+                    $ap['idSquadra'] = $r[$this->fieldList[0]];
+                    $apProxy->add($ap, $view);
 
-                    $this->_addOptionalRelation('idIscrizione', $data['idIscrizione'], 'idSquadra', $r['id'], 'iscrizione__squadra');
+                    $this->_addOptionalRelation('idIscrizione', $data['idIscrizione'], 'idSquadra', $r[$this->fieldList[0]], 'iscrizione__squadra');
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-                
-        $r = array_merge($data, $r);
-        return $r;
+        
+        return $this->get($this->fieldList[0], $view);
     }
 
 }
