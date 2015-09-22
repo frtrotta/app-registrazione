@@ -3,11 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/js/modulo2/controller.js</file>
-            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/views/registrazione.html</file>
-            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/rest-api/classes/dbproxy/MysqlProxyBase.php</file>
-            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/testsJS/utenti.html</file>
-            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/rest-api/classes/dbproxy/Utente.php</file>
+            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/js/adesioneSeStesso/adesioneSeStessoCtrl.js</file>
+            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/views/riepilogoOrdine.html</file>
+            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/js/SceltaGaraMdl/gareCtrl.js</file>
+            <file>file:/C:/Users/Lorenzo%20Gazzella/Desktop/app-registrazione/public/js/riepilogoOrdine/riepilogoOrdineCtrl.js</file>
         </group>
     </open-files>
 </project-private>

@@ -1,10 +1,11 @@
-angular.module("registrazione")
-.controller("registrazioneController", ["$resource", "$filter", function($resource, $filter){
+angular.module("registrazioneMdl")
+.controller("registrazioneCtrl", ["$resource", "$filter", function($resource, $filter){
     
     var vm = this;
     var utenti = $resource("http://localhost/app-registrazione/rest-api/Utente/:id", {id:"@id"});
     vm.nuovoUtente = null;
     
+   
     vm.registraUtente = function(){
         var utente = {
             id:null,

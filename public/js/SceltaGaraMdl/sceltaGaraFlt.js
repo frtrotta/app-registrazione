@@ -1,5 +1,5 @@
-angular.module("SceltaGara", ["ngResource"])
-.filter("uniqueTipoGara", function () {
+angular.module("SceltaGaraMdl")
+.filter("uniqueTipoGaraFlt", function () {
     return function (arrayGare) {
         if(angular.isArray(arrayGare)){
             var r = [];
@@ -12,6 +12,22 @@ angular.module("SceltaGara", ["ngResource"])
                 }
             });
             
+            return r;
+        }else{
+            return arrayGare;
+        }
+    };
+}).filter("tipoGara", function(){
+    return function(arrayGare, tipoGara){
+        if(angular.isArray(arrayGare) && tipoGara!=null){
+            var r = [];
+            angular.forEach(arrayGare, function(gara, index){
+                if(esisteTipoIscrizioneAttivo(gara)){
+                    if(gara.tipo.id === tipoGara.id){
+                        r.push(gara);
+                    }
+                }
+            });
             return r;
         }else{
             return arrayGare;

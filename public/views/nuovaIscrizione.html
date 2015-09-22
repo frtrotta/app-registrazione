@@ -1,0 +1,23 @@
+<div ng-controller="nuovaIscrizioneCtrl as iscrizioneCtrl">
+    
+    <form name="iscrizione" novalidate>
+        <div class="form-group" ng-class="iscrizione.pettorale.$error.required ? 'has-error' : 'has-success'">
+            <label>Pettorale</label>
+            <input type="number" name="pettorale" class="form-control" ng-model="iscrizioneCtrl.datiNuovaIscrizione.pettorale" required />
+        </div>
+        <div class="form-group" ng-class="iscrizione.motto.$error.required ? 'has-error' : 'has-success'">
+            <label>Motto</label>
+            <input name="motto" class="form-control" ng-model="iscrizioneCtrl.datiNuovaIscrizione.motto" required />
+        </div>
+        <div class="form-group" ng-class="iscrizione.haImmagine.$error.required ? 'has-error' : 'has-success'">
+            <label>Immagine</label>
+            <input type="checkbox" name="haImmagine" class="form-control" ng-model="iscrizioneCtrl.datiNuovaIscrizione.haImmagine" required />
+        </div>
+        <div class="text-center">
+            <button type="button" ng-disabled="iscrizione.$invalid" class="btn btn-primary btn-xs" ng-click="iscrizioneCtrl.nuovaIscrizione()">Nuova iscrizione</button>
+        </div>           
+    </form>
+    
+    
+    
+</div>
