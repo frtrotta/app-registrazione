@@ -108,13 +108,11 @@ class RegistrazioneApi extends MysqlRestApi {
                 // creation and update
                 $id = null;
                 if (strpos($this->contentType, 'application/json') >= 0) {
-//                    if (isset($this->args[0]) && is_numeric($this->args[0])) {
-                    if(isset($this->id)){
-//                        $id = (int) $this->args[0];
+                    if (isset($this->id)) {
                         $id = $this->id;
                     }
                 } else {
-                    throw new BadRequestException('Unexpected content type: ' . $this->contentType);
+                    throw new UnprocessableEntityException('Unsupported content type: ' . $this->contentType);
                 }
 
                 $authorized = false;
@@ -155,6 +153,37 @@ class RegistrazioneApi extends MysqlRestApi {
                 }
 
                 break;
+            default:
+                throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+        }
+        return $r;
+    }
+
+    protected function Ordine() {
+        $r = null;
+        $o = new dbproxy\Ordine($this->conn);
+        switch ($this->method) {
+            case 'GET':
+                $r = $this->_CRUDread($o);
+                break;
+            case 'POST':
+            case 'PUT':
+                if (isset($this->id)) {
+                    throw new UnprocessableEntityException('Update not supported', 110);
+                }
+
+                if (strpos($this->contentType, 'application/json') < 0) {
+                    throw new UnprocessableEntityException('Unsupported content type: ' . $this->contentType);
+                }
+
+                // TODO l'utente specificato nell'adesione personale o come cliente deve essere lo stesso loggato
+                if (!$this->loginModule->userIsLogged()) {
+                    throw new UnauthorizedException('User must be logged to place an ordine');
+                }
+
+                $r = $this->_CRUDcreate($o, $this->view);
+                break;
+
             default:
                 throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }

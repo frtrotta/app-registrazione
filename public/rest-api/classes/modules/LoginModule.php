@@ -11,7 +11,7 @@ class LoginModule {
     private $cookieName;
 
     public function __construct(&$dbConnection, $authConf) {
-        $this->conn = $dbConnection;
+        $this->conn = &$dbConnection;
 
         if (!isset($authConf['token-valid-for-minutes'])) {
             throw new Exception('$authConf[\'token-valid-for-minutes\'] is not set');

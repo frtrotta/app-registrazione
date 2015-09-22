@@ -80,7 +80,8 @@ function http_request($url, $cookies = NULL, $method = 'GET', $contentType = nul
     $r->response->content = curl_exec($ch);
 
     $matches = null;
-    preg_match('![\n\r]{4}(.*)!mi', $r->response->content, $matches);
+    $temp = substr($r->response->content, strrpos($r->response->content, 'HTTP')); // to handle HTTP/1.1 100 Continue
+    preg_match('![\n\r]{4}(.*)!mi', $temp, $matches);
     if (isset($matches[0])) {
         $r->response->body = $matches[0];
     }

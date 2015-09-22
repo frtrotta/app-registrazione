@@ -31,24 +31,23 @@ class Ordine extends MysqlProxyBase {
     }
 
     protected function _complete(&$data, $view) {
-
-        $mp = new ModalitaPagamento($this->conn);
-        $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
-        unset($data['idModalitaPagamento']);
-
-        $u = new Utente($this->conn);
-        $data['cliente'] = $u->get($data['idCliente'], true);
-        unset($data['idCliente']);
-
         if (isset($view)) {
             switch ($view) {
                 case 'ordine':
                     $i = new Iscrizione($this->conn);
                     $selectionClause = ['idOrdine' => $data['id']];
                     $data['iscrizioni'] = $i->getSelected($selectionClause, $view);
+                    break;
                 case 'invito':
                 case 'iscrizione':
                 case 'default':
+                    $mp = new ModalitaPagamento($this->conn);
+                    $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
+                    unset($data['idModalitaPagamento']);
+
+                    $u = new Utente($this->conn);
+                    $data['cliente'] = $u->get($data['idCliente'], true);
+                    unset($data['idCliente']);
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
@@ -59,18 +58,32 @@ class Ordine extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['ricevutoIl']) ||
-                !isset($data['totale']) ||
-                !isset($data['pagato']) ||
-                !isset($data['ricevutaInviata']) ||
-                !isset($data['indirizzoCap']) ||
-                !isset($data['indirizzoCitta']) ||
-                !isset($data['indirizzoPaese']) ||
-                !isset($data['idModalitaPagamento']) ||
-                !isset($data['idCliente'])
-        ) {
-            return 'At least one required field is not set';
+        if (!isset($data['ricevutoIl'])) {
+            return 'ricevutoIl is missing';
+        }
+        if (!isset($data['totale'])) {
+            return 'totale is missing';
+        }
+        if (!isset($data['pagato'])) {
+            return 'pagato is missing';
+        }
+        if (!isset($data['ricevutaInviata'])) {
+            return 'ricevutaInviata is missing';
+        }
+        if (!isset($data['clienteIndirizzoCap'])) {
+            return 'clienteIndirizzoCap is missing';
+        }
+        if (!isset($data['clienteIndirizzoCitta'])) {
+            return 'clienteIndirizzoCitta is missing';
+        }
+        if (!isset($data['clienteIndirizzoPaese'])) {
+            return 'clienteIndirizzoPaese is missing';
+        }
+        if (!isset($data['idModalitaPagamento'])) {
+            return 'idModalitaPagamento is missing';
+        }
+        if (!isset($data['idCliente'])) {
+            return 'idCliente is missing';
         }
         if (!$this->_is_integer_optional(@$data['id'])) {
             return 'id is set but it is not integer';
@@ -84,6 +97,7 @@ class Ordine extends MysqlProxyBase {
             return 'ricevutoIl is not a valid datetime';
         }
 
+        // TODO pagato solo false?
         if (!is_bool($data['pagato'])) {
             return 'pagato is not boolean';
         }
@@ -96,15 +110,15 @@ class Ordine extends MysqlProxyBase {
             return 'ricevutaInviataIl is set but it is not a valid datetime';
         }
 
-        if (!$this->_is_string_with_length($data['indirizzoCap'])) {
+        if (!$this->_is_string_with_length($data['clienteIndirizzoCap'])) {
             return 'indirizzoCap is a 0-length string';
         }
 
-        if (!$this->_is_string_with_length($data['indirizzoCitta'])) {
+        if (!$this->_is_string_with_length($data['clienteIndirizzoCitta'])) {
             return 'indirizzoCitta is a 0òlength string';
         }
 
-        if (!$this->_is_string_with_length($data['indirizzoPaese'])) {
+        if (!$this->_is_string_with_length($data['clienteIndirizzoPaese'])) {
             return 'indirizzoPaese is a 0-length string';
         }
 
@@ -112,8 +126,8 @@ class Ordine extends MysqlProxyBase {
             return 'idModalitaPagamento is not integer';
         }
 
-        if (!is_integer($data['idModalitaCliente'])) {
-            return 'idModalitaCliente is not integer';
+        if (!is_integer($data['idCliente'])) {
+            return 'idCliente is not integer';
         }
 
         if (isset($view)) {
@@ -122,7 +136,7 @@ class Ordine extends MysqlProxyBase {
                     if (!isset($data['iscrizioni'])) {
                         return 'iscrizioni is not set';
                     }
-                    if (is_array($data['iscrizioni'])) {
+                    if (!is_array($data['iscrizioni'])) {
                         return 'iscrizioni is not an array';
                     }
                     break;
@@ -138,29 +152,29 @@ class Ordine extends MysqlProxyBase {
         
     }
 
-    public function add(&$data, $view) {
-        if (!$this->_isCoherent($data, $view)) {
-            throw new ClientRequestException('Incoherent data for ' . get_class($this) . '. The data you provided did not meet expectations: please check and try again.', 93);
+    public function add($data, $view) {
+        $check = $this->_isCoherent($data, $view);
+        if ($check !== true) {
+            throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 91);
         }
-        
+
         $r = $this->_baseAdd($data);
-        $r = array_merge($data, $r);
-        
+
         if (isset($view)) {
             switch ($view) {
                 case 'ordine':
                     $iProxy = new Iscrizione($this->conn);
                     foreach ($data['iscrizioni'] as &$i) {
-                        $i['idOrdine'] = $data['id'];
+                        $i['idOrdine'] = $r[$this->fieldList[0]];
                         $ir = $iProxy->add($i, $view);
-                        $i = array_merge($i, $ir);
                     }
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-        return $r;
+
+        return $this->get($r[$this->fieldList[0]], $view);
     }
 
 }

@@ -21,6 +21,7 @@ class TipoGara extends MysqlProxyBase {
             switch ($view) {
                 case 'invito':
                 case 'iscrizione':
+                case 'ordine':
                 case 'default':
                     break;
                 default:

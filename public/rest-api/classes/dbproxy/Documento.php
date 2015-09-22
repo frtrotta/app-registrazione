@@ -31,11 +31,12 @@ class Documento extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (!isset($data['nomeFile']) ||
-                !isset($data['idRichiestaTesseramento'])
-        ) {
-            return 'At least one required field is missing';
-        }        
+        if (!isset($data['nomeFile'])) {
+            return 'nomeFile is missing';
+        }
+        if (!isset($data['idRichiestaTesseramento'])) {
+            return 'idRichiestaTesseramento is missing';
+        }
         
         if(!$this->_is_string_with_length($data['nomeFile'])) {
             return 'nomeFile is a 0-length string';
@@ -60,14 +61,13 @@ class Documento extends MysqlProxyBase {
         
     }
 
-    public function add(&$data, $view) {
+    public function add($data, $view) {
         $check = $this->_isCoherent($data, $view);
         if ($check !== true) {
             throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
         
         $r = $this->_baseAdd($data);
-        $r = array_merge($data, $r);
         
         if (isset($view)) {
             switch ($view) {
@@ -77,6 +77,8 @@ class Documento extends MysqlProxyBase {
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
+                
+        $r = array_merge($data, $r);
         return $r;
     }
 

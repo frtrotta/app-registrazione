@@ -6,15 +6,15 @@ namespace dbproxy;
 
 abstract class MysqlProxyBase {
 
-    private $tableName; // the name of the table
-    private $fieldList;
+    protected $tableName; // the name of the table
+    protected $fieldList;
     /* The list of the fields in the correspondent SQL table
      * The first must be the IDENTITY field.
      */
     protected $conn;
 
     public function __construct(&$connection, $tableName, $fieldList) {
-        $this->conn = $connection;
+        $this->conn = &$connection;
         $this->tableName = $tableName;
         $this->fieldList = $fieldList;
     }
@@ -195,13 +195,18 @@ abstract class MysqlProxyBase {
         if ($this->conn->errno) {
             throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
         }
-        return $this->fetch_all();
+        $r = [];
+        while($row = $rs->fetch_row()) {
+            $r[] = (int)$row[0];
+        }
+        $rs->free();
+        return $r;
     }
-    
+
     protected function _addOptionalRelation($idField, $idValue, $childIdField, $childIdValue, $tableName) {
         $idValue = $this->_sqlFormat($idValue);
         $childIdValue = $this->_sqlFormat($childIdValue);
-        $query = "INSERTO INTO `$tableName`"
+        $query = "INSERT INTO `$tableName`"
                 . " (`$idField`, `$childIdField`)"
                 . " VALUES"
                 . " ($idValue, $childIdValue)";
@@ -257,7 +262,7 @@ abstract class MysqlProxyBase {
         }
         return $r;
     }
-    
+
     /**
      * 
      * @param associative array $selectionClause
@@ -337,16 +342,19 @@ abstract class MysqlProxyBase {
     }
 
     private function _createFieldListAndValues($data) {
+        $fieldList = null;
+        $valueList = null;
         $first = true;
         foreach ($data as $key => $value) {
-            $key = $this->conn->escape_string($key);
-            if ($first) {
-                $first = false;
-                $fieldList = "( `$key`";
-                $valueList = ' VALUES ( ' . $this->_sqlFormat($value);
-            } else {
-                $fieldList .= ", `$key`";
-                $valueList .= ', ' . $this->_sqlFormat($value);
+            if (array_search($key, $this->fieldList, true) !== false) {
+                if ($first) {
+                    $first = false;
+                    $fieldList = "( `$key`";
+                    $valueList = ' VALUES ( ' . $this->_sqlFormat($value);
+                } else {
+                    $fieldList .= ", `$key`";
+                    $valueList .= ', ' . $this->_sqlFormat($value);
+                }
             }
         }
         $fieldList .= ') ';
@@ -355,14 +363,16 @@ abstract class MysqlProxyBase {
     }
 
     private function _createSetList($data) {
+        $r = null;
         $first = true;
         foreach ($data as $key => $value) {
-            $key = $this->conn->escape_string($key);
-            if ($first) {
-                $first = false;
-                $r = " SET `$key` = " . $this->_sqlFormat($value);
-            } else {
-                $r .= ", `$key` = " . $this->_sqlFormat($value);
+            if (array_search($key, $this->fieldList, true) !== false) {
+                if ($first) {
+                    $first = false;
+                    $r = " SET `$key` = " . $this->_sqlFormat($value);
+                } else {
+                    $r .= ", `$key` = " . $this->_sqlFormat($value);
+                }
             }
         }
         return $r;
@@ -371,7 +381,7 @@ abstract class MysqlProxyBase {
     protected function _is_string_with_length($value) {
         return is_string($value) && (strlen($value) > 0);
     }
-    
+
     protected function _is_string_with_length_optional($value) {
         if (isset($value)) {
             return $this->_is_string_with_length($value);
@@ -448,9 +458,9 @@ abstract class MysqlProxyBase {
         } else {
             return true;
         }
-    }    
-    
-    public function add(&$data, $view) {
+    }
+
+    public function add($data, $view) {
         throw new \Exception('Method not implemented');
     }
 
@@ -462,23 +472,24 @@ abstract class MysqlProxyBase {
      * @return $data with the generated identifier
      */
     protected function _baseAdd($data) {
-            $query = 'INSERT INTO `' . $this->tableName . '` '
-                    . $this->_createFieldListAndValues($data);
-            $this->conn->query($query);
-            switch ($this->conn->errno) {
-                case 0:
-                    break;
-                case 1062:
-                    throw new ClientRequestException('Instance already exists', 50);
-                    break; //...
-                default:
-                    throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
-            }
-            $r = $data;
-            $r[$this->fieldList[0]] = $this->conn->insert_id;
+        $query = 'INSERT INTO `' . $this->tableName . '` '
+                . $this->_createFieldListAndValues($data);
+        $this->conn->query($query);
+        switch ($this->conn->errno) {
+            case 0:
+                break;
+//            case 1062:
+//                throw new ClientRequestException('This instance of ' . get_class($this) . ' already exists', 300);
+//                break; //...
+            default:
+//                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+                throw new \Exception($this->conn->error, $this->conn->errno);
+        }
+        $r = $data;
+        $r[$this->fieldList[0]] = $this->conn->insert_id;
         return $r;
-    }    
-    
+    }
+
     public function update($id, $data) {
         throw new \Exception('Method not implemented');
     }
@@ -494,42 +505,34 @@ abstract class MysqlProxyBase {
         $current = $this->get($id);
         if ($current) {
             $data = array_merge($current, $data);
-//            if ($this->_isCoherent($data, null)) {  //TODO è veramente necessario controllare qui?
-//                /* Se update diventa una funzione che deve essere richiamata da update della specifica
-//                 * classe derivata, allora sarà compito di questa verificare che tutto sia coerente.
-//                 * Guarda, però, come è implementato il metodo add di Utente
-//                 */
-                $identifierFieldName = $this->fieldList[0];
-                unset($data[$identifierFieldName]);
-                $identifierFieldValue = $id;
-                $query = 'UPDATE `' . $this->tableName . '` '
-                        . $this->_createSetList($data)
-                        . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
-                $this->conn->query($query);
+            $identifierFieldName = $this->fieldList[0];
+            unset($data[$identifierFieldName]);
+            $identifierFieldValue = $id;
+            $query = 'UPDATE `' . $this->tableName . '` '
+                    . $this->_createSetList($data)
+                    . ' WHERE `' . $identifierFieldName . '` = ' . $this->_sqlFormat($identifierFieldValue);
+            $this->conn->query($query);
 
-                if ($this->conn->errno) {
-                    throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
-                }
+            if ($this->conn->errno) {
+                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
+            }
 
-                $n = $this->conn->affected_rows;
-                switch ($n) {
-                    case 0:
-                        break;
-                    case 1:
-                        $r = $data;
-                        $r[$identifierFieldName] = $identifierFieldValue;
-                        break;
-                    default:
-                        throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
-                }
-//            } else {
-//                throw new ClientRequestException('Incoherent data for ' . get_class($this) . '. The data you provided did not meet expectations: please check and try again.', 91);
-//            }
+            $n = $this->conn->affected_rows;
+            switch ($n) {
+                case 0:
+                    break;
+                case 1:
+                    $r = $data;
+                    $r[$identifierFieldName] = $identifierFieldValue;
+                    break;
+                default:
+                    throw new MysqlProxyBaseException("Unexpected number of affected rows ($n)");
+            }
         }
 
         return $r;
     }
-    
+
     public function delete($id) {
         throw new \Exception('Method not implemented');
     }

@@ -5,12 +5,12 @@ namespace dbproxy;
 class Squadra extends MysqlProxyBase {
 
     public function __construct(&$connection) {
-        parent::__construct($connection, 'societa_fitri', ['codice',
+        parent::__construct($connection, 'squadra', ['id',
             'nome']);
     }
 
     protected function _castData(&$data) {
-        $data['codice'] = (int) $data['nome'];
+        $data['id'] = (int) $data['id'];
     }
 
     protected function _complete(&$data, $view) {
@@ -28,6 +28,7 @@ class Squadra extends MysqlProxyBase {
                         $r[] = $ap->get($temp[0], $view);
                     }
                     $data['adesioniPersonali'] = $r;
+                    break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
             }
@@ -37,8 +38,7 @@ class Squadra extends MysqlProxyBase {
     }
 
     protected function _isCoherent($data, $view) {
-        if (
-                !isset($data['nome'])
+        if (!isset($data['nome'])
         ) {
             return 'nome is not set';
         }
@@ -87,14 +87,14 @@ class Squadra extends MysqlProxyBase {
         
     }
 
-    public function add(&$data, $view) {
+    public function add($data, $view) {
         $check = $this->_isCoherent($data, $view);
         if ($check !== true) {
             throw new ClientRequestException('Incoherent data for ' . get_class($this) . ". $check.", 93);
         }
-
+        
         $r = $this->_baseAdd($data);
-        $r = array_merge($data, $r);
+
 
         if (isset($view)) {
             switch ($view) {
@@ -102,17 +102,17 @@ class Squadra extends MysqlProxyBase {
                     // Se c'è la squadra, c'è un'unica adesione personale
                     $apProxy = new AdesionePersonale($this->conn);
                     $ap = $data['adesioniPersonali'][0];
-                    $ap['idSquadra'] = $data['id'];
-                    $apr = $apProxy->add($ap, $view);
-                    $ap = array_merge($ap, $apr);
+                    $ap['idSquadra'] = $r[$this->fieldList[0]];
+                    $apProxy->add($ap, $view);
 
-                    $this->_addOptionalRelation('idIscrizione', $data['idIscrizione'], 'idSquadra', $data['id'], 'iscrizione__squadra');
+                    $this->_addOptionalRelation('idIscrizione', $data['idIscrizione'], 'idSquadra', $r[$this->fieldList[0]], 'iscrizione__squadra');
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);
             }
         }
-        return $r;
+        
+        return $this->get($this->fieldList[0], $view);
     }
 
 }

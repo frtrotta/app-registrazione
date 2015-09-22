@@ -50,12 +50,11 @@ class Gara extends MysqlProxyBase {
                     $this->_unsetField($data['abilitazioneTipoRichiestaTesseramento'], $idFieldName);
                 case 'invito':
                 case 'iscrizione':
-
+                case 'ordine':
                     $tg = new TipoGara($this->conn);
                     $data['tipo'] = $tg->get($data['idTipoGara'], $view);
                     unset($data['idTipoGara']);
 
-                case 'ordine':
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 71);
