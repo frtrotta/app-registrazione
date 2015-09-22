@@ -24,7 +24,7 @@ class VerificaRichiestaTesseramento extends MysqlProxyBase {
             switch ($view) {
                 case 'default':
                     $sf = new SocietaFitri($this->conn);
-                    $data['societa'] = $sf->get($data['CODICE_SS'], true);
+                    $data['societa'] = $sf->get($data['CODICE_SS'], $view);
                     unset($data['CODICE_SS']);
                     break;
                 default:

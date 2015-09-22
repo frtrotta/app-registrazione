@@ -478,12 +478,11 @@ abstract class MysqlProxyBase {
         switch ($this->conn->errno) {
             case 0:
                 break;
-//            case 1062:
-//                throw new ClientRequestException('This instance of ' . get_class($this) . ' already exists', 300);
-//                break; //...
+            case 1062:
+                throw new ClientRequestException('This instance of ' . get_class($this) . ' already exists', 300);
+                break; //...
             default:
-//                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
-                throw new \Exception($this->conn->error, $this->conn->errno);
+                throw new MysqlProxyBaseException($this->conn->error, $this->conn->errno);
         }
         $r = $data;
         $r[$this->fieldList[0]] = $this->conn->insert_id;

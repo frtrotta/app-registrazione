@@ -42,7 +42,7 @@ class Invito extends MysqlProxyBase {
                             $data['idAdesionePersonale'] = $temp[0];
                             break;
                         default:
-                            throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
+                            throw new MysqlProxyBaseException("Unexpected child number ($n) for " . get_class($this), 30);
                     }                    
                     break;
 

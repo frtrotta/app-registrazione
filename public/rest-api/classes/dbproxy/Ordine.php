@@ -42,11 +42,11 @@ class Ordine extends MysqlProxyBase {
                 case 'iscrizione':
                 case 'default':
                     $mp = new ModalitaPagamento($this->conn);
-                    $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], true);
+                    $data['modalitaPagamento'] = $mp->get($data['idModalitaPagamento'], $view);
                     unset($data['idModalitaPagamento']);
 
                     $u = new Utente($this->conn);
-                    $data['cliente'] = $u->get($data['idCliente'], true);
+                    $data['cliente'] = $u->get($data['idCliente'], $view);
                     unset($data['idCliente']);
                     break;
                 default:

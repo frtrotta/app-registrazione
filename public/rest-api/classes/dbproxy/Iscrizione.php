@@ -35,7 +35,7 @@ class Iscrizione extends MysqlProxyBase {
                     $data['squadra'] = $s->get($temp[0], $view);
                     break;
                 default:
-                    throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
+                    throw new MysqlProxyBaseException("Unexpected child number ($n) for " . get_class($this), 30);
             }
 
             $ap = new AdesionePersonale($this->conn);
@@ -48,7 +48,7 @@ class Iscrizione extends MysqlProxyBase {
                     $data['adesionePersonale'] = $ap->get($temp[0], $view);
                     break;
                 default:
-                    throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
+                    throw new MysqlProxyBaseException("Unexpected child number ($n) for " . get_class($this), 30);
             }
 
             switch ($view) {
@@ -144,12 +144,13 @@ class Iscrizione extends MysqlProxyBase {
                         if (!is_array($data['inviti'])) {
                             return 'inviti is not an array';
                         }
-                    } else {
+//                    } else {
 
-                        if ((isset($data['squadra']) && isset($data['adesionePersonale'])) ||
-                                (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
-                            return 'Either squadra or adesionePersonale must be set where no invito is given';
-                        }
+//                        Questa condizione è già verificata dalle precedenti
+//                        if ((isset($data['squadra']) && isset($data['adesionePersonale'])) ||
+//                                (!isset($data['squadra']) && !isset($data['adesionePersonale']))) {
+//                            return 'Either squadra or adesionePersonale must be set where no invito is given';
+//                        }
                     }
 
                     if (isset($data['squadra']) && (count($data['inviti']) < 2 || count($data['inviti']) > 3)) {
