@@ -90,10 +90,6 @@
                 }
 
                 function creaInvito() {
-                    $ciccio = 0;
-                    for ($i = 0; $i < 1000000; $i++) {
-                        $ciccio += $i;
-                    }
                     $temp = substr(sha1(microtime()), 0, 10);
                     $inv = [];
                     $inv['nome'] = 'nome ' . $temp;
@@ -103,11 +99,7 @@
                 }
 
                 function creaAdesionePersonale($idUtente, $richiestaTesseramento) {
-                    $ciccio = 0;
-                    for ($i = 0; $i < 10000; $i++) {
-                        $ciccio += $i;
-                    }
-                    $temp = substr(sha1((new \DateTime())->format('Ymhsi')), 0, 20);
+                    $temp = substr(sha1(microtime()), 0, 20);
                     $ap = [];
                     $ap['categoriaFitri'] = 'S3';
                     $ap['indirizzoCap'] = substr('CAP ' . $temp, 0, 10);
@@ -123,10 +115,9 @@
                     for ($i = 0; $i < 10000; $i++) {
                         $ciccio += $i;
                     }
-                    $temp = substr(sha1((new \DateTime())->format('Y-m-d H:i:s')), 0, 20);
+                    $temp = substr(sha1(microtime()), 0, 20);
                     $s = [];
                     $s['nome'] = 'Nome ' . $temp;
-                    $s['motto'] = 'Motto ' . $temp;
                     $s['adesioniPersonali'] = $arrayAdesioniPersonali;
                     return $s;
                 }
@@ -193,18 +184,18 @@
                     $conn->close();
                 }
 
-                function controllaSeSecondoHaUgualiCampiPrimo($primo, $secondo) {
+                function controllaSeSecondoHaUgualiCampiPrimo($primo, $secondo, $percorso = null) {
                     $r = true;
                     foreach ($primo as $key => $value) {
                         if (array_key_exists($key, $secondo)) {
                             if (is_array($value)) {
-                                $r = controllaSeSecondoHaUgualiCampiPrimo($primo[$key], $secondo[$key]);
+                                $r = controllaSeSecondoHaUgualiCampiPrimo($primo[$key], $secondo[$key], $percorso . '->' . $key);
                                 if ($r !== true) {
                                     break;
                                 }
                             } else {
                                 if ($primo[$key] !== $secondo[$key]) {
-                                    $r = 'Chiave ' . $key . ' ha valore differente';
+                                    $r = 'Chiave ' . $percorso . $key . ' ha valore differente';
                                     break;
                                 }
                             }
@@ -284,8 +275,8 @@
 
 
                 $o_singolo_errato = creaOrdine(
-                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [ 
-                            creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, [creaInvito()])]
+                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                    creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, [creaInvito()])]
                 );
 
                 $testCode = '12 - aggiunge ordine con adesione personale e inviti, con vista ordine';
@@ -294,7 +285,7 @@
                 if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
                     if ($body) {
-                        if($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. adesionePersonale and inviti cannot be both set.') {
+                        if ($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. adesionePersonale and inviti cannot be both set.') {
                             testPassed($testCode);
                         } else {
                             testFailedMsg($testCode, $r, $check);
@@ -310,8 +301,8 @@
 
 
                 $o_singolo = creaOrdine(
-                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [ 
-                            creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, null)]
+                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                    creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, null)]
                 );
 
                 $testCode = '13 - aggiunge ordine con adesione personale e inviti, con vista ordine';
@@ -337,8 +328,8 @@
 
 
                 $o_squadra = creaOrdine(
-                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [ 
-                            creaIscrizione(ID_GARA, null, creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), [creaInvito(), creaInvito()])]
+                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                    creaIscrizione(ID_GARA, null, creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), [creaInvito(), creaInvito()])]
                 );
 
                 $testCode = '14 - aggiunge ordine con squadra, con vista ordine';
