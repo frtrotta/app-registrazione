@@ -136,8 +136,9 @@ class Tesseramento extends MysqlProxyBase {
         if (isset($view)) {
             switch ($view) {
                 case 'ordine':
-
-                    $this->_addOptionalRelation('idTesseramento', $r[$this->fieldList[0]], 'codiceSocietaFitri', $data['codiceSocietaFitri'], 'tesseramento__societa_fitri');
+                    if (isset($data['codiceSocietaFitri'])) {
+                        $this->_addOptionalRelation('idTesseramento', $r[$this->fieldList[0]], 'codiceSocietaFitri', $data['codiceSocietaFitri'], 'tesseramento__societa_fitri');
+                    }
                     break;
                 default:
                     throw new ClientRequestException('Unsupported view for ' . get_class($this) . ': ' . $view, 50);

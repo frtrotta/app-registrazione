@@ -142,12 +142,15 @@
                     return $rt;
                 }
 
-                function creaTesseramento($matricola, $codiceSocietaFitri, $stranieroSocieta, $idTipoTesseramento) {
+                function creaTesseramento($matricola, $codiceSocietaFitri, $stranieroSocieta, $stranieroStato, $idTipoTesseramento) {
                     $r = [];
                     $r['finoAl'] = (new \DateTime())->format('Y-m-d H:i:s');
                     $r['matricola'] = $matricola;
-                    $r['codiceSocietaFitri'] = $codiceSocietaFitri;
+                    if (isset($codiceSocietaFitri)) {
+                        $r['codiceSocietaFitri'] = $codiceSocietaFitri;
+                    }
                     $r['stranieroSocieta'] = $stranieroSocieta;
+                    $r['stranieroStato'] = $stranieroStato;
                     $r['idTipoTesseramento'] = $idTipoTesseramento;
                     return $r;
                 }
@@ -507,7 +510,7 @@
                 if ($fallo) {
                     $o_singolo_fitri_errato = creaOrdine(
                             $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
-                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', null, null, TESSERAMENTO_FITRI))), null, null)]
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', null, null, null, TESSERAMENTO_FITRI))), null, null)]
                     );
 
                     $testCode = '30 - aggiunge ordine singolo con tesseramento non completo, con vista ordine';
@@ -536,35 +539,7 @@
                 if ($fallo) {
                     $o_singolo_fitri = creaOrdine(
                             $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
-                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', 3, null, TESSERAMENTO_FITRI))), null, null)]
-                    );
-
-                    $testCode = '31 - aggiunge ordine singolo con tesseramento completo, con vista ordine';
-                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_fitri));
-
-                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                        $body = json_decode($r->response->body, true);
-                        if ($body) {
-                            $check = controllaSeSecondoHaUgualiCampiPrimo($o_singolo_fitri, $body);
-                            if ($check === true) {
-                                testPassed($testCode);
-                            } else {
-                                testFailedMsg($testCode, $r, $check);
-                            }
-                        } else {
-                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
-                        }
-                    } else {
-                        testFailed($testCode, $r);
-                    }
-                }
-
-//----------------------------------------------------------------------------
-
-                if ($fallo) {
-                    $o_singolo_fitri = creaOrdine(
-                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
-                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', 3, null, TESSERAMENTO_FITRI))), null, null)]
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', 3, null, null, TESSERAMENTO_FITRI))), null, null)]
                     );
 
                     $testCode = '31 - aggiunge ordine singolo con tesseramento completo, con vista ordine';
@@ -592,10 +567,10 @@
                 if ($fallo) {
                     $o_singolo_straniero = creaOrdine(
                             $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
-                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', null, 'USA triathlon', TESSERAMENTO_FITRI))), null, null)]
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', null, 'USA triathlon', 'USA', TESSERAMENTO_FITRI))), null, null)]
                     );
 
-                    $testCode = '31 - aggiunge ordine singolo con tesseramento completo, con vista ordine';
+                    $testCode = '32 - aggiunge ordine singolo con tesseramento straniero, con vista ordine';
                     $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_straniero));
 
                     if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
