@@ -51,10 +51,10 @@ class AdesionePersonale extends MysqlProxyBase {
                         case 0:
                             break;
                         case 1:
-                            $data['squadra'] = $s->get($temp[0], true);
+                            $data['squadra'] = $s->get($temp[0], $view);
                             break;
                         default:
-                            throw new MysqlProxyBaseException("Unexpected child number ($n)", 30);
+                            throw new MysqlProxyBaseException("Unexpected child number ($n) for " . get_class($this), 30);
                     }
                     break;
                 default:

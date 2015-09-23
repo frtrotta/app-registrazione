@@ -142,12 +142,15 @@
                     return $rt;
                 }
 
-                function creaTesseramento($matricola, $codiceSocietaFitri, $stranieroSocieta, $idTipoTesseramento) {
+                function creaTesseramento($matricola, $codiceSocietaFitri, $stranieroSocieta, $stranieroStato, $idTipoTesseramento) {
                     $r = [];
                     $r['finoAl'] = (new \DateTime())->format('Y-m-d H:i:s');
                     $r['matricola'] = $matricola;
-                    $r['codiceSocietaFitri'] = $codiceSocietaFitri;
+                    if (isset($codiceSocietaFitri)) {
+                        $r['codiceSocietaFitri'] = $codiceSocietaFitri;
+                    }
                     $r['stranieroSocieta'] = $stranieroSocieta;
+                    $r['stranieroStato'] = $stranieroStato;
                     $r['idTipoTesseramento'] = $idTipoTesseramento;
                     return $r;
                 }
@@ -195,12 +198,12 @@
                                 }
                             } else {
                                 if ($primo[$key] !== $secondo[$key]) {
-                                    $r = 'Chiave ' . $percorso . $key . ' ha valore differente';
+                                    $r = 'Chiave ' . $percorso . '->' . $key . ' ha valore differente';
                                     break;
                                 }
                             }
                         } else {
-                            $r = 'Secondo non ha chiave ' . $key;
+                            $r = 'Secondo non ha chiave ' . $percorso . '->' . $key;
                             break;
                         }
                     }
@@ -231,126 +234,362 @@
                 } else {
                     testFailed($testCode, $r);
                 }
-
-//----------------------------------------------------------------------------
-                $testCode = '10 - aggiunge solo ordine CONFERMARE'; // TODO va bene poter aggiungere solo ordine?
                 $idCliente = $idUtente;
-                $o = creaOrdine(
-                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [ creaIscrizione(ID_GARA, null, null, [creaInvito()])]
-                );
-                $r = http_request(URL_BASE . 'Ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o));
+//----------------------------------------------------------------------------
+                $fallo = true;
 
-                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = json_decode($r->response->body, true);
-                    if ($body) {
-                        testPassed($testCode);
+                if ($fallo) {
+                    $testCode = '10 - aggiunge solo ordine CONFERMARE'; // TODO va bene poter aggiungere solo ordine?
+
+                    $o = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [ creaIscrizione(ID_GARA, null, null, [creaInvito()])]
+                    );
+                    $r = http_request(URL_BASE . 'Ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o));
+
+                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            testPassed($testCode);
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
                     } else {
-                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        testFailed($testCode, $r);
                     }
-                } else {
-                    testFailed($testCode, $r);
                 }
 
 //----------------------------------------------------------------------------
-                $testCode = '11 - aggiunge ordine con solo inviti, con vista ordine';
-                $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o));
+                if ($fallo) {
+                    $testCode = '11 - aggiunge ordine con solo un invito, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o));
 
-                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = json_decode($r->response->body, true);
-                    if ($body) {
-                        $check = controllaSeSecondoHaUgualiCampiPrimo($o, $body);
-                        if ($check === true) {
-                            testPassed($testCode);
+                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            $check = controllaSeSecondoHaUgualiCampiPrimo($o, $body);
+                            if ($check === true) {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
                         } else {
-                            testFailedMsg($testCode, $r, $check);
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
                         }
                     } else {
-                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        testFailed($testCode, $r);
                     }
-                } else {
-                    testFailed($testCode, $r);
-                }
-
-//----------------------------------------------------------------------------
-
-
-                $o_singolo_errato = creaOrdine(
-                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
-                    creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, [creaInvito()])]
-                );
-
-                $testCode = '12 - aggiunge ordine con adesione personale e inviti, con vista ordine';
-                $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_errato));
-
-                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
-                    $body = json_decode($r->response->body, true);
-                    if ($body) {
-                        if ($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. adesionePersonale and inviti cannot be both set.') {
-                            testPassed($testCode);
-                        } else {
-                            testFailedMsg($testCode, $r, $check);
-                        }
-                    } else {
-                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
-                    }
-                } else {
-                    testFailed($testCode, $r);
                 }
 
 //----------------------------------------------------------------------------
 
 
-                $o_singolo = creaOrdine(
-                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
-                    creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, null)]
-                );
+                if ($fallo) {
+                    $o_singolo = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, null)]
+                    );
 
-                $testCode = '13 - aggiunge ordine con adesione personale e inviti, con vista ordine';
-                $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo));
+                    $testCode = '13 - aggiunge ordine con adesione personale singola, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo));
 
-                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = json_decode($r->response->body, true);
-                    if ($body) {
-                        $check = controllaSeSecondoHaUgualiCampiPrimo($o_singolo, $body);
-                        if ($check === true) {
-                            testPassed($testCode);
+                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            $check = controllaSeSecondoHaUgualiCampiPrimo($o_singolo, $body);
+                            if ($check === true) {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
                         } else {
-                            testFailedMsg($testCode, $r, $check);
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
                         }
                     } else {
-                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        testFailed($testCode, $r);
                     }
-                } else {
-                    testFailed($testCode, $r);
+                }
+
+//----------------------------------------------------------------------------
+
+                if ($fallo) {
+                    $o_squadra = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, null, creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), [creaInvito(), creaInvito()])]
+                    );
+
+                    $testCode = '14 - aggiunge ordine con squadra (singola adesione personale e due inviti), con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_squadra));
+
+                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            $check = controllaSeSecondoHaUgualiCampiPrimo($o_squadra, $body);
+                            if ($check === true) {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+
+//----------------------------------------------------------------------------
+
+                if ($fallo) {
+
+                    $o_solo_inviti = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, null, null, [creaInvito(), creaInvito(), creaInvito()])]
+                    );
+
+                    $testCode = '15 - aggiunge ordine con solo inviti, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_solo_inviti));
+
+                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            $check = controllaSeSecondoHaUgualiCampiPrimo($o_solo_inviti, $body);
+                            if ($check === true) {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+
+//----------------------------------------------------------------------------
+
+                if ($fallo) {
+                    $o_singolo_errato = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), null, [creaInvito()])]
+                    );
+
+                    $testCode = '20 - aggiunge ordine con adesione personale e inviti, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_errato));
+
+                    if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            if ($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. adesionePersonale and inviti cannot be both set.') {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+
+//----------------------------------------------------------------------------
+
+                if ($fallo) {
+                    $o_singolo_squadra_noinviti_errato = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), null)]
+                    );
+
+                    $testCode = '21 - aggiunge ordine con adesione personale e squadra senza inviti, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_squadra_noinviti_errato));
+
+                    if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            if ($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. If squadra is set, inviti must be set as well.') {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
                 }
 
 //----------------------------------------------------------------------------
 
 
-                $o_squadra = creaOrdine(
-                        $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
-                    creaIscrizione(ID_GARA, null, creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), [creaInvito(), creaInvito()])]
-                );
+                if ($fallo) {
+                    $o_singolo__squadra_inviti_errato = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null)), creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), [creaInvito()])]
+                    );
 
-                $testCode = '14 - aggiunge ordine con squadra, con vista ordine';
-                $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_squadra));
+                    $testCode = '22 - aggiunge ordine con adesione personale e squadra con inviti, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo__squadra_inviti_errato));
 
-                if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
-                    $body = json_decode($r->response->body, true);
-                    if ($body) {
-                        $check = controllaSeSecondoHaUgualiCampiPrimo($o_squadra, $body);
-                        if ($check === true) {
-                            testPassed($testCode);
+                    if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            if ($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. adesionePersonale and inviti cannot be both set.') {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
                         } else {
-                            testFailedMsg($testCode, $r, $check);
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
                         }
                     } else {
-                        testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        testFailed($testCode, $r);
                     }
-                } else {
-                    testFailed($testCode, $r);
                 }
-//----------------------------------------------------------------------------                
+
+//----------------------------------------------------------------------------
+
+
+                if ($fallo) {
+                    $o_squadra_inviti_errato = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, null, creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), [creaInvito()])]
+                    );
+
+                    $testCode = '23 - aggiunge ordine con squadra con  solo un invito, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_squadra_inviti_errato));
+
+                    if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            if ($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. If squadra is set, the size of inviti can be either 2 or 3.') {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+
+//----------------------------------------------------------------------------
+
+
+                if ($fallo) {
+                    $o_squadra_inviti_errato = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, null, creaSquadra([creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TESSERAMENTO_GIORNATA, null))]), [creaInvito(), creaInvito(), creaInvito(), creaInvito()])]
+                    );
+
+                    $testCode = '24 - aggiunge ordine con squadra con  solo un invito, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_squadra_inviti_errato));
+
+                    if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            if ($body['code'] === 93 && $body['message'] === 'Incoherent data for dbproxy\Iscrizione. If squadra is set, the size of inviti can be either 2 or 3.') {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+
+//----------------------------------------------------------------------------
+
+
+                if ($fallo) {
+                    $o_singolo_fitri_errato = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', null, null, null, TESSERAMENTO_FITRI))), null, null)]
+                    );
+
+                    $testCode = '30 - aggiunge ordine singolo con tesseramento non completo, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_fitri_errato));
+
+                    if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            if ($body['code'] === 93
+                            //&& $body['message'] === 'Incoherent data for dbproxy\\Tesseramento. The combination of matricola, codiceSocietaFitri, stranieroSocieta and\/or stranieroStato is not valid.'
+                            ) {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+
+//----------------------------------------------------------------------------
+
+                if ($fallo) {
+                    $o_singolo_fitri = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', 3, null, null, TESSERAMENTO_FITRI))), null, null)]
+                    );
+
+                    $testCode = '31 - aggiunge ordine singolo con tesseramento completo, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_fitri));
+
+                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            $check = controllaSeSecondoHaUgualiCampiPrimo($o_singolo_fitri, $body);
+                            if ($check === true) {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+
+//----------------------------------------------------------------------------
+
+                if ($fallo) {
+                    $o_singolo_straniero = creaOrdine(
+                            $idCliente, PAGAMENTO_VIA_BONIFICO_BANCARIO, [
+                        creaIscrizione(ID_GARA, creaAdesionePersonale($idUtente, creaRichiestaTesseramento(TRT_FITRI, creaTesseramento('12345', null, 'USA triathlon', 'USA', TESSERAMENTO_FITRI))), null, null)]
+                    );
+
+                    $testCode = '32 - aggiunge ordine singolo con tesseramento straniero, con vista ordine';
+                    $r = http_request(URL_BASE . 'Ordine/ordine', array($authConf['cookie-name'] => $cookie), 'PUT', 'application/json;charset=UTF-8', json_encode($o_singolo_straniero));
+
+                    if ($r->response->code === 200 && $r->response->contentType === 'application/json') {
+                        $body = json_decode($r->response->body, true);
+                        if ($body) {
+                            $check = controllaSeSecondoHaUgualiCampiPrimo($o_singolo_straniero, $body);
+                            if ($check === true) {
+                                testPassed($testCode);
+                            } else {
+                                testFailedMsg($testCode, $r, $check);
+                            }
+                        } else {
+                            testFailedMsg($testCode, $r, 'Error in decoding JSON');
+                        }
+                    } else {
+                        testFailed($testCode, $r);
+                    }
+                }
+//----------------------------------------------------------------------------
                 //rimuoviUtenteTest($mysqlConf);
 //----------------------------------------------------------------------------
                 ?>

@@ -29,15 +29,26 @@ class RichiestaTesseramento extends MysqlProxyBase {
                     $data['documenti'] = $d->getSelected($selectionClause, $view);
                     
                     $trt = new TipoRichiestaTesseramento($this->conn);
-                    $data['tipoRichiestaTesseramento'] = $trt->get($data['idTipoRichiestaTesseramento'], true);
+                    $data['tipoRichiestaTesseramento'] = $trt->get($data['idTipoRichiestaTesseramento'], $view);
                     unset($data['idTipoRichiestaTesseramento']);
                 case 'ordine':
                     $t = new Tesseramento($this->conn);
-                    $data['tesseramento'] = $t->get($data['id'], true);
+                    $selectionClause = ['idRichiestaTesseramento' => $data['id']];
+                    $temp = $t->getSelected($selectionClause, $view);
+                    switch(count($temp)) {
+                        case 0:
+                            $data['tesseramento'] = null;
+                            break;
+                        case 1:
+                            $data['tesseramento'] = $temp[0];
+                            break;
+                        default:                            
+                            throw new MysqlProxyBaseException("Unexpected child number ($n) for " . get_class($this), 30);
+                    }
                     break;
                 case 'default':
                     $ap = new AdesionePersonale($this->conn);
-                    $data['adesionePersonale'] = $ap->get($data['idAdesionePersonale'], true);
+                    $data['adesionePersonale'] = $ap->get($data['idAdesionePersonale'], $view);
                     unset($data['idAdesionePersonale']);
                     break;
                 default:
