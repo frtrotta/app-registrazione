@@ -4,31 +4,66 @@ angular.module("riepilogoOrdineMdl")
     var vm = this;
     var gara = $resource("http://localhost/app-registrazione/rest-api/Gara/:id/default",{id:"@id"});
     vm.riepilogoOrdine = [];
-   
     
     vm.riepilogo = function(){
         angular.forEach(ordineFct.iscrizioni, function(iscrizione, index){
             gara.get({id:iscrizione.idGara}, function(gara){
                 var elemento = {
-                    costoGara:getAbilitazioneTipoIscrizione(gara, iscrizione.eseguitaIl).costo,
-                    costoTesseramento:
+                    costoGara:getCostoGara(gara, iscrizione.eseguitaIl),
+                    costoTesseramenti:vm.getCostoTesseramento(gara, iscrizione)
                 };
+                vm.riepilogoOrdine.push(elemento);
             });
         });
+        vm.setCostoTotale();
+    }();
+    
+    vm.setCostoTotale = function(){
+        var totale = null;
+        angular.forEach(vm.riepilogoOrdine, function(iscrizione, index){
+            totale += iscrizione.costoGara;
+            totale += iscrizione.costoTesseramenti;
+        });
+        ordineFct.totale = totale;
+        console.log(ordineFct);
     };
     
+    vm.getCostoTesseramento = function(gara, iscrizione){
+        var r = null;
+        
+        if(iscrizione.squadra){
+            angular.forEach(iscrizione.squadra.adesioniPersonali, function(adesionePersonale, index){
+                var idTipoTesseramento = adesionePersonale.richiestaTesseramento.tesseramento.idTipoTesseramento;
+                angular.forEach(gara.abilitazioneTipoRichiestaTesseramento, function(abilitazione, index){
+                    if(abilitazione.tipoRichiestaTesseramento.id === idTipoTesseramento){
+                        r += abilitazione.costo;
+                    }
+                });
+            });
+        }else{
+            var idTipoTesseramento = iscrizione.adesionePersonale.richiestaTesseramento.tesseramento.idTipoTesseramento;
+            angular.forEach(gara.abilitazioneTipoRichiestaTesseramento, function(abilitazione, index){
+                if(abilitazione.tipoRichiestaTesseramento.id === idTipoTesseramento){
+                    r = abilitazione.costo;
+                }
+            });
+            
+        }
+        
+        return r;
+    };
     
 }]);
 
-function getAbilitazioneTipoIscrizione(gara, iscrizioneEseguitaIl){
+function getCostoGara(gara, iscrizioneEseguitaIl){
     var eseguitaIl = new Date(Date.parse(iscrizioneEseguitaIl));
     var r = null;
-    console.log(eseguitaIl);
+    
     for(var i=0; i<gara.abilitazioneTipoIscrizione.length; i++){
-        if(gara.abilitazioneTipoIscrizione[i] > eseguitaIl){
+        if(new Date(Date.parse(gara.abilitazioneTipoIscrizione[i].finoAl)) > eseguitaIl){
             r = gara.abilitazioneTipoIscrizione[i];
             break;
         }
     }
-    return r;
+    return r.costo;
 }

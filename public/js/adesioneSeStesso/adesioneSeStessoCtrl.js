@@ -6,8 +6,10 @@ angular.module("adesioneSeStessoMdl")
     var tesseratiFitri = $resource("http://localhost/app-registrazione/rest-api/TesseratiFitri/:tessera", {tessera:"@tessera"});
     vm.indirizzi = null;
     vm.utente = null;
+    vm.mostraSceltaTesseramento = null;
     vm.garaSelezionata = null;
     vm.iscrizioneTerminata = false;
+    vm.codiceTessera = null;
     
     //Prendo l'utente corrente
     $http.get("http://localhost/app-registrazione/rest-api/Me").then(
@@ -19,39 +21,61 @@ angular.module("adesioneSeStessoMdl")
     );
     
     //prendo la gara selezionata
-    gara.get({id:ordineFct.iscrizioni[0].idGara}, function(gara){
+    gara.get({id:ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].idGara}, function(gara){
         vm.garaSelezionata = gara;
     });
     
+    vm.tesseramentoFuturo = function(){
+        if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
+            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento.tesseramento = null;
+        }else{
+            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesioniPersonali.length].richiestaTesseramento.tesseramento = null;
+        }
+        console.log(ordineFct);
+    };
+    
     vm.selezionaTipoRichiestaTessermaneto = function (tipoRichiesta){
+        var richiestaTesseramento = {
+            eseguitaIl:new Date(),
+            idTipoRichiestaTesseramento:tipoRichiesta,
+            verificata:false
+        };
         switch(tipoRichiesta.id) {
             case 1:
                 //tesseramento di giornata
-                if(!ordineFct.iscrizioni[0].squadra){
-                    ordineFct.iscrizioni[0].adesione_personale.richiestaTesseramento.tipoRichiestaTesseramento = 1;
-                    var finoAl = new Date(Date.parse(vm.garaSelezionata.disputataIl));
-                    ordineFct.iscrizioni[0].adesione_personale.richiestaTesseramento.tesseramento = {
-                        finoAl:finoAl,
-                        tipo_tesseramento:1
-                    };
+                var finoAl = new Date(Date.parse(vm.garaSelezionata.disputataIl));
+                finoAl.setDate(finoAl.getDate() + 1);
+                var tesseramentoDiGiornata = {
+                    societaFitri:null,
+                    idTipoTesseramento:1,
+                    finoAl:finoAl,
+                    matricola:null,
+                    stranieroSocieta:null,
+                    stranietoStato:null
+                };
+                if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento = richiestaTesseramento;
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento.tesseramento = tesseramentoDiGiornata;
+                    vm.iscrizioneTerminata = true;
                 }else{
-                    ordineFct.iscrizioni[0].squadra.adesione_personale[0].richiestaTesseramento.tipoRichiestaTesseramento = 1;
-                    var finoAl = new Date(Date.parse(vm.garaSelezionata.disputataIl));
-                    ordineFct.iscrizioni[0].squadra.adesione_personale[0].richiestaTesseramento.tesseramento = {
-                        finoAl:finoAl,
-                        tipo_tesseramento:1
-                    };
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento = richiestaTesseramento;
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento.tesseramento = tesseramentoDiGiornata;
+                    $location.path("/invitoAtleti");
                 }
-                
-                console.log(ordineFct);
                 break;
             case 2:
                 //tesseramento Fitri
                 vm.ricercaTesserati(vm.utente.nome, vm.utente.cognome, vm.utente.natoIl, vm.utente.sesso);
+                if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento = richiestaTesseramento;
+                }else{
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento = richiestaTesseramento;
+                }
                 break;
             default:
                 alert("Tipo richiesta tesseramento non supportato");
         }
+        console.log(ordineFct);
     };
     
     vm.setTesseramentoByTessera = function(tessera){
@@ -62,46 +86,43 @@ angular.module("adesioneSeStessoMdl")
                 finoAl:finoAl,
                 matricola:tesserato.TESSERA,
                 societaFitri:tesserato.CODICE_SS,
-                tipoTesseramento:2
+                idTipoTesseramento:2
             };
             if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
-                ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesione_personale.richiestaTesseramento.tipoRichiestaTesseramento = 2;
-                ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesione_personale.richiestaTesseramento.tesseramento = tesseramento;
+                ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento.tesseramento = tesseramento;
                 vm.iscrizioneTerminata = true;
             }else{
-                ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesione_personale[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesione_personale.length-1].richiestaTesseramento.tipoRichiestaTesseramento = 2;
-                ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesione_personale[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesione_personale.length-1].richiestaTesseramento.tesseramento = tesseramento;
-                //CU: invito 1/2 atleti
+                ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento.tesseramento = tesseramento;
+                $location.path("/invitoAtleti");
             }
             console.log(ordineFct);
         });
     };
-    
+    //setIndirizzi, idUtente e categoriaFitri
     vm.setIndirizzi = function(){
         var adesionePersonale = {
             indirizzoCap:vm.indirizzi.cap,
-                indirizzoCitta:vm.indirizzi.citta,
-                indirizzoPaese:vm.indirizzi.paese,
-                idUtente:vm.utente.id,
-                nomeCategoriaFitri:getCategoriaFitriByUtente(vm.utente),
-                richiestaTesseramento:{
-                    eseguitaIl: new Date(),
-                    verificata: false
-                }
+            indirizzoCitta:vm.indirizzi.citta,
+            indirizzoPaese:vm.indirizzi.paese,
+            idUtente:vm.utente.id,
+            categoriaFitri:getCategoriaFitriByUtente(vm.utente)
         };
-        if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
-            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesione_personale = adesionePersonale;
-        }else{
-            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesione_personale.push(adesionePersonale);
-        }
         
+        if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
+            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale = adesionePersonale;
+        }else{
+            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali = [];
+            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.push(adesionePersonale);
+        }
+        ordineFct.copyByAdesionePersonale();
+        vm.mostraSceltaTesseramento = true;
         console.log(ordineFct);
     };
     
     vm.ricercaTesseratiConCodiceTessera = function(codiceTessera){
         tesseratiFitri.query({TESSERA:codiceTessera}, function(tesserati){
-            console.log(tesserati);
             vm.risultatoRicercaTesserati = tesserati;
+            vm.codiceTessera = null;
         });
     };
     vm.ricercaTesserati = function(nome, cognome, natoIl, sesso){

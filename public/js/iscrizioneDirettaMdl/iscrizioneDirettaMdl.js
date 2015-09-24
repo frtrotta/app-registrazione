@@ -1,4 +1,4 @@
-angular.module("iscrizioneDirettaMdl", ["ngResource", "ngRoute", "SceltaGaraMdl", "adesioneSeStessoMdl", "aggiuntaDatiSquadraMdl"])
+angular.module("iscrizioneDirettaMdl", ["ngResource", "ngRoute", "SceltaGaraMdl", "adesioneSeStessoMdl", "aggiuntaDatiSquadraMdl", "riepilogoOrdineMdl", "invitoAtletiMdl"])
 .factory("ordineFct", ["$http", function($http){
         
     var ordine = {
@@ -8,12 +8,28 @@ angular.module("iscrizioneDirettaMdl", ["ngResource", "ngRoute", "SceltaGaraMdl"
         ricevutaInviata:false,
         ricevutaInviataIl:null, 
         note:null,
-        iscrizioni:[]
-        //copyByAdesionePersonale
+        iscrizioni:[],
+        clienteIndirizzoCap:null,
+        clienteIndirizzoCitta:null,
+        clienteIndirizzoPaese:null,
+        copyByAdesionePersonale:function(){
+            if(!ordine.iscrizioni[ordine.iscrizioni.length-1].squadra){
+                ordine.clienteIndirizzoCap = ordine.iscrizioni[ordine.iscrizioni.length-1].adesionePersonale.indirizzoCap;
+                ordine.clienteIndirizzoCitta = ordine.iscrizioni[ordine.iscrizioni.length-1].adesionePersonale.indirizzoCitta;
+                ordine.clienteIndirizzoPaese = ordine.iscrizioni[ordine.iscrizioni.length-1].adesionePersonale.indirizzoPaese;
+            }else{
+                ordine.clienteIndirizzoCap = ordine.iscrizioni[ordine.iscrizioni.length-1].squadra.adesioniPersonali[0].indirizzoCap;
+                ordine.clienteIndirizzoCitta = ordine.iscrizioni[ordine.iscrizioni.length-1].squadra.adesioniPersonali[0].indirizzoCitta;
+                ordine.clienteIndirizzoPaese = ordine.iscrizioni[ordine.iscrizioni.length-1].squadra.adesioniPersonali[0].indirizzoPaese;
+            }
+            
+        }
     };
     
     return ordine;
     
+    
+
 }]).config(['$routeProvider', function($routeProvider) {
   
     $routeProvider.when("/sceltaGara", {
@@ -27,6 +43,12 @@ angular.module("iscrizioneDirettaMdl", ["ngResource", "ngRoute", "SceltaGaraMdl"
     });
     $routeProvider.when("/nuovaIscrizione", {
         templateUrl: "../views/nuovaIscrizione.html"
+    });
+    $routeProvider.when("/invitoAtleti", {
+        templateUrl: "../views/invitoAtleti.html"
+    });
+    $routeProvider.when("/riepilogo", {
+        templateUrl: "../views/riepilogoOrdine.html"
     });
     $routeProvider.otherwise({
         templateUrl: "../views/nuovoOrdine.html"

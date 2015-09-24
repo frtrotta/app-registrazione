@@ -29,14 +29,14 @@
                     </div>
                     <div class="form-group" ng-class="registrazione.password.$error.required ? 'has-error' : 'has-success'">
                         <label>Password</label>
-                        <input type="password" ng-pattern='/(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[|\\!"£$%&/()=?^\/\*\-\+.,;:_]).{6}/' name="password" class="form-control" ng-model="registrazioneCtrl.nuovoUtente.password" required />
+                        <input type="password" ng-pattern='/(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[|\\!"£$%&/()=?^\/\*\-\+.,;:_]).{6}/' name="password" class="form-control" ng-model="regCtrl.nuovoUtente.password" required />
                     </div>
                     <div class="form-group" ng-class="registrazione.dataDiNascita.$error.required ? 'has-error' : 'has-success'">
                         <label>Data di nascita</label>
                         <input type="date" name="dataDiNascita" class="form-control" ng-model="regCtrl.nuovoUtente.dataDiNascita" required />
                     </div>
                     <div class="form-group" ng-class="registrazione.telefono.$error.required ? 'has-error' : 'has-success'">
-                        <label>Telefono</label><!--"&#34;-->
+                        <label>Telefono</label><!--TODO da modificare l'espressione regolare-->
                         <input name="telefono" ng-pattern="/^[0-9\+][^\+A-Za-z|!£$%&/()=?^\\]{9,13}$/" class="form-control" ng-model="regCtrl.nuovoUtente.telefono" required />
                     </div>
                     <div class="form-group" ng-class="registrazione.email.$error.required ? 'has-error' : 'has-success'">

@@ -6,7 +6,8 @@ angular.module("aggiuntaDatiSquadraMdl")
     vm.setNomeSquadra = function(nomeSquadra){
         ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra = {
             nome:nomeSquadra,
-            adesione_personale:[]
+            adesioniPersonali:[],
+            inviti:[]
         };
         console.log(ordineFct);
         $location.path("/adesioneSeStesso");

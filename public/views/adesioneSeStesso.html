@@ -1,6 +1,8 @@
 <div ng-controller="adesioneSeStessoCtrl as adesioneCtrl">
-        
-    <div class="row">
+    
+    <h2>Inserisci i tuoi dati</h2>
+    
+    <div class="row" ng-hide="adesioneCtrl.mostraSceltaTesseramento">
         <div class="col-sm-4 col-sm-offset-4">
             <form name="indirizzi" novalidate>
                 <div class="form-group" ng-class="indirizzi.cap.$error.required ? 'has-error' : 'has-success'">
@@ -22,7 +24,7 @@
         </div>
     </div>
 
-    <div>
+    <div ng-show="adesioneCtrl.mostraSceltaTesseramento && !adesioneCtrl.iscrizioneTerminata">
         <h3>Tesseramento</h3>
         <div>
             <span>Scegli il tipo di tesseramento</span>
@@ -41,25 +43,25 @@
 
         <div ng-show="adesioneCtrl.risultatoRicercaTesserati.length == 0 || adesioneCtrl.risultatoRicercaTesserati.length > 1">
             <span>Non ho trovato alcun tesserato con i tuoi dati. Se sei tesserato inserisci il tuo numero di tessera. Altrimenti, se ti tessererai in futuro, clicca su prosegui</span><br>
-            <input type="text" ng-model="codiceTessera"/>
-            <button type="button" ng-click="adesioneCtrl.ricercaTesseratiConCodiceTessera(codiceTessera)">Cerca</button>
-            <button type="button">Prosegui</button><!--TODO da gestire-->
+            <input type="text" ng-model="adesioneCtrl.codiceTessera"/>
+            <button type="button" ng-click="adesioneCtrl.ricercaTesseratiConCodiceTessera(adesioneCtrl.codiceTessera)">Cerca</button>
+            <button type="button" ng-click="adesioneCtrl.tesseramentoFuturo()">Prosegui</button>
         </div>
         <div ng-show="adesioneCtrl.risultatoRicercaTesserati.length == 1">
-            <span>Secondo la nostra ricerca risulta che sei un atleta FITri</span><br>
-            <!--TODO Riepilogo atleta-->
-            <label>Codice tessera:{{adesioneCtrl.risultatoRicercaTesserati[0].TESSERA}}</label>
-            <button type="button" ng-click="adesioneCtrl.setTesseramentoByTessera(adesioneCtrl.risultatoRicercaTesserati[0].TESSERA)">Prosegui</button><!--TODO da gestire-->
+            <span>Secondo la nostra ricerca risulta che sei un atleta FITri. Se sei te clicca su conferma, altrimenti inserisci il tuo numero di tessera</span><br>
+            <label>Nome: {{adesioneCtrl.risultatoRicercaTesserati[0].NOME}}</label><br>
+            <label>Congome: {{adesioneCtrl.risultatoRicercaTesserati[0].COGNOME}}</label><br>
+            <label>Data di nascita: {{adesioneCtrl.risultatoRicercaTesserati[0].DATA_NASCITA}}</label><br>
+            <label>Codice tessera: {{adesioneCtrl.risultatoRicercaTesserati[0].TESSERA}}</label><br>
+            <button type="button" ng-click="adesioneCtrl.setTesseramentoByTessera(adesioneCtrl.risultatoRicercaTesserati[0].TESSERA)">Conferma</button>
+            <input type="text" ng-model="adesioneCtrl.codiceTessera">
+            <button type="button" class="btn btn-primary btn-xs" ng-click="adesioneCtrl.ricercaTesseratiConCodiceTessera(adesioneCtrl.codiceTessera)">Cerca</button>
         </div>
-
-        <div ng-hide="!adesioneCtrl.iscrizioneTerminata">
-           
-            <button type="button" class="btn btn-primary btn-xs" ><a href="#/views/">Riepilogo ordine</a></button>
-            <button type="button" class="btn btn-primary btn-xs" ><a href="#/nuovaIscrizione">Nuova iscrizione</a></button>
-            
-        </div>
-
     </div>
-
+    
+    <div ng-hide="!adesioneCtrl.iscrizioneTerminata">
+        <a href="#/riepilogo"><button type="button" class="btn btn-primary btn-xs" >Riepilogo ordine</button></a>
+        <a href="#/nuovaIscrizione"><button type="button" class="btn btn-primary btn-xs" >Nuova iscrizione</button></a>
+    </div>
 
 </div>

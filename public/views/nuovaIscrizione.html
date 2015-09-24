@@ -11,7 +11,7 @@
         </div>
         <div class="form-group" ng-class="iscrizione.haImmagine.$error.required ? 'has-error' : 'has-success'">
             <label>Immagine</label>
-            <input type="checkbox" name="haImmagine" class="form-control" ng-model="iscrizioneCtrl.datiNuovaIscrizione.haImmagine" required />
+            <input type="checkbox" name="haImmagine" class="form-control" ng-model="iscrizioneCtrl.datiNuovaIscrizione.haImmagine"/>
         </div>
         <div class="text-center">
             <button type="button" ng-disabled="iscrizione.$invalid" class="btn btn-primary btn-xs" ng-click="iscrizioneCtrl.nuovaIscrizione()">Nuova iscrizione</button>

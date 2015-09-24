@@ -25,7 +25,7 @@ angular.module("registrazioneMdl")
         new utenti(utente).$save().then(
             function(result){
                 console.log(result);
-                //vm.nuovoUtente = null;
+                vm.nuovoUtente = null;
             }, function(reject){
                console.log(reject);
             }

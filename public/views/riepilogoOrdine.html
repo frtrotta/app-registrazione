@@ -1,11 +1,19 @@
 <div ng-controller="riepilogoOrdineCtrl as riepilogoCtrl">
     
-    <table class="table table-striped">
-        
+    <table class="table table-striped" ng-repeat="iscrizione in riepilogoCtrl.riepilogoOrdine">
         <tr>
-            <td></td>
-            <td></td>
+            <th class="tg-031e" colspan="2">Iscrizone {{$index + 1}}</th>
+        </tr>
+        <tr>
+            <td class="tg-031e">Gara</td>
+            <td class="tg-031e">{{iscrizione.costoGara}}</td>
+        </tr>
+        <tr>
+            <td class="tg-031e">Tesseramento</td>
+            <td class="tg-031e">{{iscrizione.costoTesseramenti}}</td>
         </tr>
     </table>
+    
+    <div ng-repeat="modalitaPagamento in riepilogoCtrl"><!--TODO--></div>
     
 </div>
