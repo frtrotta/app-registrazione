@@ -1,5 +1,7 @@
 <?php
 
+namespace restapi;
+
 class Error {
     public function __construct($code, $message) {
         $this->code = $code;

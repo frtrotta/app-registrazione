@@ -18,18 +18,25 @@ function errorResponse($httpResponseBody, $httpResponseStatusCode) {
 }
 
 spl_autoload_register(function ($class) {
-    $dl = explode('\\', $class);
-    $path = null;
-    $first = true;
-    foreach ($dl as $d) {
-        if ($first) {
-            $first = false;
-            $path .= $d;
-        } else {
-            $path .= DIRECTORY_SEPARATOR . $d;
-        }
+//    $dl = explode('\\', $class);
+//    $path = null;
+//    $first = true;
+//    foreach ($dl as $d) {
+//        if ($first) {
+//            $first = false;
+//            $path .= $d;
+//        } else {
+//            $path .= DIRECTORY_SEPARATOR . $d;
+//        }
+//    }
+//    include '..' . DIRECTORY_SEPARATOR . 'php-classes' . DIRECTORY_SEPARATOR . $path . '.php';
+    if(file_exists($class.'.php')) {
+        require_once $class.'.php';
     }
-    include 'classes' . DIRECTORY_SEPARATOR . $path . '.php';
+    else {
+        $path = '..' . DIRECTORY_SEPARATOR . 'php-classes' . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $class) . '.php';
+        require_once $path;
+    }
 });
 
 try {
@@ -38,26 +45,26 @@ try {
     $authConf = $conf['auth'];
     $API = new RegistrazioneApi($_GET['request'], $mysqlConf, $authConf);
     $API->processAPI();
-} catch (BadRequestException $e) {
-    $error = new Error(400, $e->getMessage());
+} catch (restapi\BadRequestException $e) {
+    $error = new restapi\Error(400, $e->getMessage());
     errorResponse($error, 400);
-} catch (UnauthorizedException $e) {
-    $error = new Error(401, $e->getMessage());
+} catch (restapi\UnauthorizedException $e) {
+    $error = new restapi\Error(401, $e->getMessage());
     errorResponse($error, 401);
-} catch (NotFoundException $e) {
-    $error = new Error(404, $e->getMessage());
+} catch (restapi\NotFoundException $e) {
+    $error = new restapi\Error(404, $e->getMessage());
     errorResponse($error, 404);
-} catch (MethodNotAllowedException $e) {
-    $error = new Error(405, $e->getMessage());
+} catch (restapi\MethodNotAllowedException $e) {
+    $error = new restapi\Error(405, $e->getMessage());
     errorResponse($error, 405);
-} catch (UnprocessableEntityException $e) {
-    $error = new Error($e->getCode(), $e->getMessage());
+} catch (restapi\UnprocessableEntityException $e) {
+    $error = new restapi\Error($e->getCode(), $e->getMessage());
     errorResponse($error, 422);
 } catch (dbproxy\ClientRequestException $e) {
-    $error = new Error($e->getCode(), $e->getMessage());
+    $error = new restapi\Error($e->getCode(), $e->getMessage());
     errorResponse($error, 422);
 } catch (modules\ClientRequestException $e) {
-    $error = new Error($e->getCode(), $e->getMessage());
+    $error = new restapi\Error($e->getCode(), $e->getMessage());
     errorResponse($error, 422);
 }
 catch (Exception $e) {

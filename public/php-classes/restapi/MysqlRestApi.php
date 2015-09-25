@@ -1,5 +1,7 @@
 <?php
 
+namespace restapi;
+
 class MysqlRestApi extends RestApi {
 
     private $mysqlServer;
@@ -32,7 +34,7 @@ class MysqlRestApi extends RestApi {
         $this->mysqlPassword = $mysqlConf['password'];
         $this->mysqlDatabase = $mysqlConf['database'];
 
-        $this->conn = new mysqli($this->mysqlServer, $this->mysqlUsername, $this->mysqlPassword, $this->mysqlDatabase);
+        $this->conn = new \mysqli($this->mysqlServer, $this->mysqlUsername, $this->mysqlPassword, $this->mysqlDatabase);
         if ($this->conn->connect_errno) {
             throw new Exception("Connection error: $this->conn->connect_error");
         }
