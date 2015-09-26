@@ -76,9 +76,15 @@
                     if ($conn->connect_errno) {
                         throw new Exception("Connection error: $this->conn->connect_error");
                     }
-                    $query = "DELETE FROM utente "
+                    $query = "CREATE TEMPORARY TABLE utenti_da_cancellare ("
+                            . "id bigint(20) not null"
+                            . ");\n"
+                            . "INSERT INTO utenti_da_cancellare (id) SELECT id FROM utente "
+                            . "WHERE email LIKE 'delete_%@gmail.com' AND id NOT IN (SELECT idCliente FROM ordine);\n"
+                            . "DELETE FROM utente "
                             . " WHERE "
-                            . " email like 'delete_%@gmail.com'";
+                            . " id IN (SELECT id FROM utenti_da_cancellare);";
+                    var_dump($query);
                     $conn->query($query);
                     if ($conn->errno) {
                         throw new Exception($conn->error);
