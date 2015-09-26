@@ -50,7 +50,7 @@
 
                 $testCode = '00a - Login senza fornire estremi autenticazione';
                 $r = http_request(URL_BASE . 'Login');
-                if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
                     if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide email and password') {
                         testPassed($testCode);
@@ -68,7 +68,7 @@
                 
                 $testCode = '00b - Login fornendo estremi autenticazione non corretti (email vuota) in query string, NVP';
                 $r = http_request(URL_BASE . 'Login?email=&password=test');
-                if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
                     if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide email and password') {
                         testPassed($testCode);
@@ -87,7 +87,7 @@
                 
                 $testCode = '00c - Login fornendo estremi autenticazione corretti in query string, NVP';
                 $r = http_request(URL_BASE . 'Login?email=email%40test.com&password=');
-                if ($r->response->code === 400 && $r->response->contentType === 'application/json') {
+                if ($r->response->code === 422 && $r->response->contentType === 'application/json') {
                     $body = json_decode($r->response->body, true);
                     if (isset($body ['code']) && isset($body ['message']) && $body ['code'] === 400 && $body ['message'] === 'Please provide email and password') {
                         testPassed($testCode);

@@ -9,7 +9,7 @@ class RegistrazioneApi extends restapi\MysqlRestApi {
         /* The module must be created at the beginning, in order to correctly
          * refresh the authentication token in the database, if present.
          */
-        $this->loginModule = new modules\LoginModule($this->conn, $authConf);
+        $this->loginModule = new modules\login\LoginModule($this->conn, $authConf);
     }
 
     protected function Login() {

@@ -63,7 +63,7 @@ try {
 } catch (dbproxy\ClientRequestException $e) {
     $error = new restapi\Error($e->getCode(), $e->getMessage());
     errorResponse($error, 422);
-} catch (modules\ClientRequestException $e) {
+} catch (modules\login\ClientRequestException $e) {
     $error = new restapi\Error($e->getCode(), $e->getMessage());
     errorResponse($error, 422);
 }

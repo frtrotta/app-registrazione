@@ -1,6 +1,6 @@
 <?php
 
-namespace modules;
+namespace modules\login;
 
 /**
  * Malformed requests or invalid operation
