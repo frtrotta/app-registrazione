@@ -146,7 +146,7 @@ class RegistrazioneApi extends restapi\MysqlRestApi {
                 } else {
                     // creation
                     if ($authorized) {
-                        $r = $this->_CRUDcreate($u);
+                        $r = $this->_CRUDcreate($u, $this->view);
                     } else {
                         throw new restapi\UnauthorizedException('User must be Amministratore to create an Amministratore');
                     }

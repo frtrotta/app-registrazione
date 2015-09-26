@@ -103,7 +103,7 @@ class MysqlRestApi extends RestApi {
         return $r;
     }
 
-    protected function _CRUDcreate($entityProxy, $view) {
+    protected function _CRUDcreate($entityProxy) {
         $r = null;
         if (strpos($this->contentType, 'application/json') >= 0) {
             $data = $this->body;
