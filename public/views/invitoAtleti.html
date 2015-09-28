@@ -5,9 +5,9 @@
         <label>Cognome: {{invitoCtrl.utenteCorrente.cognome}}</label><br>
     </div>
    
-    <div ng-hide="invitoCtrl.ordineFct.iscrizioni[invitoCtrl.ordineFct.iscrizioni.length-1].squadra.inviti.length > 1">
+    <div ng-hide="invitoCtrl.ordineFct.iscrizioni[invitoCtrl.ordineFct.iscrizioni.length-1].inviti.length > 1">
         <form name="invito" novalidate>
-            <h3>Invito numero {{invitoCtrl.ordineFct.iscrizioni[invitoCtrl.ordineFct.iscrizioni.length-1].squadra.inviti.length + 1}}</h3>
+            <h3>Invito numero {{invitoCtrl.ordineFct.iscrizioni[invitoCtrl.ordineFct.iscrizioni.length-1].inviti.length + 1}}</h3>
             <div class="form-group" ng-class="invito.nome.$error.required ? 'has-error' : 'has-success'">
                 <label>Nome</label>
                 <input name="nome" class="form-control" ng-model="invitoCtrl.inviti.nome" required />
@@ -21,15 +21,15 @@
                 <input type="email" name="email" class="form-control" ng-model="invitoCtrl.inviti.email" required />
             </div>    
             <div class="text-center">
-                <button ng-disabled="invito.$invalid" class="btn btn-primary" ng-click="invitoCtrl.setInvitati()">Registrati</button>
+                <button ng-disabled="invito.$invalid" class="btn btn-primary" ng-click="invitoCtrl.setInvitati()">Invita</button>
             </div>
             
         </form>
     </div>
     
     <div ng-hide="!invitoCtrl.iscrizioneTerminata">
-        <button type="button" class="btn btn-primary btn-xs" ><a href="#/riepilogo">Riepilogo ordine</a></button>
-        <button type="button" class="btn btn-primary btn-xs" ><a href="#/nuovaIscrizione">Nuova iscrizione</a></button>
+        <a href="#/riepilogo"><button type="button" class="btn btn-primary btn-xs" >Riepilogo ordine</button></a>
+        <a href="#/nuovaIscrizione"><button type="button" class="btn btn-primary btn-xs" >Nuova iscrizione</button></a>
     </div>
     
     

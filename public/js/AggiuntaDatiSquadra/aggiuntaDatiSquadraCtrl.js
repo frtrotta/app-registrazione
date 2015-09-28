@@ -7,8 +7,8 @@ angular.module("aggiuntaDatiSquadraMdl")
         ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra = {
             nome:nomeSquadra,
             adesioniPersonali:[],
-            inviti:[]
         };
+        ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].inviti = [];
         console.log(ordineFct);
         $location.path("/adesioneSeStesso");
     };

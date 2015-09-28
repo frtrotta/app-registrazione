@@ -6,6 +6,7 @@ angular.module("iscrizioneDirettaMdl")
     vm.nuovoOrdine = function(){
         $http.get("http://localhost/app-registrazione/rest-api/Me").then(
         function(me){
+            console.log(me);
             ordineFct.idCliente = me.data.id;
             console.log(ordineFct);
             $location.path("/nuovaIscrizione");

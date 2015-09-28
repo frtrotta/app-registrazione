@@ -1,8 +1,8 @@
 angular.module("iscrizioneDirettaMdl", ["ngResource", "ngRoute", "SceltaGaraMdl", "adesioneSeStessoMdl", "aggiuntaDatiSquadraMdl", "riepilogoOrdineMdl", "invitoAtletiMdl"])
-.factory("ordineFct", ["$http", function($http){
+.factory("ordineFct", ["$http", "$filter", function($http, $filter){
         
     var ordine = {
-        recevutoIl: new Date(),
+        ricevutoIl: $filter('date')(new Date(), 'yyyy/MM/dd HH:mm:ss'),
         totale:null,
         pagato:false,
         ricevutaInviata:false,

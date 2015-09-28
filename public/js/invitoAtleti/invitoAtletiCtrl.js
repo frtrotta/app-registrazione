@@ -21,7 +21,7 @@ angular.module("invitoAtletiMdl")
             cognome:vm.inviti.congome,
             email:vm.inviti.email
         };
-        ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.inviti.push(invitoAmico);
+        ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].inviti.push(invitoAmico);
         vm.inviti = null;        
         console.log(ordineFct);
         

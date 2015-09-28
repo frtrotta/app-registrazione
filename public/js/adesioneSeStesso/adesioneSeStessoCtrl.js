@@ -28,38 +28,33 @@ angular.module("adesioneSeStessoMdl")
     vm.tesseramentoFuturo = function(){
         if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
             ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento.tesseramento = null;
+            vm.iscrizioneTerminata = true;
         }else{
-            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesioniPersonali.length].richiestaTesseramento.tesseramento = null;
+            ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento.tesseramento = null;
+            $location.path("/invitoAtleti");
         }
+        
         console.log(ordineFct);
     };
     
     vm.selezionaTipoRichiestaTessermaneto = function (tipoRichiesta){
         var richiestaTesseramento = {
-            eseguitaIl:new Date(),
-            idTipoRichiestaTesseramento:tipoRichiesta,
-            verificata:false
+            idTipoRichiestaTesseramento:tipoRichiesta.id,
+            verificata:false,
+            eseguitaIl:$filter('date')(new Date(), 'yyyy/MM/dd HH:mm:ss')
         };
         switch(tipoRichiesta.id) {
             case 1:
                 //tesseramento di giornata
                 var finoAl = new Date(Date.parse(vm.garaSelezionata.disputataIl));
                 finoAl.setDate(finoAl.getDate() + 1);
-                var tesseramentoDiGiornata = {
-                    societaFitri:null,
-                    idTipoTesseramento:1,
-                    finoAl:finoAl,
-                    matricola:null,
-                    stranieroSocieta:null,
-                    stranietoStato:null
-                };
                 if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
                     ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento = richiestaTesseramento;
-                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento.tesseramento = tesseramentoDiGiornata;
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento.tesseramento = null;
                     vm.iscrizioneTerminata = true;
                 }else{
                     ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento = richiestaTesseramento;
-                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento.tesseramento = tesseramentoDiGiornata;
+                    ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali[ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra.adesioniPersonali.length-1].richiestaTesseramento.tesseramento = null;
                     $location.path("/invitoAtleti");
                 }
                 break;
@@ -83,10 +78,12 @@ angular.module("adesioneSeStessoMdl")
             var finoAl = new Date(Date.parse(tesserato.DATA_EMISSIONE));
             finoAl.setFullYear(finoAl.getFullYear() + 1);
             var tesseramento = {
-                finoAl:finoAl,
-                matricola:tesserato.TESSERA,
+                finoAl:$filter('date')(finoAl, 'yyyy/MM/dd HH:mm:ss'),
+                matricola:tesserato.TESSERA,//TODO da controllare
                 societaFitri:tesserato.CODICE_SS,
-                idTipoTesseramento:2
+                idTipoTesseramento:2,
+                stranieroSocieta:null,
+                stranieroStato:null
             };
             if(!ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].squadra){
                 ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].adesionePersonale.richiestaTesseramento.tesseramento = tesseramento;

@@ -1,8 +1,11 @@
 <div ng-controller="riepilogoOrdineCtrl as riepilogoCtrl">
     
+    <button class="btn btn-primary" ng-click="riepilogoCtrl.riepilogo()">Riepilogo</button>
+    <button class="btn btn-primary" ng-click="riepilogoCtrl.inviaOrdine()">Pusha</button>
+    
     <table class="table table-striped" ng-repeat="iscrizione in riepilogoCtrl.riepilogoOrdine">
         <tr>
-            <th class="tg-031e" colspan="2">Iscrizone {{$index + 1}}</th>
+            <th class="tg-031e" colspan="2">Iscrizione {{$index + 1}}</th>
         </tr>
         <tr>
             <td class="tg-031e">Gara</td>

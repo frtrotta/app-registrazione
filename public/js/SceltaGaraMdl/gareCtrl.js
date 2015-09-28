@@ -17,7 +17,6 @@ angular.module("SceltaGaraMdl")
     
     vm.selezionaGara = function(gara){
         vm.garaSelezionata = gara;
-        ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].eseguitaIl = new Date();
         ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].idGara=gara.id;
         console.log(ordineFct);
     
