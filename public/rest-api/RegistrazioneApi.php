@@ -1,6 +1,6 @@
 <?php
 
-class RegistrazioneApi extends MysqlRestApi {
+class RegistrazioneApi extends restapi\MysqlRestApi {
 
     private $loginModule;
 
@@ -9,7 +9,7 @@ class RegistrazioneApi extends MysqlRestApi {
         /* The module must be created at the beginning, in order to correctly
          * refresh the authentication token in the database, if present.
          */
-        $this->loginModule = new modules\LoginModule($this->conn, $authConf);
+        $this->loginModule = new modules\login\LoginModule($this->conn, $authConf);
     }
 
     protected function Login() {
@@ -33,15 +33,15 @@ class RegistrazioneApi extends MysqlRestApi {
                 }
                 break;
             default:
-                throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+                throw new restapi\MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         try {
             if (!($this->loginModule->loginByEmailAndPassword($email, $password))) {
-                throw new UnauthorizedException('Wrong email and/or password');
+                throw new restapi\UnauthorizedException('Wrong email and/or password');
             }
         } catch (modules\ClientRequestException $ex) {
             if ($ex->getCode() === 0) {
-                throw new BadRequestException('Please provide email and password');
+                throw new restapi\BadRequestException('Please provide email and password');
             } else {
                 throw $ex;
             }
@@ -59,7 +59,7 @@ class RegistrazioneApi extends MysqlRestApi {
                 $r = 'No user to log out';
             }
         } else {
-            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+            throw new restapi\MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
@@ -68,7 +68,7 @@ class RegistrazioneApi extends MysqlRestApi {
         if ($this->method === 'GET') {
             return $this->loginModule->me();
         } else {
-            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+            throw new restapi\MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
     }
 
@@ -78,7 +78,7 @@ class RegistrazioneApi extends MysqlRestApi {
             $tf = new dbproxy\TesseratiFitri($this->conn);
             $r = $this->_CRUDread($tf);
         } else {
-            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+            throw new restapi\MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
@@ -89,7 +89,7 @@ class RegistrazioneApi extends MysqlRestApi {
         if ($this->method === 'GET') {
             $r = $this->_CRUDread($g);
         } else {
-            throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+            throw new restapi\MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
@@ -112,7 +112,7 @@ class RegistrazioneApi extends MysqlRestApi {
                         $id = $this->id;
                     }
                 } else {
-                    throw new UnprocessableEntityException('Unsupported content type: ' . $this->contentType);
+                    throw new restapi\UnprocessableEntityException('Unsupported content type: ' . $this->contentType);
                 }
 
                 $authorized = false;
@@ -141,20 +141,20 @@ class RegistrazioneApi extends MysqlRestApi {
                     if ($authorized) {
                         $r = $this->_CRUDupdate($u);
                     } else {
-                        throw new UnauthorizedException('User must be Amministratore to update users');
+                        throw new restapi\UnauthorizedException('User must be Amministratore to update users');
                     }
                 } else {
                     // creation
                     if ($authorized) {
-                        $r = $this->_CRUDcreate($u);
+                        $r = $this->_CRUDcreate($u, $this->view);
                     } else {
-                        throw new UnauthorizedException('User must be Amministratore to create an Amministratore');
+                        throw new restapi\UnauthorizedException('User must be Amministratore to create an Amministratore');
                     }
                 }
 
                 break;
             default:
-                throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+                throw new restapi\MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }
@@ -169,23 +169,23 @@ class RegistrazioneApi extends MysqlRestApi {
             case 'POST':
             case 'PUT':
                 if (isset($this->id)) {
-                    throw new UnprocessableEntityException('Update not supported', 110);
+                    throw new restapi\UnprocessableEntityException('Update not supported', 110);
                 }
 
                 if (strpos($this->contentType, 'application/json') < 0) {
-                    throw new UnprocessableEntityException('Unsupported content type: ' . $this->contentType);
+                    throw new restapi\UnprocessableEntityException('Unsupported content type: ' . $this->contentType);
                 }
 
                 // TODO l'utente specificato nell'adesione personale o come cliente deve essere lo stesso loggato
                 if (!$this->loginModule->userIsLogged()) {
-                    throw new UnauthorizedException('User must be logged to place an ordine');
+                    throw new restapi\UnauthorizedException('User must be logged to place an ordine');
                 }
 
                 $r = $this->_CRUDcreate($o, $this->view);
                 break;
 
             default:
-                throw new MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
+                throw new restapi\MethodNotAllowedException('Method ' . $this->method . ' is not allowed');
         }
         return $r;
     }

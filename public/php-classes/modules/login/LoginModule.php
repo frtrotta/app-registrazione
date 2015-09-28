@@ -1,6 +1,6 @@
 <?php
 
-namespace modules;
+namespace modules\login;
 
 class LoginModule {
 
@@ -14,17 +14,17 @@ class LoginModule {
         $this->conn = &$dbConnection;
 
         if (!isset($authConf['token-valid-for-minutes'])) {
-            throw new Exception('$authConf[\'token-valid-for-minutes\'] is not set');
+            throw new LoginModuleException('$authConf[\'token-valid-for-minutes\'] is not set', 100);
         }
 
         if (!is_numeric($authConf['token-valid-for-minutes'])) {
-            throw new Exception('$authConf[\'token-valid-for-minutes\'] must be numeric');
+            throw new LoginModuleException('$authConf[\'token-valid-for-minutes\'] must be numeric', 101);
         } else if (!(is_integer($authConf['token-valid-for-minutes'] + 0) && ((int) $authConf['token-valid-for-minutes']) > 0)) {
-            throw new Exception('$authConf[\'token-valid-for-minutes\'] must be integer and positive');
+            throw new LoginModuleException('$authConf[\'token-valid-for-minutes\'] must be integer and positive', 102);
         }
 
         if (!isset($authConf['cookie-name'])) {
-            throw new Exception('$authConf[\'cookie-name\'] is not set');
+            throw new LoginModuleException('$authConf[\'cookie-name\'] is not set', 103);
         }
 
         $this->gettoneValidoPerMinuti = $authConf['token-valid-for-minutes'];
@@ -75,7 +75,7 @@ class LoginModule {
                 $this->_setAuthCookie();
             }
         } else {
-            throw new ClientRequestException('No email and/or password provided', 0);
+            throw new ClientRequestException('No email and/or password provided', 1);
         }
 
         return $r;
@@ -185,7 +185,7 @@ class LoginModule {
                     . " AND gettoneAutenticazioneScadeIl > NOW()";
             $this->conn->query($query);
             if ($this->conn->errno) {
-                throw new \Exception($this->conn->error, $this->conn->errno);
+                throw new LoginModuleException($this->conn->error, $this->conn->errno);
             }
             switch ($this->conn->affected_rows) {
                 case 0:
