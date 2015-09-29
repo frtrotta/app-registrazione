@@ -1,19 +1,31 @@
 <div ng-controller="gareCtrl as gare">
+    
+    <div class="row">
+        <div class="col-sm-4 col-sm-offset-4">
+            <form name="selezionaGara">
+                <div class="form-group">
+                    <label>Seleziona tipo gara</label>
+                    <select class="form-control" 
+                          ng-model="gare.tipoGaraSelezionata" 
+                          ng-options="tipoGara.nome_it for tipoGara in gare.gare | uniqueTipoGaraFlt"
+                          required>  
+                    </select> 
+                </div>    
 
-    <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Seleziona tipo gara
-        <span class="caret"></span></button>
-        <ul class="dropdown-menu">
-            <li role="presentation" ng-repeat="tipoGara in gare.gare | uniqueTipoGaraFlt" ng-click="gare.selezionaTipoGara(tipoGara)"><a role="menuitem" tabindex="-1" >{{tipoGara.nome_it}}</a></li>
-        </ul>
+                <div class="form-group" ng-show="gare.tipoGaraSelezionata">
+                    <label>Seleziona gara</label>
+                    <select class="form-control" 
+                          ng-model="gare.garaSelezionata" 
+                          ng-options="gara.nome for gara in gare.gare | tipoGara:gare.tipoGaraSelezionata"
+                          required>
+                    </select> 
+                </div>
+
+                <div class="text-center" ng-show="gare.garaSelezionata">
+                    <button type="button" class="btn btn-success" ng-click="gare.setGara()">Conferma</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="dropdown" ng-show="gare.tipoGaraSelezionata">
-        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Seleziona gara
-        <span class="caret"></span></button>
-        <ul class="dropdown-menu">
-            <li role="presentation" ng-repeat="gara in gare.gare | tipoGara:gare.tipoGaraSelezionata" ng-click="gare.selezionaGara(gara)"><a role="menuitem" tabindex="-1" >{{gara.nome}}</a></li>
-        </ul>
-    </div>
-
+        
 </div>

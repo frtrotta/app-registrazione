@@ -10,6 +10,8 @@
         <script src="https://code.angularjs.org/1.4.3/angular-route.js" type="text/javascript"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
         <script src="../js/registrazioneMdl/registrazioneMdl.js" type="text/javascript"></script>
         <script src="../js/registrazioneMdl/registrazioneCtrl.js" type="text/javascript"></script>
         
@@ -43,12 +45,15 @@
                         <label>Email</label>
                         <input type="email" name="email" class="form-control" ng-model="regCtrl.nuovoUtente.email" required />
                     </div>
+                    
                     <div class="form-group" ng-class="registrazione.sesso.$error.required ? 'has-error' : 'has-success'">
-                        <label>Sesso</label><br><!--TODO validazione radio button-->
-                        <input type="radio" name="sesso" ng-model="regCtrl.nuovoUtente.sesso" value="M">Maschio<br>
-                        <input type="radio" name="sesso" ng-model="regCtrl.nuovoUtentes.sesso" value="F">Femmina
+                        <label>Sesso</label>
+                        <select name="sesso" class="form-control" ng-model="sesso" required>
+                            <option value="M">M</option> 
+                            <option value="F">F</option> 
+                        </select> 
                     </div>
-
+                    
                     <div class="text-center">
                         <button ng-disabled="registrazione.$invalid" class="btn btn-primary" ng-click="regCtrl.registraUtente()">Registrati</button>
                     </div>           

@@ -1,5 +1,5 @@
 angular.module("SceltaGaraMdl")
-.controller("gareCtrl", ["$resource", "$log", "ordineFct", "$location", function($resource, $log, ordineFct, $location){
+.controller("gareCtrl", ["$resource", "$filter", "$log", "ordineFct", "$location", function($resource, $filter, $log, ordineFct, $location){
         
     var vm = this;
     var gara = $resource("http://localhost/app-registrazione/rest-api/Gara/default");
@@ -10,14 +10,9 @@ angular.module("SceltaGaraMdl")
         vm.gare = gare;
     });
     
-    vm.selezionaTipoGara = function(tipoGara){
-        vm.tipoGaraSelezionata = tipoGara;
-        vm.garaSelezionata = null;
-    };
     
-    vm.selezionaGara = function(gara){
-        vm.garaSelezionata = gara;
-        ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].idGara=gara.id;
+    vm.setGara = function(){
+        ordineFct.iscrizioni[ordineFct.iscrizioni.length-1].idGara=vm.garaSelezionata.id;
         console.log(ordineFct);
     
         switch(vm.tipoGaraSelezionata.id) {

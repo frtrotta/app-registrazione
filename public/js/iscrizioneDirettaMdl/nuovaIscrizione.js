@@ -10,7 +10,7 @@ angular.module("iscrizioneDirettaMdl")
             eseguitaIl: $filter('date')(new Date(), 'yyyy/MM/dd HH:mm:ss'),
             pettorale:vm.datiNuovaIscrizione.pettorale,
             motto:vm.datiNuovaIscrizione.motto,
-            haImmagine:vm.datiNuovaIscrizione.haImmagine
+            haImmagine:false //TODO da gestire: Come la faccio inserire? Dove la salvo?
         };
         ordineFct.iscrizioni.push(iscrizione);
         console.log(ordineFct);

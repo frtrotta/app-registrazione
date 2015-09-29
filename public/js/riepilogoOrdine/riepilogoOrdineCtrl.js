@@ -1,5 +1,5 @@
 angular.module("riepilogoOrdineMdl")
-.controller("riepilogoOrdineCtrl", ["$resource", "$log", "$location", "ordineFct", function($resource, $log, $location, ordineFct){
+.controller("riepilogoOrdineCtrl", ["$resource", "$filter", "$log", "$location", "ordineFct", function($resource, $filter, $log, $location, ordineFct){
 
     var vm = this;
     var gara = $resource("http://localhost/app-registrazione/rest-api/Gara/:id/default",{id:"@id"});
@@ -11,7 +11,9 @@ angular.module("riepilogoOrdineMdl")
             gara.get({id:iscrizione.idGara}, function(gara){
                 var elemento = {
                     costoGara:getCostoGara(gara, iscrizione.eseguitaIl),
-                    costoTesseramenti:vm.getCostoTesseramento(gara, iscrizione)
+                    costoTesseramenti:vm.getCostoTesseramento(gara, iscrizione),
+                    nomeGara:gara.nome,
+                    dataGara:$filter('date')(new Date(Date.parse(gara.disputataIl)), 'yyyy/MM/dd')
                 };
                 vm.riepilogoOrdine.push(elemento);
                 vm.setCostoTotale();
@@ -19,14 +21,17 @@ angular.module("riepilogoOrdineMdl")
         });
         
     };
+    vm.riepilogo();
     
     vm.inviaOrdine = function(){
         ordineFct.idModalitaPagamento = 2;
         new ordine(ordineFct).$save().then(
             function(result){
                 console.log(result);
+                $location.path("/");
             }, function(reject){
                 console.log(reject);
+                //TODO da gestire
             }
         );
     };

@@ -5,6 +5,11 @@ angular.module("registrazioneMdl")
     var utenti = $resource("http://localhost/app-registrazione/rest-api/Utente/:id", {id:"@id"});
     vm.nuovoUtente = null;
     
+    vm.selezionaSesso = function(sesso){
+        if(!vm.nuovoUtente)
+            vm.nuovoUtente = {};
+        vm.nuovoUtente.sesso = sesso;
+    };
    
     vm.registraUtente = function(){
         var utente = {

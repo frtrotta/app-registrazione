@@ -1,22 +1,33 @@
 <div ng-controller="riepilogoOrdineCtrl as riepilogoCtrl">
     
-    <button class="btn btn-primary" ng-click="riepilogoCtrl.riepilogo()">Riepilogo</button>
-    <button class="btn btn-primary" ng-click="riepilogoCtrl.inviaOrdine()">Pusha</button>
+    <h3>Riepilogo Ordine</h3>
     
-    <table class="table table-striped" ng-repeat="iscrizione in riepilogoCtrl.riepilogoOrdine">
-        <tr>
-            <th class="tg-031e" colspan="2">Iscrizione {{$index + 1}}</th>
-        </tr>
-        <tr>
-            <td class="tg-031e">Gara</td>
-            <td class="tg-031e">{{iscrizione.costoGara}}</td>
-        </tr>
-        <tr>
-            <td class="tg-031e">Tesseramento</td>
-            <td class="tg-031e">{{iscrizione.costoTesseramenti}}</td>
-        </tr>
-    </table>
+    <div class="row">
+        <div class="col-sm-6 col-sm-offset-2">
+            <table class="table table-striped" ng-repeat="iscrizione in riepilogoCtrl.riepilogoOrdine">
+                <tr>
+                    <th class="tg-031e" colspan="2">Iscrizione a <u>{{iscrizione.nomeGara}}</u> che si disputerà in data <u>{{iscrizione.dataGara}}</u></th>
+                </tr>
+                <tr>
+                    <td class="tg-031e">Gara</td>
+                    <td class="tg-031e">{{iscrizione.costoGara}}</td>
+                </tr>
+                <tr>
+                    <td class="tg-031e">Tesseramento</td>
+                    <td class="tg-031e">{{iscrizione.costoTesseramenti}}</td>
+                </tr>
+            </table>
+            <!--TODO inserire modalità di pagamento-->
+            <div class="text-center">
+                <button type="button" class="btn btn-success" ng-click="riepilogoCtrl.inviaOrdine()">Conferma</button>
+            </div>
+        </div>
+    </div>
     
-    <div ng-repeat="modalitaPagamento in riepilogoCtrl"><!--TODO--></div>
+    
+    
+    
+    
+    
     
 </div>
